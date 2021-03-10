@@ -1,5 +1,10 @@
 /** @type {HTMLInputElement} */ // @ts-ignore
-const input = document.getElementById("input");
+const codeInput = document.getElementById("input");
+/** @type {HTMLInputElement} */ // @ts-ignore
+const widthInput = document.getElementById("width");
+/** @type {HTMLInputElement} */ // @ts-ignore
+const heightInput = document.getElementById("height");
+
 const loadingElm = document.getElementById("loading");
 const errorElm = document.getElementById("error");
 
@@ -7,17 +12,63 @@ const errorElm = document.getElementById("error");
 const canvas = document.getElementById("canvas");
 
 
-canvas.width = 1024;
-canvas.height = 1024;
+canvas.width = 512;
+canvas.height = 512;
 
 const X = canvas.getContext("2d");
 
 /** @param {ImageBitmap} bitmap */
 function render(bitmap) {
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    updateWidthHeightInputValues();
     X.drawImage(bitmap, 0, 0);
 }
 
-input.addEventListener("input", tryRunInput);
+function updateWidthHeightInputValues() {
+    widthInput.value = canvas.width.toString();
+    heightInput.value = canvas.height.toString();
+}
+
+updateWidthHeightInputValues();
+
+codeInput.addEventListener("input", tryRunInput);
+widthInput.addEventListener("input", () => {
+    beforeResize();
+    canvas.width = getInputValueNonnegativeNonzero(widthInput.value);
+    resize();
+});
+heightInput.addEventListener("input", () => {
+    beforeResize();
+    canvas.height = getInputValueNonnegativeNonzero(heightInput.value);
+    resize();
+});
+
+/** @param {string} str */
+function getInputValueNonnegativeNonzero(str) {
+    const parsed = parseInt(str);
+    if (parsed <= 0) {
+        return 1;
+    } else if (isNaN(parsed)) {
+        return 1;
+    } else {
+        return parsed;
+    }
+}
+
+let beforeResizeImage;
+
+function beforeResize() {
+    beforeResizeImage = X.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function resize() {
+    if (beforeResizeImage) {
+        X.putImageData(beforeResizeImage, 0, 0);
+    }
+
+    tryRunInput();
+}
 
 /** @type {Worker} */
 let worker;
@@ -34,7 +85,7 @@ function tryRunInput() {
     }
 
     worker.postMessage({
-        code: input.value,
+        code: codeInput.value,
         width: canvas.width,
         height: canvas.height
     });
@@ -44,7 +95,6 @@ function tryRunInput() {
     loadingElm.innerText = "Loading...";
 
     worker.addEventListener("message", function (data) {
-        console.log(data);
         if (data.data instanceof ImageBitmap) {
             render(data.data);
             errorElm.innerText = "";
@@ -63,6 +113,7 @@ function resetWorker() {
     if (worker) { worker.terminate() };
     worker = new Worker("./worker.js");
 }
+
 
 resetWorker();
 tryRunInput();
