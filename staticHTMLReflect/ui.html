@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Static HTML Reflect </title>
+</head>
+
+<body>
+    <h1> Static HTML Reflect </h1>
+
+    <p> This is a utility -- not a project :/ </p>
+
+    <p> Reflects the body given in the URL hash (assumes is passed through <code>encodeURIComponent</code>). </p>
+
+    <p> Input html body: </p>
+
+    <p> <input oninput="document.getElementById('output').innerText = document.getElementById('output').href = location.href.slice(0, location.href.lastIndexOf('/')) + '/#' + encodeURIComponent(this.value)"> </p>
+
+    <p> <a href="#" id="output"></a> </p>
+</body>
+
+</html>
