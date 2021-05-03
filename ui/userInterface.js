@@ -1,6 +1,6 @@
 import { Component } from "../utils/elements.js";
 
-export class UserInterface extends Component {
+class UserInterface extends Component {
     constructor() {
         super("userInterface");
         
@@ -31,3 +31,9 @@ export class UserInterface extends Component {
         //
     }
 }
+
+export const userInterface = new UserInterface();
+
+userInterface.elm.appendTo(document.body);
+addEventListener("resize", () => userInterface.onResize());
+userInterface.onResize();
