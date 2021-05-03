@@ -1,20 +1,30 @@
-class Canvas {
+import { Component } from "./utils/elements.js";
+import { equasions } from "./equasions.js";
+
+class Canvas extends Component {
     constructor() {
-        this.elm = document.createElement("canvas");
-        this.X = this.elm.getContext("2d");
+        super("canvas");
+        
+        this.canvas = document.createElement("canvas");
+        this.X = this.canvas.getContext("2d");
+
+        this.elm.append(this.canvas);
     }
 
     resizeToScreen() {
         const scaling = window.devicePixelRatio || 1;
-        this.elm.width = innerWidth * scaling;
-        this.elm.height = innerHeight * scaling;
+        this.canvas.width = innerWidth * scaling;
+        this.canvas.height = innerHeight * scaling;
     }
 }
 
-class UserInterface {
+class UserInterface extends Component {
     constructor() {
-        this.elm = document.createElement("div");
-        this.canvas = new Canvas();
+        super("userInterface");
+        
+        this.elm.append(
+            this.canvas = new Canvas()
+        );
     }
 
     onResize() {
@@ -24,6 +34,7 @@ class UserInterface {
 
 const ui = new UserInterface();
 
+ui.elm.appendTo(document.body);
 ui.onResize();
 
 addEventListener("resize", () => ui.onResize());
@@ -31,3 +42,4 @@ addEventListener("resize", () => ui.onResize());
 ui.canvas.X.fillRect(0, 0, 100, 100);
 
 
+console.log(equasions);
