@@ -49,10 +49,10 @@ export function start(simulationView) {
 }
 
 export function update() {
-    const time = performance.now() - startTime;
+    const time = (performance.now() - startTime) / 1000;
 
     const x = equasions.x(time, 9.8, Math.PI / 2, 10, 0);
-    const y = equasions.y(time, 9.8, Math.PI / 2, 10, 0);
+    const y = canvas.height - equasions.y(time, 9.8, Math.PI / 2, 10, 0);
 
     canvas.X.clearRect(0, 0, canvas.width, canvas.height);
     canvas.X.fillStyle = "#ff0000";
