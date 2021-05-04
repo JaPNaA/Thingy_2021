@@ -12,14 +12,23 @@ export class SimulationView extends View {
         this.module = undefined;
         this.loadPromise = this.loadSimulation(simulationName);
         this.elm.append(this.canvas);
+
+        this.requestAnimationFrameId = 0;
     }
 
     async _setup() {
         await this.loadPromise;
         
-        setInterval(() => {
-            this.module.update();
-        }, 30);
+        this.requestAnimationFrameHandler();
+    }
+
+    _setdown() {
+        cancelAnimationFrame(this.requestAnimationFrameId);
+    }
+
+    requestAnimationFrameHandler() {
+        this.module.update();
+        this.requestAnimationFrameId = requestAnimationFrame(() => this.requestAnimationFrameHandler());
     }
     
     async loadSimulation(name) {

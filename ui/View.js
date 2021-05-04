@@ -14,6 +14,11 @@ export class View extends Component {
      */
     _setup() { }
 
+    /**
+     * Abstract method called after closing view
+     */
+    _setdown() { }
+
     /** @param {Elm} parentElm */
     open(parentElm) {
         console.log("open view", this.viewName);
@@ -24,5 +29,6 @@ export class View extends Component {
     close() {
         console.log("close view", this.viewName);
         this.elm.remove();
+        this._setdown();
     }
 }
