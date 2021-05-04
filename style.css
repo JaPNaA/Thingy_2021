@@ -1,6 +1,14 @@
 body {
     margin: 0;
     overflow: hidden;
+    background-color: #242424;
+    color: #ffffff;
+    font-family: Roboto, Arial, Helvetica, sans-serif;
+}
+
+a {
+    color: #4ba8ff;
+    text-decoration: none;
 }
 
 canvas {
@@ -13,4 +21,10 @@ canvas {
 
 .view {
     padding: 8px;
+}
+
+.view.SimulationList {
+    width: 100%;
+    max-width: 960px;
+    margin: auto;
 }
