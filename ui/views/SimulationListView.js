@@ -1,7 +1,5 @@
 import { View } from "../View.js";
-import { SimulationView } from "./SimulationView.js";
 import { Elm } from "../../utils/elements.js";
-import { userInterface } from "../userInterface.js";
 
 export class SimulationListView extends View {
     constructor() {
@@ -12,10 +10,6 @@ export class SimulationListView extends View {
             new Elm().class("list").append(
                 this.createSimulationLink("Projectile Motion", "projectileMotion")
             )
-        )
-
-        this.elm.append(
-            
         );
     }
 
@@ -26,7 +20,6 @@ export class SimulationListView extends View {
     createSimulationLink(title, simulationId) {
         return new Elm("a")
             .append(title)
-            .attribute("href", "#" + simulationId)
-            .on("click", () => userInterface.setView(new SimulationView(simulationId)))
+            .attribute("href", "#" + simulationId);
     }
 }
