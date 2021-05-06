@@ -1,9 +1,9 @@
 import { EventHandler } from "../../utils/EventHandler.js";
+import { Vec2 } from "../../utils/vectors.js";
 
-export class Cursor {
+export class Cursor extends Vec2 {
     constructor() {
-        this.x = 0;
-        this.y = 0;
+        super(0, 0);
         this.down = false;
 
         this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
