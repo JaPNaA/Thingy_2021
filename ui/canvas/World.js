@@ -1,5 +1,9 @@
 import { Cursor } from "./Cursor.js";
 
+/**
+ * @typedef {import("./HitBox.js").HitBox} HitBox
+ */
+
 export class World {
     /** @param {import("./Canvas.js").Canvas} canvas */
     constructor(canvas) {
@@ -8,8 +12,13 @@ export class World {
         /** @type {import("./CanvasElm.js").CanvasElm[]} */
         this.elements = [];
 
+        /** @type {HitBox[]} */
+        this.hitboxes = [];
+
         this.cursor = new Cursor();
         this.cursor.setup();
+
+        this.cursor.mouseDown.addHandler(e => this._mousedownHandler(e));
     }
 
     setdown() {
@@ -19,7 +28,12 @@ export class World {
     /** @param {import("./CanvasElm.js").CanvasElm} elm */
     addElm(elm) {
         this.elements.push(elm);
-        elm.world = this;
+        elm.setup(this);
+    }
+
+    /** @param {HitBox} hitbox */
+    addHitbox(hitbox) {
+        this.hitboxes.push(hitbox);
     }
 
     draw() {
@@ -27,6 +41,12 @@ export class World {
 
         for (const element of this.elements) {
             element.draw();
+        }
+    }
+
+    _mousedownHandler(e) {
+        for (const hitbox of this.hitboxes) {
+            hitbox.tryMousedown(e.clientX, e.clientY);
         }
     }
 }

@@ -1,3 +1,5 @@
+import { EventHandler } from "../../utils/EventHandler.js";
+
 export class Cursor {
     constructor() {
         this.x = 0;
@@ -7,6 +9,12 @@ export class Cursor {
         this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
         this._mouseDownHandler = this._mouseDownHandler.bind(this);
         this._mouseUpHandler = this._mouseUpHandler.bind(this);
+
+        this.mouseMove = new EventHandler();
+        this.mouseUp = new EventHandler();
+        this.mouseDown = new EventHandler();
+
+        this.nextMouseUpPromises = [];
     }
 
     setup() {
@@ -21,17 +29,33 @@ export class Cursor {
         removeEventListener("mouseup", this._mouseUpHandler);
     }
 
+    nextMouseUp() {
+        return new Promise(res => {
+            this.nextMouseUpPromises.push(res);
+        });
+    }
+
     /** @param {MouseEvent} e */
     _mouseMoveHandler(e) {
         this.x = e.clientX;
         this.y = e.clientY;
+        this.mouseMove.dispatch(e);
     }
 
-    _mouseDownHandler() {
+    _mouseDownHandler(e) {
         this.down = true;
+        this.mouseDown.dispatch(e);
     }
 
-    _mouseUpHandler() {
+    _mouseUpHandler(e) {
         this.down = false;
+
+        for (const nextMouseUpPromise of this.nextMouseUpPromises) {
+            nextMouseUpPromise();
+        }
+
+        this.nextMouseUpPromises.length = 0;
+
+        this.mouseUp.dispatch(e);
     }
 }

@@ -1,7 +1,16 @@
+/**
+ * @typedef {import("./World.js").World} World
+ */
+
 export class CanvasElm {
     constructor() {
-        /** @type {import("./World.js").World} */
+        /** @type {World} */
         this.world = null;
+    }
+
+    /** @param {World} world */
+    setup(world) {
+        this.world = world;
     }
 
     draw() {
