@@ -33,6 +33,12 @@ class Vec2 {
         return this.x * other.x + this.y * other.y;
     }
 
+    /** @param {number} magnitude */
+    withMagnitude(magnitude) {
+        const scale = magnitude / this.magnitude;
+        return this.scale(scale);
+    }
+
     get magnitude() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
