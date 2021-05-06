@@ -16,6 +16,10 @@ export class SimulationView extends View {
         this.requestAnimationFrameId = 0;
     }
 
+    resize() {
+        this.canvas.resizeToScreen();
+    }
+
     async _setup() {
         await this.loadPromise;
         

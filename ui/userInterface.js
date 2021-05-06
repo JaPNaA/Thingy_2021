@@ -28,7 +28,9 @@ class UserInterface extends Component {
     }
 
     onResize() {
-        //
+        for (const view of this.views) {
+            view.resize();
+        }
     }
 }
 

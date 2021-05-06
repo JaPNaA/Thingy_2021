@@ -8,6 +8,12 @@ export class View extends Component {
     }
 
     /**
+     * Resize view
+     * @abstract
+     */
+    resize() { }
+
+    /**
      * Abstract method called after opening view
      * @abstract
      * @protected
@@ -16,6 +22,8 @@ export class View extends Component {
 
     /**
      * Abstract method called after closing view
+     * @abstract
+     * @protected
      */
     _setdown() { }
 
