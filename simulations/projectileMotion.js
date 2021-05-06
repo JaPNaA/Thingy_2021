@@ -1,3 +1,7 @@
+import { vec } from "../utils/vectors.js";
+import { World } from "../ui/canvas/World.js";
+import { VectorLinearInput } from "../ui/canvas/vectorInput/VectorLinearInput.js";
+
 const equasions = {
     /**
      * Calculate x position
@@ -24,33 +28,42 @@ const equasions = {
 };
 
 
-/** @type {import("../ui/canvas/Canvas.js").Canvas} */
-let canvas;
-let startTime = 0;
+/** @type {import("../ui/canvas/World.js").World} */
+let world;
+
+let vxInput = new VectorLinearInput(vec(10, 0), vec(10, 400));
+let vyInput = new VectorLinearInput(vec(0, 10), vec(10, 400));
+let timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
+
+const gravity = -9.8;
 
 /** @param {SimulationView} simulationView */
 export function start(simulationView) {
     console.log("projectileMotion");
 
-    canvas = simulationView.canvas;
-    startTime = performance.now();
+    world = new World(simulationView.canvas);
+
+    world.addElm(vxInput);
+    world.addElm(vyInput);
+    world.addElm(timeInput);
 }
 
-const gravity = 9.8;
-const angle = Math.PI * 0.25;
-const initialVelocity = 40;
-
 export function update() {
-    const time = (performance.now() - startTime) / 1000;
+    const time = timeInput.magnitude / 100;
+
+    const velocity = vxInput.getVec2().add(vyInput.getVec2());
+    const angle = velocity.angle;
+    const initialVelocity = velocity.magnitude;
 
     const x = equasions.x(time, gravity, angle, initialVelocity, 0) * 10;
-    const y = canvas.height - equasions.y(time, gravity, angle, initialVelocity, 0) * 10;
+    const y = equasions.y(time, gravity, angle, initialVelocity, 0) * 10;
 
-    canvas.X.clearRect(0, 0, canvas.width, canvas.height);
-    canvas.X.fillStyle = "#ff0000";
+    world.draw();
 
-    canvas.X.beginPath();
-    canvas.X.arc(x, y, 4, 0, 2 * Math.PI);
-    canvas.X.closePath();
-    canvas.X.fill();
+    world.canvas.X.fillStyle = "#ff0000";
+
+    world.canvas.X.beginPath();
+    world.canvas.X.arc(x, y, 4, 0, 2 * Math.PI);
+    world.canvas.X.closePath();
+    world.canvas.X.fill();
 }
