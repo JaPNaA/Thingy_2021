@@ -24,7 +24,7 @@ const equasions = {
 };
 
 
-/** @type {import("../ui/Canvas.js").Canvas} */
+/** @type {import("../ui/canvas/Canvas.js").Canvas} */
 let canvas;
 let startTime = 0;
 

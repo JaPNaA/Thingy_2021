@@ -1,6 +1,6 @@
 import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
-import { Canvas } from "../Canvas.js";
+import { Canvas } from "../canvas/Canvas.js";
 
 export class SimulationView extends View {
     constructor(simulationName) {

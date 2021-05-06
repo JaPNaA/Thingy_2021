@@ -1,4 +1,4 @@
-import { Component } from "../utils/elements.js";
+import { Component } from "../../utils/elements.js";
 
 export class Canvas extends Component {
     constructor() {
