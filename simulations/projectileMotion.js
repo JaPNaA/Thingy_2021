@@ -46,6 +46,10 @@ export function start(simulationView) {
     world.addElm(vxInput);
     world.addElm(vyInput);
     world.addElm(timeInput);
+
+    world.keyboard.addKeyDownListener("Space", () => {
+        timeInput.setMagnitude(timeInput.getMagnitude() + 1);
+    });
 }
 
 export function update() {
@@ -55,8 +59,8 @@ export function update() {
     const angle = velocity.angle;
     const initialVelocity = velocity.magnitude;
 
-    const x = equasions.x(time, gravity, angle, initialVelocity, 0) * 10;
-    const y = equasions.y(time, gravity, angle, initialVelocity, 0) * 10;
+    const x = equasions.x(time, gravity, angle, initialVelocity, 0);
+    const y = equasions.y(time, gravity, angle, initialVelocity, 0);
 
     world.draw();
 

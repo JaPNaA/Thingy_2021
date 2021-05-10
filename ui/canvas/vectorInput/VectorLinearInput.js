@@ -9,15 +9,15 @@ export class VectorLinearInput extends CanvasElm {
      */
     constructor(direction, tailPos) {
         super();
-        this.magnitude = 0;
         this.direction = direction;
+        this.magnitude = this.direction.magnitude;
         this.tailPos = tailPos;
         this.valueVector = this.direction;
 
         this.dragging = false;
 
         this.hitbox = new HitBox(this._getHitboxCorner(), vec(4, 4));
-        this.hitbox.setMousedownHandler(() => this.mousedownHandler());
+        this.hitbox.setMousedownHandler(() => this._mousedownHandler());
     }
 
     /** @param {import("./World.js").World} world */
@@ -28,8 +28,9 @@ export class VectorLinearInput extends CanvasElm {
 
     draw() {
         if (this.dragging) {
-            this.magnitude = this.world.cursor.subtract(this.tailPos).dot(this.direction) / this.direction.magnitude; 
-            this.valueVector = this.getVec2();
+            this.setMagnitude(
+                this.world.cursor.subtract(this.tailPos).dot(this.direction) / this.direction.magnitude
+            );
         }
 
         const canvas = this.world.canvas;
@@ -46,13 +47,22 @@ export class VectorLinearInput extends CanvasElm {
         this.hitbox.setPos(this._getHitboxCorner());
     }
 
-    mousedownHandler() {
-        this.dragging = true;
-        this.world.cursor.nextMouseUp().then(() => this.dragging = false);
-    }
-
     getVec2() {
         return this.direction.withMagnitude(this.magnitude);
+    }
+
+    getMagnitude() {
+        return this.magnitude;
+    }
+
+    setMagnitude(magnitude) {
+        this.magnitude = magnitude;
+        this.valueVector = this.getVec2();
+    }
+
+    _mousedownHandler() {
+        this.dragging = true;
+        this.world.cursor.nextMouseUp().then(() => this.dragging = false);
     }
 
     _getHitboxCorner() {

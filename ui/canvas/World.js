@@ -1,4 +1,5 @@
 import { Cursor } from "./Cursor.js";
+import { Keyboard } from "./Keyboard.js";
 
 /**
  * @typedef {import("./HitBox.js").HitBox} HitBox
@@ -15,6 +16,9 @@ export class World {
         /** @type {HitBox[]} */
         this.hitboxes = [];
 
+        this.keyboard = new Keyboard();
+        this.keyboard.setup();
+
         this.cursor = new Cursor();
         this.cursor.setup();
 
@@ -23,6 +27,7 @@ export class World {
 
     setdown() {
         this.cursor.setdown();
+        this.keyboard.setdown();
     }
 
     /** @param {import("./CanvasElm.js").CanvasElm} elm */
