@@ -28,3 +28,7 @@ canvas {
     max-width: 960px;
     margin: auto;
 }
+
+.view.SimulationList .list .simulationLink {
+    display: block;
+}
