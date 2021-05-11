@@ -51,6 +51,13 @@ export class VectorLinearInput extends CanvasElm {
         return this.direction.withMagnitude(this.magnitude);
     }
 
+    /** @param {Vec2} vec2 */
+    setVec2(vec2) {
+        this.direction = vec2;
+        this.magnitude = vec2.magnitude;
+        this.valueVector = vec2;
+    }
+
     getMagnitude() {
         return this.magnitude;
     }

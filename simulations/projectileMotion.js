@@ -1,6 +1,7 @@
 import { vec } from "../utils/vectors.js";
 import { World } from "../ui/canvas/World.js";
 import { VectorLinearInput } from "../ui/canvas/vectorInput/VectorLinearInput.js";
+import { VectorInput } from "../ui/canvas/vectorInput/VectorInput.js";
 
 const equasions = {
     /**
@@ -31,8 +32,7 @@ const equasions = {
 /** @type {import("../ui/canvas/World.js").World} */
 let world;
 
-let vxInput = new VectorLinearInput(vec(10, 0), vec(10, 400));
-let vyInput = new VectorLinearInput(vec(0, 10), vec(10, 400));
+let vInput = new VectorInput(vec(10, 10), vec(10, 400));
 let timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
 
 const gravity = -9.8;
@@ -43,8 +43,7 @@ export function start(simulationView) {
 
     world = new World(simulationView.canvas);
 
-    world.addElm(vxInput);
-    world.addElm(vyInput);
+    world.addElm(vInput);
     world.addElm(timeInput);
 
     world.keyboard.addKeyDownListener("Space", () => {
@@ -55,7 +54,7 @@ export function start(simulationView) {
 export function update() {
     const time = timeInput.magnitude / 100;
 
-    const velocity = vxInput.getVec2().add(vyInput.getVec2());
+    const velocity = vInput.getVec2();
     const angle = velocity.angle;
     const initialVelocity = velocity.magnitude;
 
