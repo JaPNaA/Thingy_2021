@@ -1,6 +1,7 @@
 import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
 import { Canvas } from "../canvas/Canvas.js";
+import { HTMLCanvas } from "../htmlCanvas/HTMLCanvas.js";
 
 export class SimulationView extends View {
     constructor(simulationName) {
@@ -9,9 +10,13 @@ export class SimulationView extends View {
         this.canvas = new Canvas();
         this.canvas.resizeToScreen();
 
+        this.htmlCanvas = new HTMLCanvas();
+
         this.module = undefined;
         this.loadPromise = this.loadSimulation(simulationName);
+
         this.elm.append(this.canvas);
+        this.elm.append(this.htmlCanvas);
 
         this.requestAnimationFrameId = 0;
     }
