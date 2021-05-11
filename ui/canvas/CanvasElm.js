@@ -13,6 +13,8 @@ export class CanvasElm {
         this.world = world;
     }
 
+    update() { }
+
     draw() {
         throw new Error("CanvasElm doesn't have draw implemented");
     }

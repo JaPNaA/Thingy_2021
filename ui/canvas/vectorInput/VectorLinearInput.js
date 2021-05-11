@@ -26,13 +26,15 @@ export class VectorLinearInput extends CanvasElm {
         world.addHitbox(this.hitbox);
     }
 
-    draw() {
+    update() {
         if (this.dragging) {
             this.setMagnitude(
                 this.world.cursor.subtract(this.tailPos).dot(this.direction) / this.direction.magnitude
             );
         }
+    }
 
+    draw() {
         const canvas = this.world.canvas;
         const headPos = this.tailPos.add(this.valueVector);
 

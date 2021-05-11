@@ -45,6 +45,10 @@ export class World {
         this.canvas.X.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         for (const element of this.elements) {
+            element.update();
+        }
+
+        for (const element of this.elements) {
             element.draw();
         }
     }

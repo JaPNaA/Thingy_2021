@@ -20,7 +20,10 @@ export class VectorInput extends VectorLinearInput {
         world.addElm(this.yInput);
     }
 
-    draw() {
+    /**
+     * @override
+     */
+    update() {
         if (this.xInput.dragging || this.yInput.dragging) {
             this.setVec2(vec(
                 this.xInput.getVec2().x,
@@ -31,6 +34,5 @@ export class VectorInput extends VectorLinearInput {
             this.xInput.setVec2(vec(this.direction.x, 0));
             this.yInput.setVec2(vec(0, this.direction.y));
         }
-        super.draw();
     }
 }
