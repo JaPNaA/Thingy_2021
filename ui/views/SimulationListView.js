@@ -8,7 +8,8 @@ export class SimulationListView extends View {
         this.elm.append(
             new Elm("h1").append("Physics simulations"),
             new Elm().class("list").append(
-                this.createSimulationLink("Projectile Motion", "projectileMotion")
+                this.createSimulationLink("Projectile Motion", "projectileMotion"),
+                this.createSimulationLink("1d Motion", "1dMotion")
             )
         );
     }
@@ -19,6 +20,7 @@ export class SimulationListView extends View {
      */
     createSimulationLink(title, simulationId) {
         return new Elm("a")
+            .class("simulationLink")
             .append(title)
             .attribute("href", "#" + simulationId);
     }
