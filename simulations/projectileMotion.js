@@ -2,6 +2,7 @@ import { vec } from "../utils/vectors.js";
 import { World } from "../ui/canvas/World.js";
 import { VectorLinearInput } from "../ui/canvas/vectorInput/VectorLinearInput.js";
 import { VectorInput } from "../ui/canvas/vectorInput/VectorInput.js";
+import { TimePath } from "../ui/canvas/timePath/TimePath.js";
 
 const equasions = {
     /**
@@ -32,8 +33,9 @@ const equasions = {
 /** @type {import("../ui/canvas/World.js").World} */
 let world;
 
-let vInput = new VectorInput(vec(10, 10), vec(10, 400));
-let timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
+const vInput = new VectorInput(vec(10, 10), vec(10, 400));
+const timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
+const timePath = new TimePath();
 
 const gravity = -9.8;
 
@@ -45,6 +47,7 @@ export function start(simulationView) {
 
     world.addElm(vInput);
     world.addElm(timeInput);
+    world.addElm(timePath);
 
     world.keyboard.addKeyDownListener("Space", () => {
         timeInput.setMagnitude(timeInput.getMagnitude() + 1);
@@ -61,6 +64,18 @@ export function update() {
     const x = equasions.x(time, gravity, angle, initialVelocity, 0);
     const y = equasions.y(time, gravity, angle, initialVelocity, 0);
 
+
+    // temp: timepath generation
+    timePath.clearNodes();
+
+    for (let i = 0; i < 10; i += 0.1) {
+        timePath.addNode(
+            equasions.x(i, gravity, angle, initialVelocity, 0),
+            equasions.y(i, gravity, angle, initialVelocity, 0),
+            i
+        );
+    }
+    
     world.draw();
 
     world.canvas.X.fillStyle = "#ff0000";
