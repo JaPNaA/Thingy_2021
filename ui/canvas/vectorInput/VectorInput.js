@@ -16,14 +16,17 @@ export class VectorInput extends VectorLinearInput {
     /** @param {import("../World.js").World} world */
     setup(world) {
         super.setup(world);
-        world.addElm(this.xInput);
-        world.addElm(this.yInput);
+        this.xInput.setup(world);
+        this.yInput.setup(world);
     }
 
     /**
      * @override
      */
     update() {
+        this.xInput.update();
+        this.yInput.update();
+
         if (this.xInput.dragging || this.yInput.dragging) {
             this.setVec2(vec(
                 this.xInput.getVec2().x,
@@ -34,5 +37,11 @@ export class VectorInput extends VectorLinearInput {
             this.xInput.setVec2(vec(this.direction.x, 0));
             this.yInput.setVec2(vec(0, this.direction.y));
         }
+    }
+
+    draw() {
+        this.xInput.draw();
+        this.yInput.draw();
+        super.draw();
     }
 }
