@@ -2,9 +2,11 @@ import { EventHandler } from "../../utils/EventHandler.js";
 import { Vec2 } from "../../utils/vectors.js";
 
 export class Cursor extends Vec2 {
-    constructor() {
+    /** @param {Vec2} offset */
+    constructor(offset) {
         super(0, 0);
         this.down = false;
+        this.offset = offset;
 
         this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
         this._mouseDownHandler = this._mouseDownHandler.bind(this);
@@ -37,8 +39,8 @@ export class Cursor extends Vec2 {
 
     /** @param {MouseEvent} e */
     _mouseMoveHandler(e) {
-        this.x = e.clientX;
-        this.y = e.clientY;
+        this.x = e.clientX + this.offset.x;
+        this.y = e.clientY + this.offset.y;
         this.mouseMove.dispatch(e);
     }
 

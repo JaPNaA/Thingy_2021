@@ -3,6 +3,7 @@ import { World } from "../ui/canvas/World.js";
 import { VectorLinearInput } from "../ui/canvas/vectorInput/VectorLinearInput.js";
 import { VectorInput } from "../ui/canvas/vectorInput/VectorInput.js";
 import { TimePath } from "../ui/canvas/timePath/TimePath.js";
+import { CanvasElm } from "../ui/canvas/CanvasElm.js";
 
 const equasions = {
     /**
@@ -29,9 +30,28 @@ const equasions = {
     y: (t, g, theta, v, y0) => v * Math.sin(theta) * t  - g * (t * t)
 };
 
+class Ball extends CanvasElm {
+    constructor() {
+        super();
+        this.pos = vec(0, 0);
+    }
+
+    draw() {
+        const X = this.world.canvas.X;
+        
+        X.fillStyle = "#ff0000";
+
+        X.beginPath();
+        X.arc(this.pos.x, this.pos.y, 4, 0, 2 * Math.PI);
+        X.closePath();
+        X.fill();
+    }
+}
 
 /** @type {import("../ui/canvas/World.js").World} */
 let world;
+
+const ball = new Ball();
 
 const vInput = new VectorInput(vec(10, 10), vec(10, 400));
 const timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
@@ -48,6 +68,7 @@ export function start(simulationView) {
     world.addElm(vInput);
     world.addElm(timeInput);
     world.addElm(timePath);
+    world.addElm(ball);
 
     world.keyboard.addKeyDownListener("Space", () => {
         timeInput.setMagnitude(timeInput.getMagnitude() + 1);
@@ -64,6 +85,7 @@ export function update() {
     const x = equasions.x(time, gravity, angle, initialVelocity, 0);
     const y = equasions.y(time, gravity, angle, initialVelocity, 0);
 
+    ball.pos = vec(x, y);
 
     // temp: timepath generation
     timePath.clearNodes();
@@ -75,13 +97,7 @@ export function update() {
             i
         );
     }
-    
+
     world.draw();
 
-    world.canvas.X.fillStyle = "#ff0000";
-
-    world.canvas.X.beginPath();
-    world.canvas.X.arc(x, y, 4, 0, 2 * Math.PI);
-    world.canvas.X.closePath();
-    world.canvas.X.fill();
 }
