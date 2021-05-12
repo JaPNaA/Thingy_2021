@@ -1,4 +1,4 @@
-import { CanvasElm } from "../CanvasElm.js";
+import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { TimeNode } from "./TimeNode.js"
 
 export class TimePath extends CanvasElm {

@@ -7,9 +7,13 @@ import { Camera } from "./canvas/Camera.js";
  */
 
 export class World {
-    /** @param {import("./Canvas.js").Canvas} canvas */
-    constructor(canvas) {
+    /** @param { {
+     *   canvas: import("./canvas/Canvas.js").Canvas,
+     *   htmlCanvas: import("./htmlCanvas/HTMLCanvas.js").HTMLCanvas
+     * } } canvases */
+    constructor( { canvas, htmlCanvas } ) {
         this.canvas = canvas;
+        this.htmlCanvas = htmlCanvas;
 
         /** @type {import("./CanvasElm.js").CanvasElm[]} */
         this.elements = [];

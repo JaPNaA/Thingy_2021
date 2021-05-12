@@ -1,6 +1,6 @@
 import { vec, Vec2 } from "../../../utils/vectors.js";
-import { CanvasElm } from "../CanvasElm.js";
-import { HitBox } from "../HitBox.js";
+import { CanvasElm } from "../../canvas/CanvasElm.js";
+import { HitBox } from "../../canvas/HitBox.js";
 
 export class VectorLinearInput extends CanvasElm {
     /**

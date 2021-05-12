@@ -1,5 +1,5 @@
 import { VectorLinearInput } from "./VectorLinearInput.js";
-import { CanvasElm } from "../CanvasElm.js";
+import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { vec, Vec2 } from "../../../utils/vectors.js";
 
 export class VectorInput extends VectorLinearInput {

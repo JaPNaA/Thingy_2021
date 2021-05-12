@@ -1,8 +1,8 @@
 import { vec } from "../utils/vectors.js";
 import { World } from "../engine/World.js";
-import { VectorLinearInput } from "../engine/canvas/vectorInput/VectorLinearInput.js";
-import { VectorInput } from "../engine/canvas/vectorInput/VectorInput.js";
-import { TimePath } from "../engine/canvas/timePath/TimePath.js";
+import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinearInput.js";
+import { VectorInput } from "../engine/components/vectorInput/VectorInput.js";
+import { TimePath } from "../engine/components/timePath/TimePath.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 
 const equasions = {
@@ -63,7 +63,7 @@ const gravity = -9.8;
 export function start(simulationView) {
     console.log("projectileMotion");
 
-    world = new World(simulationView.canvas);
+    world = new World(simulationView);
 
     world.addElm(vInput);
     world.addElm(timeInput);
