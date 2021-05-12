@@ -19,3 +19,5 @@ export function start(simulationView) {
 }
 
 export function update() { }
+
+export function stop() { }

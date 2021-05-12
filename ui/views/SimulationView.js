@@ -33,6 +33,7 @@ export class SimulationView extends View {
 
     _setdown() {
         cancelAnimationFrame(this.requestAnimationFrameId);
+        this.module.stop();
     }
 
     requestAnimationFrameHandler() {

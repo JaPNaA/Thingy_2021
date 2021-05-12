@@ -99,5 +99,8 @@ export function update() {
     }
 
     world.draw();
+}
 
+export function stop() {
+    world.setdown();
 }
