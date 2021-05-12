@@ -1,6 +1,8 @@
 import { vec, Vec2 } from "../../../utils/vectors.js";
 import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { HitBox } from "../../canvas/HitBox.js";
+import { HTMLCanvasElm } from "../../htmlCanvas/HTMLCanvasElm.js";
+import { Elm, InputElm } from "../../../utils/elements.js";
 
 export class VectorLinearInput extends CanvasElm {
     /**
@@ -18,12 +20,15 @@ export class VectorLinearInput extends CanvasElm {
 
         this.hitbox = new HitBox(this._getHitboxCorner(), vec(4, 4));
         this.hitbox.setMousedownHandler(() => this._mousedownHandler());
+
+        this.inputElm = new HTMLCanvasInputElm();
     }
 
     /** @param {import("./World.js").World} world */
     setup(world) {
         super.setup(world);
         world.addHitbox(this.hitbox);
+        world.htmlCanvas.addElm(this.inputElm);
     }
 
     update() {
@@ -32,6 +37,7 @@ export class VectorLinearInput extends CanvasElm {
                 this.world.cursor.subtract(this.tailPos).dot(this.direction) / this.direction.magnitude
             );
         }
+        this.inputElm.setValue(this.magnitude);
     }
 
     draw() {
@@ -76,5 +82,18 @@ export class VectorLinearInput extends CanvasElm {
 
     _getHitboxCorner() {
         return this.tailPos.add(this.valueVector).subtract(vec(2, 2));
+    }
+}
+
+class HTMLCanvasInputElm extends HTMLCanvasElm {
+    constructor() {
+        super();
+        this.append(
+            this.inputElm = new InputElm()
+        );
+    }
+
+    setValue(value) {
+        this.inputElm.setValue(value);
     }
 }
