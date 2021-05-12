@@ -1,9 +1,9 @@
 import { vec } from "../utils/vectors.js";
-import { World } from "../ui/canvas/World.js";
-import { VectorLinearInput } from "../ui/canvas/vectorInput/VectorLinearInput.js";
-import { VectorInput } from "../ui/canvas/vectorInput/VectorInput.js";
-import { TimePath } from "../ui/canvas/timePath/TimePath.js";
-import { CanvasElm } from "../ui/canvas/CanvasElm.js";
+import { World } from "../engine/World.js";
+import { VectorLinearInput } from "../engine/canvas/vectorInput/VectorLinearInput.js";
+import { VectorInput } from "../engine/canvas/vectorInput/VectorInput.js";
+import { TimePath } from "../engine/canvas/timePath/TimePath.js";
+import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 
 const equasions = {
     /**

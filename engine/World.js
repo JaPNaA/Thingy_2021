@@ -1,6 +1,6 @@
-import { Cursor } from "./Cursor.js";
-import { Keyboard } from "./Keyboard.js";
-import { Camera } from "./Camera.js";
+import { Cursor } from "./canvas/Cursor.js";
+import { Keyboard } from "./canvas/Keyboard.js";
+import { Camera } from "./canvas/Camera.js";
 
 /**
  * @typedef {import("./HitBox.js").HitBox} HitBox

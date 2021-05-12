@@ -1,6 +1,6 @@
 import { vec } from "../utils/vectors.js";
-import { VectorLinearInput } from "../ui/canvas/vectorInput/VectorLinearInput.js";
-import { World } from "../ui/canvas/World.js";
+import { VectorLinearInput } from "../engine/canvas/vectorInput/VectorLinearInput.js";
+import { World } from "../engine/World.js";
 
 let world;
 let startTime;

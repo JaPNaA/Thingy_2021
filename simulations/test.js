@@ -1,6 +1,6 @@
 // Testing grounds. Not an actual simulation
 
-import { HTMLCanvasElm } from "../ui/htmlCanvas/HTMLCanvasElm.js";
+import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm, InputElm } from "../utils/elements.js";
 
 class HTMLCanvasInputElm extends HTMLCanvasElm {
