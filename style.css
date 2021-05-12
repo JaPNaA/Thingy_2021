@@ -37,3 +37,19 @@ a {
 .view.Simulation .canvas {
     pointer-events: none;
 }
+
+.HTMLCanvas .HTMLCanvasElm {
+    position: absolute;
+}
+
+.HTMLCanvas .LinearVectorInputElm input {
+    background-color: transparent;
+    border: none;
+    color: #ffffff;
+    text-align: center;
+    padding: 4px;
+}
+
+.HTMLCanvas .LinearVectorInputElm input:hover {
+    background-color: #000000a6;
+}

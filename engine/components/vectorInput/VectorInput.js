@@ -37,6 +37,8 @@ export class VectorInput extends VectorLinearInput {
             this.xInput.setVec2(vec(this.direction.x, 0));
             this.yInput.setVec2(vec(0, this.direction.y));
         }
+        
+        this.inputElm.setValue(this.magnitude);
     }
 
     draw() {

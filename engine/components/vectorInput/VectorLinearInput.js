@@ -21,10 +21,10 @@ export class VectorLinearInput extends CanvasElm {
         this.hitbox = new HitBox(this._getHitboxCorner(), vec(4, 4));
         this.hitbox.setMousedownHandler(() => this._mousedownHandler());
 
-        this.inputElm = new HTMLCanvasInputElm();
+        this.inputElm = new LinearVectorInputElm();
     }
 
-    /** @param {import("./World.js").World} world */
+    /** @param {import("./World.js").World} Lorld */
     setup(world) {
         super.setup(world);
         world.addHitbox(this.hitbox);
@@ -51,6 +51,8 @@ export class VectorLinearInput extends CanvasElm {
         canvas.X.lineTo(headPos.x, headPos.y);
         canvas.X.stroke();
         canvas.X.fillRect(headPos.x - 2, headPos.y - 2, 4, 4);
+
+        this.inputElm.setPos(headPos.add(this.tailPos).scale(1/2));
 
         this.hitbox.setPos(this._getHitboxCorner());
     }
@@ -85,15 +87,19 @@ export class VectorLinearInput extends CanvasElm {
     }
 }
 
-class HTMLCanvasInputElm extends HTMLCanvasElm {
+class LinearVectorInputElm extends HTMLCanvasElm {
     constructor() {
         super();
+        this.class("LinearVectorInputElm");
         this.append(
             this.inputElm = new InputElm()
         );
     }
 
+    /** @param {number} value */
     setValue(value) {
-        this.inputElm.setValue(value);
+        const strValue = value.toFixed(2);
+        this.inputElm.setValue(strValue);
+        this.inputElm.attribute("style", "width: " + strValue.length + "ch");
     }
 }
