@@ -3,6 +3,7 @@ import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { HitBox } from "../../canvas/HitBox.js";
 import { HTMLCanvasElm } from "../../htmlCanvas/HTMLCanvasElm.js";
 import { Elm, InputElm } from "../../../utils/elements.js";
+import { EventHandler } from "../../../utils/EventHandler.js";
 
 export class VectorLinearInput extends CanvasElm {
     /**
@@ -21,6 +22,8 @@ export class VectorLinearInput extends CanvasElm {
         this.hitbox = new HitBox(this._getHitboxCorner(), vec(4, 4));
         this.hitbox.setMousedownHandler(() => this._mousedownHandler());
 
+        this.onUserChange = new EventHandler();
+
         this.inputElm = new LinearVectorInputElm();
     }
 
@@ -36,6 +39,7 @@ export class VectorLinearInput extends CanvasElm {
             this.setMagnitude(
                 this.world.cursor.subtract(this.tailPos).dot(this.direction) / this.direction.magnitude
             );
+            this.onUserChange.dispatch(this.valueVector);
         }
         this.inputElm.setValue(this.magnitude);
     }

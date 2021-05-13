@@ -73,32 +73,36 @@ export function start(simulationView) {
     world.keyboard.addKeyDownListener("Space", () => {
         timeInput.setMagnitude(timeInput.getMagnitude() + 1);
     });
+    
+    vInput.onUserChange.addHandler(() => updateTimePath());
+    updateTimePath();
 }
 
 export function update() {
     const time = timeInput.magnitude / 100;
 
     const velocity = vInput.getVec2();
-    const angle = velocity.angle;
-    const initialVelocity = velocity.magnitude;
 
-    const x = equasions.x(time, gravity, angle, initialVelocity, 0);
-    const y = equasions.y(time, gravity, angle, initialVelocity, 0);
+    const x = equasions.x(time, gravity, velocity.angle, velocity.magnitude, 0);
+    const y = equasions.y(time, gravity, velocity.angle, velocity.magnitude, 0);
 
     ball.pos = vec(x, y);
 
-    // temp: timepath generation
+    world.draw();
+}
+
+function updateTimePath() {
+    const velocity = vInput.getVec2();
+
     timePath.clearNodes();
 
-    for (let i = 0; i < 10; i += 0.1) {
+    for (let i = 0; i < 20; i += 0.1) {
         timePath.addNode(
-            equasions.x(i, gravity, angle, initialVelocity, 0),
-            equasions.y(i, gravity, angle, initialVelocity, 0),
+            equasions.x(i, gravity, velocity.angle, velocity.magnitude, 0),
+            equasions.y(i, gravity, velocity.angle, velocity.magnitude, 0),
             i
         );
     }
-
-    world.draw();
 }
 
 export function stop() {
