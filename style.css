@@ -45,12 +45,17 @@ a {
 
 .HTMLCanvas .LinearVectorInputElm input {
     background-color: transparent;
-    border: none;
+
     color: #ffffff;
+    font-size: 12px;
     text-align: center;
+    opacity: 0.6;
+
     padding: 4px;
+    border: none;
 }
 
 .HTMLCanvas .LinearVectorInputElm input:hover {
     background-color: #000000a6;
+    opacity: 1;
 }
