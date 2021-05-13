@@ -22,9 +22,12 @@ export class VectorLinearInput extends CanvasElm {
         this.hitbox = new HitBox(this._getHitboxCorner(), vec(4, 4));
         this.hitbox.setMousedownHandler(() => this._mousedownHandler());
 
-        this.onUserChange = new EventHandler();
-
         this.inputElm = new LinearVectorInputElm();
+        this.inputElm.onUserChange.addHandler(value => this._inputElmChangeHandler(value));
+
+        this.onUserChange = new EventHandler();
+        this.onUserChange.addHandler(() => this.updateInputValue());
+        this.updateInputValue();
     }
 
     /** @param {import("./World.js").World} Lorld */
@@ -35,13 +38,11 @@ export class VectorLinearInput extends CanvasElm {
     }
 
     update() {
-        if (this.dragging) {
-            this.setMagnitude(
-                this.world.cursor.subtract(this.tailPos).dot(this.direction) / this.direction.magnitude
-            );
-            this.onUserChange.dispatch(this.valueVector);
-        }
-        this.inputElm.setValue(this.magnitude);
+        if (!this.dragging) { return; }
+        this.setMagnitude(
+            this.world.cursor.subtract(this.tailPos).dot(this.direction) / this.direction.magnitude
+        );
+        this.onUserChange.dispatch(this.valueVector);
     }
 
     draw() {
@@ -61,6 +62,10 @@ export class VectorLinearInput extends CanvasElm {
         this.hitbox.setPos(this._getHitboxCorner());
     }
 
+    updateInputValue() {
+        this.inputElm.setValue(this.magnitude);
+    }
+
     getVec2() {
         return this.direction.withMagnitude(this.magnitude);
     }
@@ -70,6 +75,7 @@ export class VectorLinearInput extends CanvasElm {
         this.direction = vec2;
         this.magnitude = vec2.magnitude;
         this.valueVector = vec2;
+        this.updateInputValue();
     }
 
     getMagnitude() {
@@ -79,6 +85,13 @@ export class VectorLinearInput extends CanvasElm {
     setMagnitude(magnitude) {
         this.magnitude = magnitude;
         this.valueVector = this.getVec2();
+    }
+
+    /** @param {number} value */
+    _inputElmChangeHandler(value) {
+        this.setMagnitude(value);
+        this.updateInputValue();
+        this.onUserChange.dispatch(this.valueVector);
     }
 
     _mousedownHandler() {
@@ -95,9 +108,15 @@ class LinearVectorInputElm extends HTMLCanvasElm {
     constructor() {
         super();
         this.class("LinearVectorInputElm");
+
         this.append(
             this.inputElm = new InputElm()
         );
+
+        this._lastValue = "";
+
+        this.onUserChange = new EventHandler();
+        this.inputElm.on("change", () => this._inputChangeHandler());
     }
 
     /** @param {number} value */
@@ -105,5 +124,16 @@ class LinearVectorInputElm extends HTMLCanvasElm {
         const strValue = value.toFixed(2);
         this.inputElm.setValue(strValue);
         this.inputElm.attribute("style", "width: " + strValue.length + "ch");
+        this._lastValue = value;
+    }
+
+    _inputChangeHandler() {
+        const value = parseFloat(this.inputElm.getValue());
+        if (isNaN(value)) {
+            this.setValue(this._lastValue);
+            return;
+        }
+
+        this.onUserChange.dispatch(value);
     }
 }

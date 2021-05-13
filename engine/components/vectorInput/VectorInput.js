@@ -32,12 +32,24 @@ export class VectorInput extends VectorLinearInput {
 
         if (this.dragging) {
             this.setVec2(this.world.cursor.subtract(this.tailPos));
-            this.xInput.setVec2(vec(this.direction.x, 0));
-            this.yInput.setVec2(vec(0, this.direction.y));
-            this.onUserChange.dispatch(this.valueVector);
+            this.updateComponentInputsFromValue();
         }
-        
-        this.inputElm.setValue(this.magnitude);
+    }
+
+    /**
+     * @param {number} value
+     * @override
+     */
+    _inputElmChangeHandler(value) {
+        this.setMagnitude(value);
+        this.updateComponentInputsFromValue();
+        this.onUserChange.dispatch(this.valueVector);
+    }
+
+    updateComponentInputsFromValue() {
+        this.xInput.setVec2(vec(this.valueVector.x, 0));
+        this.yInput.setVec2(vec(0, this.valueVector.y));
+        this.onUserChange.dispatch(this.valueVector);
     }
     
     updateValueFromComponentInputs() {
