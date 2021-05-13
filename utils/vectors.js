@@ -39,6 +39,10 @@ class Vec2 {
         return this.scale(scale);
     }
 
+    isEqual(other) {
+        return this.x == other.x && this.y == other.y;
+    }
+
     get magnitude() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }

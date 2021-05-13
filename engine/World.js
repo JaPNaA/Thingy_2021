@@ -53,6 +53,8 @@ export class World {
         this.canvas.X.save();
         this.canvas.X.translate(-this.camera.x, -this.camera.y);
 
+        this.htmlCanvas.setTranslation(this.camera.scale(-1));
+
         for (const element of this.elements) {
             element.update();
         }
