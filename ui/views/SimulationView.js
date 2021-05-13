@@ -33,7 +33,9 @@ export class SimulationView extends View {
 
     _setdown() {
         cancelAnimationFrame(this.requestAnimationFrameId);
-        this.module.stop();
+        if (this.module) {
+            this.module.stop();
+        }
     }
 
     requestAnimationFrameHandler() {
@@ -42,7 +44,13 @@ export class SimulationView extends View {
     }
     
     async loadSimulation(name) {
-        const module = await import(`/simulations/${name}.js`);
+        let module;
+        try {
+            module = await import(`/simulations/${name}.js`);
+        } catch (err) {
+            this.elm.append("Failed to load module -- it was probably not found.");
+            throw err;
+        }
         module.start(this);
         this.module = module;
     }
