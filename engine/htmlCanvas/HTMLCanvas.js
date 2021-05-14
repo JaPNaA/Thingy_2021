@@ -11,15 +11,17 @@ export class HTMLCanvas extends Component {
         /** @type {HTMLCanvasElm[]} */
         this.elms = [];
         this.displacement = vec(0, 0);
+        this.scale = 0;
     }
 
     /** @param {Vec2} displacement */
-    setTranslation(displacement) {
-        if (this.displacement.isEqual(displacement)) { return; }
+    setTransformation(displacement, scale) {
+        if (this.displacement.isEqual(displacement) && this.scale === scale) { return; }
         this.displacement = displacement;
+        this.scale = scale;
 
         for (const elm of this.elms) {
-            elm.setTranslation(displacement);
+            elm.setTransformation(displacement, scale);
         }
     }
 

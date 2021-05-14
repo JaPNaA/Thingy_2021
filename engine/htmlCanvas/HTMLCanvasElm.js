@@ -8,11 +8,13 @@ export class HTMLCanvasElm extends Elm {
 
         this.displacement = vec(0, 0);
         this.pos = vec(0, 0);
+        this.scale = 0;
     }
 
     /** @param {Vec2} displacement */
-    setTranslation(displacement) {
+    setTransformation(displacement, scale) {
         this.displacement = displacement;
+        this.scale = scale;
         this.updateInlineStyle();
     }
 
@@ -23,8 +25,7 @@ export class HTMLCanvasElm extends Elm {
     }
 
     updateInlineStyle() {
-        this.attribute("style",
-            `left: ${this.pos.x + this.displacement.x}px; top: ${this.pos.y + this.displacement.y}px`
-        );
+        const pos = this.pos.scale(this.scale).add(this.displacement);
+        this.attribute("style", `left: ${pos.x}px; top: ${pos.y}px`);
     }
 }

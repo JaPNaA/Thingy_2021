@@ -14,5 +14,8 @@ export class Camera extends Vec2 {
         this.keyboard.addKeyDownListener("KeyA", () => this.x -= 5);
         this.keyboard.addKeyDownListener("KeyS", () => this.y += 5);
         this.keyboard.addKeyDownListener("KeyD", () => this.x += 5);
+        this.keyboard.addKeyDownListener("Equal", () => this.zoom *= 1.05);
+        this.keyboard.addKeyDownListener("Minus", () => this.zoom /= 1.05);
+        this.keyboard.addKeyDownListener("Digit0", () => this.zoom = 1);
     }
 }

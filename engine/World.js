@@ -54,8 +54,9 @@ export class World {
         this.canvas.X.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.canvas.X.save();
         this.canvas.X.translate(-this.camera.x, -this.camera.y);
+        this.canvas.X.scale(this.camera.zoom, this.camera.zoom);
 
-        this.htmlCanvas.setTranslation(this.camera.scale(-1));
+        this.htmlCanvas.setTransformation(this.camera.scale(-1), this.camera.zoom);
 
         for (const element of this.elements) {
             element.update();
