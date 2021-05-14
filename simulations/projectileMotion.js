@@ -4,6 +4,7 @@ import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinear
 import { VectorInput } from "../engine/components/vectorInput/VectorInput.js";
 import { TimePath } from "../engine/components/timePath/TimePath.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
+import { HitBox } from "../engine/canvas/HitBox.js";
 
 const equasions = {
     /**
@@ -27,13 +28,25 @@ const equasions = {
      * @param {number} v - initial velocity magnitude in m/s
      * @param {number} y0 - initial y position
      */
-    y: (t, g, theta, v, y0) => v * Math.sin(theta) * t  - g * (t * t)
+    y: (t, g, theta, v, y0) => v * Math.sin(theta) * t  - g * (t * t) / 2
 };
 
 class Ball extends CanvasElm {
     constructor() {
         super();
+        
         this.pos = vec(0, 0);
+
+        this.hovering = false;
+
+        this.hitbox = new HitBox(this._getHitboxCorner(), vec(8, 8));
+        this.hitbox.setMousemoveHandler(() => this.hovering = true);
+        this.hitbox.setMouseoffHandler(() => this.hovering = false);
+    }
+
+    setup(world) {
+        super.setup(world);
+        world.addHitbox(this.hitbox);
     }
 
     draw() {
@@ -45,6 +58,16 @@ class Ball extends CanvasElm {
         X.arc(this.pos.x, this.pos.y, 4, 0, 2 * Math.PI);
         X.closePath();
         X.fill();
+
+        this.hitbox.setPos(this._getHitboxCorner());
+
+        if (this.hovering) {
+            X.fillText(this.pos, this.pos.x, this.pos.y);
+        }
+    }
+
+    _getHitboxCorner() {
+        return this.pos.subtract(vec(4, 4));
     }
 }
 

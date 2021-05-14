@@ -50,6 +50,10 @@ class Vec2 {
     get angle() {
         return Math.atan2(this.y, this.x);
     }
+
+    toString() {
+        return `(${this.x}, ${this.y})`;
+    }
 }
 
 /**

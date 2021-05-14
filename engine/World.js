@@ -20,6 +20,7 @@ export class World {
 
         /** @type {HitBox[]} */
         this.hitboxes = [];
+        this._debugDrawHitbox = false;
 
         this.keyboard = new Keyboard();
         this.keyboard.setup();
@@ -64,7 +65,22 @@ export class World {
             element.draw();
         }
 
+        if (this._debugDrawHitbox) {
+            this._debugDrawHitboxes();
+        }
+
         this.canvas.X.restore();
+    }
+
+    _debugDrawHitboxes() {
+        this.canvas.X.fillStyle = "#4444ff20";
+        this.canvas.X.strokeStyle = "#4444ff";
+        for (const hitbox of this.hitboxes) {
+            this.canvas.X.beginPath();
+            this.canvas.X.rect(hitbox.pos.x, hitbox.pos.y, hitbox.dim.x, hitbox.dim.y);
+            this.canvas.X.fill();
+            this.canvas.X.stroke();
+        }
     }
 
     _mousedownHandler(e) {
