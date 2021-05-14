@@ -18,9 +18,12 @@ export class VectorLinearInput extends CanvasElm {
         this.valueVector = this.direction;
 
         this.dragging = false;
+        this.hovering = false;
 
-        this.hitbox = new HitBox(this._getHitboxCorner(), vec(4, 4));
+        this.hitbox = new HitBox(this._getHitboxCorner(), vec(8, 8));
         this.hitbox.setMousedownHandler(() => this._mousedownHandler());
+        this.hitbox.setMousemoveHandler(() => this.hovering = true);
+        this.hitbox.setMouseoffHandler(() => this.hovering = false);
 
         this.inputElm = new LinearVectorInputElm();
         this.inputElm.onUserChange.addHandler(value => this._inputElmChangeHandler(value));
@@ -50,7 +53,7 @@ export class VectorLinearInput extends CanvasElm {
         const headPos = this.tailPos.add(this.valueVector);
 
         canvas.X.strokeStyle = "#ffffff";
-        canvas.X.fillStyle = "#ff0000";
+        canvas.X.fillStyle = (this.hovering || this.dragging) ? "#ff0000" : "#aaaaaa";
         canvas.X.beginPath();
         canvas.X.moveTo(this.tailPos.x, this.tailPos.y);
         canvas.X.lineTo(headPos.x, headPos.y);
@@ -100,7 +103,7 @@ export class VectorLinearInput extends CanvasElm {
     }
 
     _getHitboxCorner() {
-        return this.tailPos.add(this.valueVector).subtract(vec(2, 2));
+        return this.tailPos.add(this.valueVector).subtract(vec(4, 4));
     }
 }
 

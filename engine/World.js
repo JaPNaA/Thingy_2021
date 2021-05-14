@@ -30,6 +30,7 @@ export class World {
         this.cursor.setup();
 
         this.cursor.mouseDown.addHandler(e => this._mousedownHandler(e));
+        this.cursor.mouseMove.addHandler(e => this._mousemoveHandler(e));
     }
 
     setdown() {
@@ -69,6 +70,12 @@ export class World {
     _mousedownHandler(e) {
         for (const hitbox of this.hitboxes) {
             hitbox.tryMousedown(e.clientX + this.camera.x, e.clientY + this.camera.y);
+        }
+    }
+
+    _mousemoveHandler(e) {
+        for (const hitbox of this.hitboxes) {
+            hitbox.tryMousemove(e.clientX + this.camera.x, e.clientY + this.camera.y);
         }
     }
 }

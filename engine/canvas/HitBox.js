@@ -19,6 +19,11 @@ export class HitBox {
         
         /** @type {function} */
         this.mousedownHandler = null;
+
+        /** @type {function} */
+        this.mouseoffHandler = null;
+
+        this._hovering = false;
     }
 
     /**
@@ -26,8 +31,18 @@ export class HitBox {
      * @param {number} y
      */
     tryMousemove(x, y) {
-        if (this.mousemoveHandler && this._checkHit(x, y)) {
-            this.mousemoveHandler();
+        if (!this.mousemoveHandler && !this.mouseoffHandler) { return; }
+        if (this._checkHit(x, y)) {
+            if (this.mousemoveHandler) {
+                this.mousemoveHandler();
+            }
+
+            this._hovering = true;
+        } else {
+            this._hovering = false;
+            if (this.mouseoffHandler) {
+                this.mouseoffHandler();
+            }
         }
     }
 
@@ -49,6 +64,11 @@ export class HitBox {
     /** @param {function} handler */
     setMousedownHandler(handler) {
         this.mousedownHandler = handler;
+    }
+
+    /** @param {function} handler */
+    setMouseoffHandler(handler) {
+        this.mouseoffHandler = handler;
     }
 
     /** @param {Vec2} dim */
