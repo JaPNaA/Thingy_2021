@@ -60,6 +60,13 @@ export class VectorInput extends VectorLinearInput {
         this.onUserChange.dispatch(this.valueVector);
     }
 
+    /** @param {Vec2} vec2 */
+    setTailPos(vec2) {
+        super.setTailPos(vec2);
+        this.xInput.setTailPos(vec2);
+        this.yInput.setTailPos(vec2);
+    }
+
     draw() {
         this.xInput.draw();
         this.yInput.draw();

@@ -69,6 +69,15 @@ export class VectorLinearInput extends CanvasElm {
         this.inputElm.setValue(this.magnitude);
     }
 
+    getTailPos() {
+        return this.tailPos;
+    }
+
+    /** @param {Vec2} vec2 */
+    setTailPos(vec2) {
+        this.tailPos = vec2;
+    }
+
     getVec2() {
         return this.direction.withMagnitude(this.magnitude);
     }
