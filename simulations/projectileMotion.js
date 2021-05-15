@@ -102,6 +102,7 @@ export function start(simulationView) {
     });
     
     vInput.onUserChange.addHandler(() => updateTimePath());
+    initialPositionInput.onUserChange.addHandler(() => updateTimePath());
     updateTimePath();
 }
 
@@ -112,29 +113,29 @@ export function resize() {
 export function update() {
     const time = timeInput.magnitude / 100;
 
-    const velocity = vInput.getVec2();
-    const initialPosition = initialPositionInput.getVec2().add(initialPositionInput.getTailPos());
-
-    const x = equasions.x(time, gravity, velocity.angle, velocity.magnitude, initialPosition.x);
-    const y = equasions.y(time, gravity, velocity.angle, velocity.magnitude, initialPosition.y);
-
-    ball.pos = vec(x, y);
+    ball.pos = getPositionAtTime(time);
+    vInput.setTailPos(initialPositionInput.getVec2().add(initialPositionInput.getTailPos()));
 
     world.draw();
 }
 
 function updateTimePath() {
-    const velocity = vInput.getVec2();
-
     timePath.clearNodes();
 
     for (let i = 0; i < 20; i += 0.1) {
-        timePath.addNode(
-            equasions.x(i, gravity, velocity.angle, velocity.magnitude, 0),
-            equasions.y(i, gravity, velocity.angle, velocity.magnitude, 0),
-            i
-        );
+        const pos = getPositionAtTime(i);
+        timePath.addNode(pos.x, pos.y, i);
     }
+}
+
+function getPositionAtTime(time) {
+    const velocity = vInput.getVec2();
+    const initialPosition = initialPositionInput.getVec2().add(initialPositionInput.getTailPos());
+
+    return vec(
+        equasions.x(time, gravity, velocity.angle, velocity.magnitude, initialPosition.x),
+        equasions.y(time, gravity, velocity.angle, velocity.magnitude, initialPosition.y)
+    );
 }
 
 export function stop() {
