@@ -28,7 +28,7 @@ const equasions = {
      * @param {number} v - initial velocity magnitude in m/s
      * @param {number} y0 - initial y position
      */
-    y: (t, g, theta, v, y0) => v * Math.sin(theta) * t  - g * (t * t) / 2
+    y: (t, g, theta, v, y0) => v * Math.sin(theta) * t  - g * (t * t) / 2 + y0
 };
 
 class Ball extends CanvasElm {
@@ -74,10 +74,13 @@ class Ball extends CanvasElm {
 /** @type {import("../ui/canvas/World.js").World} */
 let world;
 
+const initialPositionTailPos = vec(200, 400);
+
 const ball = new Ball();
 
 const vInput = new VectorInput(vec(10, 10), vec(10, 400));
 const timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
+const initialPositionInput = new VectorInput(vec(100, -200), initialPositionTailPos);
 const timePath = new TimePath();
 
 const gravity = -9.8;
@@ -91,6 +94,7 @@ export function start(simulationView) {
     world.addElm(vInput);
     world.addElm(timeInput);
     world.addElm(timePath);
+    world.addElm(initialPositionInput);
     world.addElm(ball);
 
     world.keyboard.addKeyDownListener("Space", () => {
@@ -105,9 +109,10 @@ export function update() {
     const time = timeInput.magnitude / 100;
 
     const velocity = vInput.getVec2();
+    const initialPosition = initialPositionInput.getVec2().add(initialPositionTailPos);
 
-    const x = equasions.x(time, gravity, velocity.angle, velocity.magnitude, 0);
-    const y = equasions.y(time, gravity, velocity.angle, velocity.magnitude, 0);
+    const x = equasions.x(time, gravity, velocity.angle, velocity.magnitude, initialPosition.x);
+    const y = equasions.y(time, gravity, velocity.angle, velocity.magnitude, initialPosition.y);
 
     ball.pos = vec(x, y);
 
