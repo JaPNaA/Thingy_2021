@@ -40,8 +40,8 @@ export class Cursor extends Vec2 {
 
     /** @param {MouseEvent} e */
     _mouseMoveHandler(e) {
-        this.x = e.clientX + this.world.camera.x;
-        this.y = e.clientY + this.world.camera.y;
+        this.x = (e.clientX + this.world.camera.x) / this.world.camera.zoom;
+        this.y = (e.clientY + this.world.camera.y) / this.world.camera.zoom;
         this.mouseMove.dispatch(e);
     }
 

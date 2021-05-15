@@ -86,13 +86,13 @@ export class World {
 
     _mousedownHandler(e) {
         for (const hitbox of this.hitboxes) {
-            hitbox.tryMousedown(e.clientX + this.camera.x, e.clientY + this.camera.y);
+            hitbox.tryMousedown(this.cursor.x, this.cursor.y);
         }
     }
 
     _mousemoveHandler(e) {
         for (const hitbox of this.hitboxes) {
-            hitbox.tryMousemove(e.clientX + this.camera.x, e.clientY + this.camera.y);
+            hitbox.tryMousemove(this.cursor.x, this.cursor.y);
         }
     }
 }
