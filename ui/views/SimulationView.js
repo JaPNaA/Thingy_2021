@@ -3,6 +3,18 @@ import { Elm } from "../../utils/elements.js";
 import { Canvas } from "../../engine/canvas/Canvas.js";
 import { HTMLCanvas } from "../../engine/htmlCanvas/HTMLCanvas.js";
 
+
+/**
+ * View that loads a simulation module.
+ * 
+ * A module modular .js file with at least 3 exported functions
+ * that take no arguments:
+ *   - start
+ *   - update
+ *   - end
+ * and may also contain:
+ *   - resize
+ */
 export class SimulationView extends View {
     constructor(simulationName) {
         super("Simulation");
@@ -23,6 +35,9 @@ export class SimulationView extends View {
 
     resize() {
         this.canvas.resizeToScreen();
+        if (this.module && this.module.resize) {
+            this.module.resize();
+        }
     }
 
     async _setup() {
