@@ -25,10 +25,10 @@ export class World {
         this.keyboard = new Keyboard();
         this.keyboard.setup();
 
-        this.camera = new Camera(this.keyboard);
-
-        this.cursor = new Cursor(this.camera);
+        this.cursor = new Cursor(this);
         this.cursor.setup();
+
+        this.camera = new Camera(this);
 
         this.cursor.mouseDown.addHandler(e => this._mousedownHandler(e));
         this.cursor.mouseMove.addHandler(e => this._mousemoveHandler(e));
