@@ -1,21 +1,25 @@
 // Testing grounds. Not an actual simulation
 
-import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
-import { Elm, InputElm } from "../utils/elements.js";
-
-class HTMLCanvasInputElm extends HTMLCanvasElm {
-    constructor() {
-        super();
-
-        this.append(new InputElm());
-    }
-}
+import { Graph } from "/engine/components/graph/Graph.js";
+import { World } from "/engine/World.js";
 
 /** @param {SimulationView} simulationView */
 export function start(simulationView) {
-    simulationView.htmlCanvas.addElm(
-        new HTMLCanvasInputElm()
-    );
+    const world = new World(simulationView);
+    const graph = new Graph();
+
+    world.addElm(graph);
+
+    const graphData = [];
+    
+    for (let i = 0; i < 100; i++) {
+        graphData.push([i * 2, (i - 50)**2]);
+    }
+
+    graph.setData(graphData);
+    graph.fitScaleToData();
+    graph.draw();
+    console.log(graph);
 }
 
 export function update() { }
