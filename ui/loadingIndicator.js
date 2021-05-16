@@ -1,9 +1,11 @@
 export const loadingIndicator = {
     element: document.getElementById("loading"),
-    showDelayPromiseReject: () => {},
+    _showDelayPromiseReject: () => {},
+    _hideDelayPromiseReject: () => {},
 
-    hide() {
-        this.showDelayPromiseReject();
+    async hide() {
+        loadingIndicator._showDelayPromiseReject();
+        await loadingIndicator._hideDelay();
 
         loadingIndicator.element.classList.add("hiding");
         setTimeout(() => {
@@ -12,14 +14,23 @@ export const loadingIndicator = {
     },
 
     async show() {
-        await loadingIndicator.showDelay();
+        loadingIndicator._hideDelayPromiseReject();
+        await loadingIndicator._showDelay();
+
         loadingIndicator.element.classList.remove("hiding");
         loadingIndicator.element.classList.remove("hidden");
     },
 
-    showDelay() {
+    _showDelay() {
         return new Promise((res, rej) => {
-            this.showDelayPromiseReject = () => rej("Loading indicator show canceled");
+            loadingIndicator._showDelayPromiseReject = () => rej("Loading indicator show canceled");
+            setTimeout(res, 50);
+        });
+    },
+
+    _hideDelay() {
+        return new Promise((res, rej) => {
+            loadingIndicator._hideDelayPromiseReject = () => rej("Loading indicator hide canceled");
             setTimeout(res, 50);
         });
     }
