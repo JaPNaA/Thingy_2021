@@ -2,6 +2,7 @@ import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
 import { Canvas } from "../../engine/canvas/Canvas.js";
 import { HTMLCanvas } from "../../engine/htmlCanvas/HTMLCanvas.js";
+import { loadingIndicator } from "../loadingIndicator.js";
 
 
 /**
@@ -60,13 +61,18 @@ export class SimulationView extends View {
     
     async loadSimulation(name) {
         let module;
+        loadingIndicator.show();
+
         try {
             module = await import(`/simulations/${name}.js`);
+
+            module.start(this);
+            this.module = module;
         } catch (err) {
             this.elm.append("Failed to load module -- it was probably not found.");
             throw err;
+        } finally {
+            loadingIndicator.hide();
         }
-        module.start(this);
-        this.module = module;
     }
 }

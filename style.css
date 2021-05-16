@@ -11,6 +11,28 @@ a {
     text-decoration: none;
 }
 
+#loading {
+    position: fixed;
+    padding: 64px 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #3b3b3b;
+    text-align: center;
+    font-size: 1.6em;
+    width: 100%;
+    z-index: 9;
+}
+
+#loading.hiding {
+    transform: translateY(-50%) scaleY(0.8);
+    opacity: 0;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+#loading.hidden {
+    display: none;
+}
+
 .view {
     padding: 8px;
 }

@@ -1,4 +1,5 @@
 import { Component } from "../utils/elements.js";
+import { loadingIndicator } from "./loadingIndicator.js";
 
 class UserInterface extends Component {
     constructor() {
@@ -39,3 +40,5 @@ export const userInterface = new UserInterface();
 userInterface.elm.appendTo(document.body);
 addEventListener("resize", () => userInterface.onResize());
 userInterface.onResize();
+
+loadingIndicator.hide();
