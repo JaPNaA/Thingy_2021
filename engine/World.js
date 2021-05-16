@@ -1,6 +1,7 @@
 import { Cursor } from "./canvas/Cursor.js";
 import { Keyboard } from "./canvas/Keyboard.js";
 import { Camera } from "./canvas/Camera.js";
+import { HTMLCanvasElm } from "./htmlCanvas/HTMLCanvasElm.js";
 
 /**
  * @typedef {import("./HitBox.js").HitBox} HitBox
@@ -39,10 +40,14 @@ export class World {
         this.keyboard.setdown();
     }
 
-    /** @param {import("./CanvasElm.js").CanvasElm} elm */
+    /** @param {import("./canvas/CanvasElm.js").CanvasElm | HTMLCanvasElm} elm */
     addElm(elm) {
-        this.elements.push(elm);
-        elm.setup(this);
+        if (elm instanceof HTMLCanvasElm) {
+            this.htmlCanvas.addElm(elm);
+        } else {
+            this.elements.push(elm);
+            elm.setup(this);
+        }
     }
 
     /** @param {HitBox} hitbox */
