@@ -5,7 +5,6 @@ import { VectorInput } from "../engine/components/vectorInput/VectorInput.js";
 import { TimePath } from "../engine/components/timePath/TimePath.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { HitBox } from "../engine/canvas/HitBox.js";
-import { Graph } from "../engine/components/graph/Graph.js";
 
 const equasions = {
     /**
@@ -95,8 +94,6 @@ export function start(simulationView) {
     world.addElm(timePath);
     world.addElm(initialPositionInput);
     world.addElm(ball);
-
-    world.addElm(new Graph());
 
     resize();
 
