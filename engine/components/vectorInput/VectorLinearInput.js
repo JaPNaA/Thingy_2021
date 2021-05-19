@@ -29,7 +29,6 @@ export class VectorLinearInput extends CanvasElm {
         this.inputElm.onUserChange.addHandler(value => this._inputElmChangeHandler(value));
 
         this.onUserChange = new EventHandler();
-        this.onUserChange.addHandler(() => this.updateInputValue());
         this.updateInputValue();
     }
 
@@ -97,12 +96,12 @@ export class VectorLinearInput extends CanvasElm {
     setMagnitude(magnitude) {
         this.magnitude = magnitude;
         this.valueVector = this.getVec2();
+        this.updateInputValue();
     }
 
     /** @param {number} value */
     _inputElmChangeHandler(value) {
         this.setMagnitude(value);
-        this.updateInputValue();
         this.onUserChange.dispatch(this.valueVector);
     }
 
