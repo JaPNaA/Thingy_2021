@@ -13,7 +13,8 @@ export function start(simulationView) {
     const graphData = [];
     
     for (let i = 0; i < 100; i++) {
-        graphData.push([i * 2, (i - 50)**2]);
+        const x = i * 2;
+        graphData.push([x * x, Math.sin(x * x / 1e3)]);
     }
 
     graph.setData(graphData);
