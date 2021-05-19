@@ -83,9 +83,13 @@ const timePath = new TimePath();
 
 const gravity = -9.8;
 
+let realTimeMode = false;
+let lastTime = 0;
+
 /** @param {SimulationView} simulationView */
 export function start(simulationView) {
     console.log("projectileMotion");
+    lastTime = Date.now();
 
     world = new World(simulationView);
 
@@ -98,8 +102,11 @@ export function start(simulationView) {
     resize();
 
     world.keyboard.addKeyDownListener("Space", () => {
-        timeInput.setMagnitude(timeInput.getMagnitude() + 1);
+        realTimeMode = true;
     });
+    world.keyboard.addKeyUpListener("Space", () => {
+        realTimeMode = false;
+    })
     
     vInput.onUserChange.addHandler(() => updateTimePath());
     initialPositionInput.onUserChange.addHandler(() => updateTimePath());
@@ -110,8 +117,17 @@ export function resize() {
     vInput.setTailPos(vec(32, innerHeight - 32));
 }
 
+
 export function update() {
-    const time = timeInput.magnitude / 100;
+    const now = Date.now();
+    const timeElapsed = now - lastTime;
+    lastTime = now;
+
+    if (realTimeMode) {
+        timeInput.setMagnitude(timeInput.getMagnitude() + timeElapsed / 1000);
+    }
+
+    const time = timeInput.getMagnitude();
 
     ball.pos = getPositionAtTime(time);
     vInput.setTailPos(initialPositionInput.getVec2().add(initialPositionInput.getTailPos()));
