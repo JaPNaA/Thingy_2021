@@ -12,10 +12,12 @@ export class Cursor extends Vec2 {
         this._mouseMoveHandler = this._mouseMoveHandler.bind(this);
         this._mouseDownHandler = this._mouseDownHandler.bind(this);
         this._mouseUpHandler = this._mouseUpHandler.bind(this);
+        this._wheelHandler = this._wheelHandler.bind(this);
 
         this.mouseMove = new EventHandler();
         this.mouseUp = new EventHandler();
         this.mouseDown = new EventHandler();
+        this.wheel = new EventHandler();
 
         this.nextMouseUpPromises = [];
     }
@@ -24,12 +26,14 @@ export class Cursor extends Vec2 {
         addEventListener("mousemove", this._mouseMoveHandler);
         addEventListener("mousedown", this._mouseDownHandler);
         addEventListener("mouseup", this._mouseUpHandler);
+        addEventListener("mousewheel", this._wheelHandler);
     }
 
     setdown() {
         removeEventListener("mousemove", this._mouseMoveHandler);
         removeEventListener("mousedown", this._mouseDownHandler);
         removeEventListener("mouseup", this._mouseUpHandler);
+        removeEventListener("mousewheel", this._wheelHandler);
     }
 
     nextMouseUp() {
@@ -60,5 +64,9 @@ export class Cursor extends Vec2 {
         this.nextMouseUpPromises.length = 0;
 
         this.mouseUp.dispatch(e);
+    }
+
+    _wheelHandler(e) {
+        this.wheel.dispatch(e);
     }
 }

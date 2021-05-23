@@ -7,6 +7,8 @@ export class Camera extends Vec2 {
     constructor(world) {
         super(0, 0);
         this.zoom = 1;
+        this.zoomSpeed = 1.2;
+        this.world = world;
 
         this.panning = false;
 
@@ -14,17 +16,6 @@ export class Camera extends Vec2 {
         world.keyboard.addKeyDownListener("KeyA", () => this.x -= 5);
         world.keyboard.addKeyDownListener("KeyS", () => this.y += 5);
         world.keyboard.addKeyDownListener("KeyD", () => this.x += 5);
-        world.keyboard.addKeyDownListener("Equal", () => {
-            const originalZoom = this.zoom;
-            this.zoom *= 1.05;
-
-            const dZoom = this.zoom - originalZoom;
-            
-            this.x += world.cursor.x * dZoom;
-            this.y += world.cursor.y * dZoom;
-        });
-        world.keyboard.addKeyDownListener("Minus", () => this.zoom /= 1.05);
-        world.keyboard.addKeyDownListener("Digit0", () => this.zoom = 1);
 
         world.keyboard.addKeyDownListener("Space", () => this.panning = true);
         world.keyboard.addKeyUpListener("Space", () => this.panning = false);
@@ -34,5 +25,27 @@ export class Camera extends Vec2 {
                 this.x -= e.movementX;
             }
         });
+
+        world.keyboard.addKeyDownListener("Digit0", () => this.zoom = 1);
+        world.keyboard.addKeyDownListener("Equal", () => this._zoomIn(this.zoomSpeed));
+        world.keyboard.addKeyDownListener("Minus", () => this._zoomIn(1 / this.zoomSpeed));
+        world.cursor.wheel.addHandler(e => {
+            console.log(e);
+            if (e.deltaY > 0) {
+                this._zoomIn(1 / this.zoomSpeed ** (e.deltaY / 100));
+            } else {
+                this._zoomIn(this.zoomSpeed ** (-e.deltaY / 100));
+            }
+        });
+    }
+
+    _zoomIn(scale) {
+        const originalZoom = this.zoom;
+        this.zoom *= scale;
+
+        const dZoom = this.zoom - originalZoom;
+        
+        this.x += this.world.cursor.x * dZoom;
+        this.y += this.world.cursor.y * dZoom;
     }
 }
