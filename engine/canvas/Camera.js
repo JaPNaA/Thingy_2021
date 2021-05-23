@@ -1,4 +1,4 @@
-import { Vec2 } from "../../utils/vectors.js";
+import { vec, Vec2 } from "../../utils/vectors.js";
 
 export class Camera extends Vec2 {
     /**
@@ -14,7 +14,15 @@ export class Camera extends Vec2 {
         world.keyboard.addKeyDownListener("KeyA", () => this.x -= 5);
         world.keyboard.addKeyDownListener("KeyS", () => this.y += 5);
         world.keyboard.addKeyDownListener("KeyD", () => this.x += 5);
-        world.keyboard.addKeyDownListener("Equal", () => this.zoom *= 1.05);
+        world.keyboard.addKeyDownListener("Equal", () => {
+            const originalZoom = this.zoom;
+            this.zoom *= 1.05;
+
+            const dZoom = this.zoom - originalZoom;
+            
+            this.x += world.cursor.x * dZoom;
+            this.y += world.cursor.y * dZoom;
+        });
         world.keyboard.addKeyDownListener("Minus", () => this.zoom /= 1.05);
         world.keyboard.addKeyDownListener("Digit0", () => this.zoom = 1);
 
