@@ -1,9 +1,8 @@
 import { vec, Vec2 } from "../../../utils/vectors.js";
 import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { HitBox } from "../../canvas/HitBox.js";
-import { HTMLCanvasElm } from "../../htmlCanvas/HTMLCanvasElm.js";
-import { Elm, InputElm } from "../../../utils/elements.js";
 import { EventHandler } from "../../../utils/EventHandler.js";
+import { ScalarInputElm } from "../ScalarInputElm.js";
 
 export class VectorLinearInput extends CanvasElm {
     /**
@@ -25,7 +24,7 @@ export class VectorLinearInput extends CanvasElm {
         this.hitbox.setMousemoveHandler(() => this.hovering = true);
         this.hitbox.setMouseoffHandler(() => this.hovering = false);
 
-        this.inputElm = new LinearVectorInputElm();
+        this.inputElm = new ScalarInputElm();
         this.inputElm.onUserChange.addHandler(value => this._inputElmChangeHandler(value));
 
         this.onUserChange = new EventHandler();
@@ -118,41 +117,5 @@ export class VectorLinearInput extends CanvasElm {
 
     _getHitboxCorner() {
         return this.tailPos.add(this.valueVector).subtract(vec(4, 4));
-    }
-}
-
-class LinearVectorInputElm extends HTMLCanvasElm {
-    constructor() {
-        super();
-        this.class("LinearVectorInputElm");
-
-        this.append(
-            this.inputElm = new InputElm()
-        );
-
-        this._lastValue = "";
-
-        this.onUserChange = new EventHandler();
-        this.inputElm.on("change", () => this._inputChangeHandler());
-    }
-
-    /** @param {number} value */
-    setValue(value) {
-        const strValue = value.toFixed(2);
-        this.inputElm.setValue(strValue);
-        this.inputElm.attribute("style", "width: " + strValue.length + "ch");
-        this._lastValue = value;
-    }
-
-    _inputChangeHandler() {
-        const value = parseFloat(this.inputElm.getValue());
-        if (isNaN(value)) {
-            this.setValue(this._lastValue);
-            return;
-        }
-
-        this.onUserChange.dispatch(value);
-
-        this.inputElm.elm.blur();
     }
 }

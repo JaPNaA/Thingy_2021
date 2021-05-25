@@ -9,6 +9,7 @@ export class HTMLCanvasElm extends Elm {
         this.displacement = vec(0, 0);
         this.pos = vec(0, 0);
         this.scale = 0;
+        this.fixedPosition = false;
     }
 
     /** @param {Vec2} displacement */
@@ -25,6 +26,7 @@ export class HTMLCanvasElm extends Elm {
     }
 
     updateInlineStyle() {
+        if (this.fixedPosition) { return; }
         const pos = this.pos.scale(this.scale).add(this.displacement);
         this.attribute("style", `left: ${pos.x}px; top: ${pos.y}px`);
     }
