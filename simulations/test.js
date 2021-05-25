@@ -14,7 +14,7 @@ export function start(simulationView) {
     
     for (let i = 0; i < 100; i++) {
         const x = i * 2;
-        graphData.push([x * x, Math.sin(x * x / 1e3)]);
+        graphData.push([x * x / 10, Math.sin(x * x / 1e3)]);
     }
 
     graph.setData(graphData);

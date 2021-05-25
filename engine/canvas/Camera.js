@@ -26,11 +26,10 @@ export class Camera extends Vec2 {
             }
         });
 
-        world.keyboard.addKeyDownListener("Digit0", () => this.zoom = 1);
+        world.keyboard.addKeyDownListener("Digit0", () => this._zoomIn(1 / this.zoom));
         world.keyboard.addKeyDownListener("Equal", () => this._zoomIn(this.zoomSpeed));
         world.keyboard.addKeyDownListener("Minus", () => this._zoomIn(1 / this.zoomSpeed));
         world.cursor.wheel.addHandler(e => {
-            console.log(e);
             if (e.deltaY > 0) {
                 this._zoomIn(1 / this.zoomSpeed ** (e.deltaY / 100));
             } else {
