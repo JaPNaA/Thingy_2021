@@ -152,5 +152,7 @@ class LinearVectorInputElm extends HTMLCanvasElm {
         }
 
         this.onUserChange.dispatch(value);
+
+        this.inputElm.elm.blur();
     }
 }
