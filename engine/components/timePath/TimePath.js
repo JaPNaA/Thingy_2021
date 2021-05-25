@@ -22,7 +22,7 @@ export class TimePath extends CanvasElm {
         X.fillStyle = "#ffffff";
 
         for (const node of this.nodes) {
-            X.fillRect(node.x, node.y, 1, 1);
+            X.fillRect(node.x, node.y, 1 / this.world.camera.zoom, 1 / this.world.camera.zoom);
         }
     }
 }

@@ -52,12 +52,18 @@ export class VectorLinearInput extends CanvasElm {
         const headPos = this.tailPos.add(this.valueVector);
 
         canvas.X.strokeStyle = "#ffffff";
+        canvas.X.lineWidth = 1 / this.world.camera.zoom;
         canvas.X.fillStyle = (this.hovering || this.dragging) ? "#ff0000" : "#aaaaaa";
         canvas.X.beginPath();
         canvas.X.moveTo(this.tailPos.x, this.tailPos.y);
         canvas.X.lineTo(headPos.x, headPos.y);
         canvas.X.stroke();
-        canvas.X.fillRect(headPos.x - 2, headPos.y - 2, 4, 4);
+        canvas.X.fillRect(
+            headPos.x - 2 / this.world.camera.zoom,
+            headPos.y - 2 / this.world.camera.zoom,
+            4 / this.world.camera.zoom,
+            4 / this.world.camera.zoom
+        );
 
         this.inputElm.setPos(headPos.add(this.tailPos).scale(1/2));
 
