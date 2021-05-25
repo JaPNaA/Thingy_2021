@@ -5,13 +5,14 @@ import { Variable, Expression } from "../utils/mathLib.js";
 
 let world;
 
-class Input extends ScalarInputElm {
+class VariableInput extends ScalarInputElm {
     /** @param {Variable} variable */
     constructor(variable) {
         super();
-        this.fixedPosition = true;
+        this.staticPosition = true;
 
         this.variable = variable;
+        this.addTextBefore(variable.toString() + " = ");
     }
 }
 
@@ -29,7 +30,9 @@ const expression = new Expression(
 
 export function start(simulationView) {
     world = new World(simulationView);
-    world.addElm(new Input());
+    world.addElm(new VariableInput(vVar));
+    world.addElm(new VariableInput(aVar));
+    world.addElm(new VariableInput(rVar));
 }
 
 export function update() {

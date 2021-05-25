@@ -65,22 +65,33 @@ a {
     position: absolute;
 }
 
+.HTMLCanvas .LinearVectorInputElm {
+    font-size: 12px;
+    color: #ffffff;
+    opacity: 0.6;
+    width: auto;
+}
+
 .HTMLCanvas .LinearVectorInputElm input {
     background-color: transparent;
 
-    color: #ffffff;
-    font-size: 12px;
+    color: inherit;
+    font-size: inherit;
     text-align: center;
-    opacity: 0.6;
 
     padding: 4px;
     border: none;
 }
 
+.HTMLCanvas .LinearVectorInputElm:hover,
+.HTMLCanvas .LinearVectorInputElm:focus,
+.HTMLCanvas .LinearVectorInputElm:focus-within {
+    opacity: 1;
+}
+
 .HTMLCanvas .LinearVectorInputElm input:hover,
 .HTMLCanvas .LinearVectorInputElm input:focus {
     background-color: #000000a6;
-    opacity: 1;
 }
 
 .HTMLCanvas .graph canvas {

@@ -26,6 +26,14 @@ export class ScalarInputElm extends HTMLCanvasElm {
         this._lastValue = value;
     }
 
+    addTextBefore(text) {
+        this.appendAsFirst(text);
+    }
+
+    addTextAfter(after) {
+        this.append(after);
+    }
+
     _inputChangeHandler() {
         const value = parseFloat(this.inputElm.getValue());
         if (isNaN(value)) {
