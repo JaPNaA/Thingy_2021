@@ -14,11 +14,16 @@
  * Represents a variable or constant in a mathematical expression
  */
 export class Variable {
-    /** @param {number} [val] */
+    /** @param {number | string} [val] */
     constructor(val) {
+        this.name = "x";
+        this.known = false;
+        this.value = 0;
+
         if (typeof val === 'undefined') {
-            this.known = false;
             this.value = 0;
+        } else if (typeof val === "string") {
+            this.name = val;
         } else {
             this.known = true;
             this.value = val;
@@ -45,7 +50,7 @@ export class Variable {
 
     toString() {
         if (this.known) { return this.value.toString(); }
-        return "x";
+        return this.name;
     }
 
     copy() {
