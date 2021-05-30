@@ -2,6 +2,8 @@ import { World } from "../engine/World.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 import { InputElm } from "../utils/elements.js";
 import { Variable, Expression } from "../utils/mathLib.js";
+import { CanvasElm } from "../engine/canvas/CanvasElm.js";
+import { vec, Vec2 } from "../utils/vectors.js";
 
 class VariableInput extends ScalarInputElm {
     /** @param {Variable} variable */
@@ -37,8 +39,16 @@ class VariableInputForm {
         this.variableInputs.push(input);
         input.onUserChange.addHandler(() => {
             this._updateInputLastEdited(input);
-            this._trySolve();
+            this.trySolve();
         });
+    }
+
+    trySolve() {
+        const targetInput = this._getLeastLikelyUsedInput();
+        const expression = targetInput.variable.solveForSelf();
+        try {
+            targetInput.setValue(expression.eval());
+        } catch (err) { console.log(err); }
     }
 
     _updateInputLastEdited(input) {
@@ -56,14 +66,6 @@ class VariableInputForm {
         if (unedited) { return unedited; }
         return this.inputsByLastEdited[0];
     }
-
-    _trySolve() {
-        const targetInput = this._getLeastLikelyUsedInput();
-        const expression = targetInput.variable.solveForSelf();
-        try {
-            targetInput.setValue(expression.eval());
-        } catch (err) { }
-    }
 }
 
 const vVar = new Variable("v");
@@ -79,20 +81,66 @@ const expression = new Expression(
     )
 );
 
+
+class OrbitBall extends CanvasElm {
+    constructor() {
+        super();
+        this.radius = 1;
+        this.pos = vec(0, 0);
+        this.angle = 0;
+    }
+
+    draw() {
+        /** @type {CanvasRenderingContext2D} */
+        const X = this.world.canvas.X;
+
+        X.strokeStyle = "#ffffff";
+        X.fillStyle = "#ff0000";
+
+        X.beginPath();
+        X.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
+        X.stroke();
+
+        const ballPos = Vec2.fromPolar(this.radius, this.angle).add(this.pos);
+
+        X.beginPath();
+        X.arc(ballPos.x, ballPos.y, 4, 0, Math.PI * 2);
+        X.fill();
+    }
+}
+
+const orbitBall = new OrbitBall();
+
 let world;
 
 export function start(simulationView) {
     world = new World(simulationView);
+    world.addElm(orbitBall);
 
-    for (const variable of [vVar, aVar, rVar]) {
+    resize();
+
+    for (const [variable, initialValue] of [[vVar], [aVar, 40], [rVar, 100]]) {
         const variableInput = new VariableInput(variable);
         variableInputForm.addVariableInput(variableInput);
+        
+        if (initialValue) {
+            variableInput.setValue(initialValue);
+        }
+
         world.addElm(variableInput);
     }
+
+    variableInputForm.trySolve();
 }
 
 export function update() {
+    orbitBall.radius = rVar.value;
+
     world.draw();
+}
+
+export function resize() {
+    orbitBall.pos = vec(innerWidth / 2, innerHeight / 2);
 }
 
 export function stop() {
