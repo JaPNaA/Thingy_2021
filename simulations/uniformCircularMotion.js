@@ -96,16 +96,24 @@ class OrbitBall extends CanvasElm {
 
         X.strokeStyle = "#ffffff";
         X.fillStyle = "#ff0000";
+        X.lineWidth = 1 / this.world.camera.zoom;
 
         X.beginPath();
         X.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
         X.stroke();
 
-        const ballPos = Vec2.fromPolar(this.radius, this.angle).add(this.pos);
+        const ballPosRel = Vec2.fromPolar(this.radius, this.angle);
+        const ballPos = ballPosRel.add(this.pos);
 
         X.beginPath();
-        X.arc(ballPos.x, ballPos.y, 4, 0, Math.PI * 2);
+        X.arc(ballPos.x, ballPos.y, 4 / this.world.camera.zoom, 0, Math.PI * 2);
         X.fill();
+
+        const accelerationVecHead = ballPosRel.withMagnitude(this.radius - aVar.eval()).add(this.pos);
+        X.beginPath();
+        X.moveTo(ballPos.x, ballPos.y);
+        X.lineTo(accelerationVecHead.x, accelerationVecHead.y);
+        X.stroke();
     }
 }
 
@@ -133,8 +141,12 @@ export function start(simulationView) {
     variableInputForm.trySolve();
 }
 
-export function update() {
-    orbitBall.radius = rVar.value;
+export function update(timeElapsed) {
+    const radius = rVar.eval();
+    orbitBall.radius = radius;
+
+    const angularSpeed = vVar.eval() / radius;
+    orbitBall.angle += angularSpeed * timeElapsed;
 
     world.draw();
 }
