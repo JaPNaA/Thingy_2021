@@ -15,7 +15,20 @@ export class ScalarInputElm extends HTMLCanvasElm {
         this.setValue(this._lastValue);
 
         this.onUserChange = new EventHandler();
-        this.inputElm.on("change", () => this._inputChangeHandler());
+        this.inputElm.on("change", () => {
+            this._inputChangeHandler();
+            this.inputElm.elm.blur();
+        });
+
+        this.inputElm.on("keydown", e => {
+            if (e.key === "ArrowUp") {
+                this.setValue(this._lastValue + 1);
+                this._inputChangeHandler();
+            } else if (e.key === "ArrowDown") {
+                this.setValue(this._lastValue - 1);
+                this._inputChangeHandler();
+            }
+        })
     }
 
     /** @param {number} value */
@@ -43,7 +56,5 @@ export class ScalarInputElm extends HTMLCanvasElm {
 
         this.setValue(value);
         this.onUserChange.dispatch(value);
-
-        this.inputElm.elm.blur();
     }
 }
