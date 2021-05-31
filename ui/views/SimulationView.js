@@ -8,13 +8,12 @@ import { loadingIndicator } from "../loadingIndicator.js";
 /**
  * View that loads a simulation module.
  * 
- * A module modular .js file with at least 3 exported functions
- * that take no arguments:
- *   - start
- *   - update
- *   - end
+ * A module modular .js file with at least 3 exported functions:
+ *   - start(): void
+ *   - update(timeElapsedSeconds: number): void
+ *   - end(): void
  * and may also contain:
- *   - resize
+ *   - resize(): void
  */
 export class SimulationView extends View {
     constructor(simulationName) {
@@ -32,6 +31,7 @@ export class SimulationView extends View {
         this.elm.append(this.htmlCanvas);
 
         this.requestAnimationFrameId = 0;
+        this.lastTime = performance.now();
     }
 
     resize() {
@@ -55,7 +55,11 @@ export class SimulationView extends View {
     }
 
     requestAnimationFrameHandler() {
-        this.module.update();
+        const now = performance.now();
+        const timeElapsed = now - this.lastTime;
+        this.lastTime = now;
+
+        this.module.update(timeElapsed / 1000);
         this.requestAnimationFrameId = requestAnimationFrame(() => this.requestAnimationFrameHandler());
     }
     

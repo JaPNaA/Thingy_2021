@@ -84,12 +84,10 @@ const timePath = new TimePath();
 const gravity = -9.8;
 
 let realTimeMode = false;
-let lastTime = 0;
 
 /** @param {SimulationView} simulationView */
 export function start(simulationView) {
     console.log("projectileMotion");
-    lastTime = Date.now();
 
     world = new World(simulationView);
 
@@ -118,13 +116,9 @@ export function resize() {
 }
 
 
-export function update() {
-    const now = Date.now();
-    const timeElapsed = now - lastTime;
-    lastTime = now;
-
+export function update(timeElapsed) {
     if (realTimeMode) {
-        timeInput.setMagnitude(timeInput.getMagnitude() + timeElapsed / 1000);
+        timeInput.setMagnitude(timeInput.getMagnitude() + timeElapsed);
     }
 
     const time = timeInput.getMagnitude();
