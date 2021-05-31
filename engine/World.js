@@ -40,13 +40,15 @@ export class World {
         this.keyboard.setdown();
     }
 
-    /** @param {import("./canvas/CanvasElm.js").CanvasElm | HTMLCanvasElm} elm */
-    addElm(elm) {
-        if (elm instanceof HTMLCanvasElm) {
-            this.htmlCanvas.addElm(elm);
-        } else {
-            this.elements.push(elm);
-            elm.setup(this);
+    /** @param {(import("./canvas/CanvasElm.js").CanvasElm | HTMLCanvasElm)[]} ...elm */
+    addElm(...elms) {
+        for (const elm of elms) {
+            if (elm instanceof HTMLCanvasElm) {
+                this.htmlCanvas.addElm(elm);
+            } else {
+                this.elements.push(elm);
+                elm.setup(this);
+            }
         }
     }
 
