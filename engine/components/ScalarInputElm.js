@@ -28,7 +28,7 @@ export class ScalarInputElm extends HTMLCanvasElm {
                 this.setValue(this._lastValue - 1);
                 this._inputChangeHandler();
             }
-        })
+        });
     }
 
     /** @param {number} value */
