@@ -19,7 +19,8 @@ export class VectorLinearInput extends CanvasElm {
         this.dragging = false;
         this.hovering = false;
 
-        this.hitbox = new HitBox(this._getHitboxCorner(), vec(8, 8));
+        this.hitboxSize = vec(8, 8);
+        this.hitbox = new HitBox(this._getHitboxCorner(1), this.hitboxSize);
         this.hitbox.setMousedownHandler(() => this._mousedownHandler());
         this.hitbox.setMousemoveHandler(() => this.hovering = true);
         this.hitbox.setMouseoffHandler(() => this.hovering = false);
@@ -49,24 +50,26 @@ export class VectorLinearInput extends CanvasElm {
     draw() {
         const canvas = this.world.canvas;
         const headPos = this.tailPos.add(this.valueVector);
+        const invCameraScale = 1 / this.world.camera.zoom;
 
         canvas.X.strokeStyle = "#ffffff";
-        canvas.X.lineWidth = 1 / this.world.camera.zoom;
+        canvas.X.lineWidth = invCameraScale;
         canvas.X.fillStyle = (this.hovering || this.dragging) ? "#ff0000" : "#aaaaaa";
         canvas.X.beginPath();
         canvas.X.moveTo(this.tailPos.x, this.tailPos.y);
         canvas.X.lineTo(headPos.x, headPos.y);
         canvas.X.stroke();
         canvas.X.fillRect(
-            headPos.x - 2 / this.world.camera.zoom,
-            headPos.y - 2 / this.world.camera.zoom,
-            4 / this.world.camera.zoom,
-            4 / this.world.camera.zoom
+            headPos.x - 2 * invCameraScale,
+            headPos.y - 2 * invCameraScale,
+            4 * invCameraScale,
+            4 * invCameraScale
         );
 
-        this.inputElm.setPos(headPos.add(this.tailPos).scale(1/2));
+        this.inputElm.setPos(headPos.add(this.tailPos).scale(1 / 2));
 
-        this.hitbox.setPos(this._getHitboxCorner());
+        this.hitbox.setPos(this._getHitboxCorner(invCameraScale));
+        this.hitbox.setDim(this.hitboxSize.scale(invCameraScale));
     }
 
     updateInputValue() {
@@ -115,7 +118,7 @@ export class VectorLinearInput extends CanvasElm {
         this.world.cursor.nextMouseUp().then(() => this.dragging = false);
     }
 
-    _getHitboxCorner() {
-        return this.tailPos.add(this.valueVector).subtract(vec(4, 4));
+    _getHitboxCorner(invCameraScale) {
+        return this.tailPos.add(this.valueVector).subtract(this.hitboxSize.scale(invCameraScale / 2));
     }
 }
