@@ -1,5 +1,6 @@
 import { HTMLCanvasElm } from "../../htmlCanvas/HTMLCanvasElm.js";
 import { Elm } from "/utils/elements.js";
+import { vec } from "/utils/vectors.js";
 
 export class Graph extends HTMLCanvasElm {
     constructor() {
@@ -95,7 +96,7 @@ export class Graph extends HTMLCanvasElm {
         );
         this.uiX.fill();
 
-        this.uiX.fillText(`(${closestPoint[0]}, ${closestPoint[1]})`, x, y);
+        this.uiX.fillText(vec(...closestPoint).toString(2), x, y);
     }
 
     _getYForX(x) {

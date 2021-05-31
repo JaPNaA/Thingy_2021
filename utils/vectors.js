@@ -55,8 +55,12 @@ class Vec2 {
         return Math.atan2(this.y, this.x);
     }
 
-    toString() {
-        return `(${this.x}, ${this.y})`;
+    toString(rounding) {
+        if (rounding === undefined) {
+            return `(${this.x}, ${this.y})`;
+        } else {
+            return `(${this.x.toFixed(rounding)}, ${this.y.toFixed(rounding)})`;
+        }
     }
 }
 
