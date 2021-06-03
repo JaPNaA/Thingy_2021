@@ -8,6 +8,10 @@ export class VariableInput extends ScalarInputElm {
         this.variable = variable;
 
         this.addTextBefore(variable.name + " = ");
+
+        try {
+            this.setValue(variable.eval());
+        } catch (err) { }
     }
 
     /** @override */
