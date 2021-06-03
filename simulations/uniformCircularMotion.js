@@ -1,72 +1,9 @@
 import { World } from "../engine/World.js";
-import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
-import { InputElm } from "../utils/elements.js";
 import { Variable, Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
-
-class VariableInput extends ScalarInputElm {
-    /** @param {Variable} variable */
-    constructor(variable) {
-        super();
-        this.staticPosition = true;
-        this.variable = variable;
-
-        this.addTextBefore(variable.toString() + " = ");
-    }
-
-    /** @override */
-    setValue(val) {
-        super.setValue(val);
-        if (this.variable) {
-            this.variable.setKnownValue(val);
-        }
-    }
-}
-
-class VariableInputForm {
-    constructor() {
-        this.variableInputs = [];
-
-        /**
-         * Variable inputs sorted by time edited. Latest edited last.
-         * @type {VariableInput[]}
-         */
-        this.inputsByLastEdited = [];
-    }
-
-    addVariableInput(input) {
-        this.variableInputs.push(input);
-        input.onUserChange.addHandler(() => {
-            this._updateInputLastEdited(input);
-            this.trySolve();
-        });
-    }
-
-    trySolve() {
-        const targetInput = this._getLeastLikelyUsedInput();
-        const expression = targetInput.variable.solveForSelf();
-        try {
-            targetInput.setValue(expression.eval());
-        } catch (err) { console.log(err); }
-    }
-
-    _updateInputLastEdited(input) {
-        const lastIndex = this.inputsByLastEdited.indexOf(input);
-        if (lastIndex >= 0) {
-            this.inputsByLastEdited.splice(lastIndex, 1);
-        }
-        
-        this.inputsByLastEdited.push(input);
-    }
-
-    /** @returns {VariableInput} */
-    _getLeastLikelyUsedInput() {
-        const unedited = this.variableInputs.find(input => !this.inputsByLastEdited.includes(input));
-        if (unedited) { return unedited; }
-        return this.inputsByLastEdited[0];
-    }
-}
+import { VariableInput } from "../engine/components/variablesForm/VariableInput.js";
+import { VariableInputForm } from "../engine/components/variablesForm/VariableInputForm.js";
 
 const vVar = new Variable("v");
 const aVar = new Variable("a");
