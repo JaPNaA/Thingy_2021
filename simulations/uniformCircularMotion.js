@@ -2,21 +2,19 @@ import { World } from "../engine/World.js";
 import { Variable, Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
-import { VariableInput } from "../engine/components/variablesForm/VariableInput.js";
-import { VariableInputForm } from "../engine/components/variablesForm/VariableInputForm.js";
+import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 
-const vVar = new Variable("v");
-const aVar = new Variable("a");
-const rVar = new Variable("r");
-const variableInputForm = new VariableInputForm();
-const expression = new Expression(
-    "subtract",
-    aVar,
-    new Expression("divide",
-        new Expression("power", vVar, 2),
-        rVar
+const expressionSolver = new ExpressionSolver({
+    variables: ["v", ["a", 40], ["r", 100]],
+    expression: vars => new Expression(
+        "subtract",
+        vars.a,
+        new Expression("divide",
+            new Expression("power", vars.v, 2),
+            vars.r
+        )
     )
-);
+});
 
 
 class OrbitBall extends CanvasElm {
@@ -46,7 +44,7 @@ class OrbitBall extends CanvasElm {
         X.arc(ballPos.x, ballPos.y, 4 / this.world.camera.zoom, 0, Math.PI * 2);
         X.fill();
 
-        const accelerationVecHead = ballPosRel.withMagnitude(this.radius - aVar.eval()).add(this.pos);
+        const accelerationVecHead = ballPosRel.withMagnitude(this.radius - expressionSolver.variables.a.eval()).add(this.pos);
         X.beginPath();
         X.moveTo(ballPos.x, ballPos.y);
         X.lineTo(accelerationVecHead.x, accelerationVecHead.y);
@@ -61,28 +59,16 @@ let world;
 export function start(simulationView) {
     world = new World(simulationView);
     world.addElm(orbitBall);
+    expressionSolver.addFormToWorld(world);
 
     resize();
-
-    for (const [variable, initialValue] of [[vVar], [aVar, 40], [rVar, 100]]) {
-        const variableInput = new VariableInput(variable);
-        variableInputForm.addVariableInput(variableInput);
-        
-        if (initialValue) {
-            variableInput.setValue(initialValue);
-        }
-
-        world.addElm(variableInput);
-    }
-
-    variableInputForm.trySolve();
 }
 
 export function update(timeElapsed) {
-    const radius = rVar.eval();
+    const radius = expressionSolver.variables.r.eval();
     orbitBall.radius = radius;
 
-    const angularSpeed = vVar.eval() / radius;
+    const angularSpeed = expressionSolver.variables.v.eval() / radius;
     orbitBall.angle += angularSpeed * timeElapsed;
 
     world.draw();
