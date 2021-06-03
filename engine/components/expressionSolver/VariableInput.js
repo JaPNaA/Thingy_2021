@@ -7,7 +7,7 @@ export class VariableInput extends ScalarInputElm {
         this.staticPosition = true;
         this.variable = variable;
 
-        this.addTextBefore(variable.toString() + " = ");
+        this.addTextBefore(variable.name + " = ");
     }
 
     /** @override */
