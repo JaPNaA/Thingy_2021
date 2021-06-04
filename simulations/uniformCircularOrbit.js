@@ -1,7 +1,5 @@
 import { World } from "../engine/World.js";
-import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
-import { InputElm } from "../utils/elements.js";
-import { Variable, Expression } from "../utils/mathLib.js";
+import { Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
