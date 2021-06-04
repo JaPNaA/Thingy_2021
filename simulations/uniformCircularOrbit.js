@@ -4,8 +4,7 @@ import { InputElm } from "../utils/elements.js";
 import { Variable, Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
-import { VariableInput } from "../engine/components/variablesForm/VariableInput.js";
-import { VariableInputForm } from "../engine/components/variablesForm/VariableInputForm.js";
+import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 
 const G = 6.67e-11;
 
@@ -82,26 +81,23 @@ class OrbitDraw extends CanvasElm {
     }
 }
 
-const vVar = new Variable("v");
-const mVar = new Variable("m");
-const rVar = new Variable("r");
-
-const variableInputForm = new VariableInputForm();
-
-const expression = new Expression( // v^2 = GM / r
-    "subtract",
-    new Expression(
-        "power", vVar, 2
-    ),
-    
-    new Expression(
-        "divide",
+const expressionSolver = new ExpressionSolver({
+    variables: ["v", ["m", planetData.earth.mass], ["r", planetData.earth.radius]],
+    expression: vars => new Expression( // v^2 = GM / r
+        "subtract",
         new Expression(
-           "multiply", G, mVar
+            "power", vars.v, 2
         ),
-        rVar
+        
+        new Expression(
+            "divide",
+            new Expression(
+            "multiply", G, vars.m
+            ),
+            vars.r
+        )
     )
-);
+});
 
 let world;
 let orbitDraw = new OrbitDraw();
@@ -110,25 +106,15 @@ export function start(asdf) {
     world = new World(asdf);
     world.addElm(orbitDraw);
 
-    for (const [variable, initialValue] of [[vVar], [mVar, planetData.earth.mass], [rVar, planetData.earth.radius]]) {
-        const variableInput = new VariableInput(variable);
-        variableInputForm.addVariableInput(variableInput);
-        
-        if (initialValue) {
-            variableInput.setValue(initialValue);
-        }
-
-        world.addElm(variableInput);
-    }
+    expressionSolver.addFormToWorld(world);
 }
 
 export function update(timeElapsed) {
-    const angularVelocity = vVar.eval() / rVar.eval();
+    const angularVelocity = expressionSolver.variables.v.eval() / expressionSolver.variables.r.eval();
 
     orbitDraw.angle += angularVelocity * timeElapsed;
-    orbitDraw.distance = rVar.eval();
+    orbitDraw.distance = expressionSolver.variables.r.eval();
     
-
     world.draw();
 }
 
