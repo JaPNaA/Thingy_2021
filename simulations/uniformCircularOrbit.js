@@ -116,4 +116,6 @@ export function update(timeElapsed) {
     world.draw();
 }
 
-export function end() { }
+export function stop() {
+    world.setdown();
+}
