@@ -16,6 +16,7 @@ export class VectorLinearInput extends CanvasElm {
         this.tailPos = tailPos;
         this.valueVector = this.direction;
 
+        this.hidden = false;
         this.dragging = false;
         this.hovering = false;
 
@@ -48,6 +49,7 @@ export class VectorLinearInput extends CanvasElm {
     }
 
     draw() {
+        if (this.hidden) { return; }
         const canvas = this.world.canvas;
         const headPos = this.tailPos.add(this.valueVector);
         const invCameraScale = 1 / this.world.camera.zoom;
@@ -105,6 +107,18 @@ export class VectorLinearInput extends CanvasElm {
         this.magnitude = magnitude;
         this.valueVector = this.getVec2();
         this.updateInputValue();
+    }
+
+    hide() {
+        this.hitbox.disable();
+        this.inputElm.hide();
+        this.hidden = true;
+    }
+
+    show() {
+        this.hitbox.enable();
+        this.inputElm.show();
+        this.hidden = false;
     }
 
     /** @param {number} value */

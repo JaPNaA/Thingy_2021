@@ -10,6 +10,7 @@ export class HTMLCanvasElm extends Elm {
         this.pos = vec(0, 0);
         this.scale = 0;
         this.staticPosition = false;
+        this.hidden = false;
     }
 
     /** @param {Vec2} displacement */
@@ -25,7 +26,22 @@ export class HTMLCanvasElm extends Elm {
         this.updateInlineStyle();
     }
 
+    hide() {
+        this.hidden = true;
+        this.updateInlineStyle();
+    }
+
+    show() {
+        this.hidden = false;
+        this.updateInlineStyle();
+    }
+
     updateInlineStyle() {
+        if (this.hidden) { 
+            this.attribute("style", "display: none");
+            return;
+        }
+
         if (this.staticPosition) {
             this.attribute("style", "position: static");
         } else {

@@ -1,6 +1,7 @@
 import { VectorLinearInput } from "./VectorLinearInput.js";
 import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { vec, Vec2 } from "../../../utils/vectors.js";
+import { HitBox } from "../../canvas/HitBox.js";
 
 export class VectorInput extends VectorLinearInput {
     /**
@@ -12,6 +13,12 @@ export class VectorInput extends VectorLinearInput {
         this.xInput = new VectorLinearInput(vec(direction.x, 0), tailPos);
         this.yInput = new VectorLinearInput(vec(0, direction.y), tailPos);
 
+        this.isHidingComponents = true;
+
+        this.bigHitbox = new HitBox(this.getTailPos(), this.getVec2(), 8);
+        this.bigHitbox.mousemoveHandler = () => this._showComponents();
+        this.bigHitbox.mouseoffHandler = () => this._hideComponents();
+
         this.xInput.onUserChange.addHandler(() => this.updateValueFromComponentInputs());
         this.yInput.onUserChange.addHandler(() => this.updateValueFromComponentInputs());
     }
@@ -19,21 +26,41 @@ export class VectorInput extends VectorLinearInput {
     /** @param {import("../World.js").World} world */
     setup(world) {
         super.setup(world);
+        world.addHitbox(this.bigHitbox);
+
         this.xInput.setup(world);
         this.yInput.setup(world);
+        this.xInput.hide();
+        this.yInput.hide();
     }
 
     /**
      * @override
      */
     update() {
-        this.xInput.update();
-        this.yInput.update();
+        if (!this.isHidingComponents) {
+            this.xInput.update();
+            this.yInput.update();
+        }
 
         if (this.dragging) {
-            this.setVec2(this.world.cursor.subtract(this.tailPos));
+            const newValue = this.world.cursor.subtract(this.tailPos);
+            this.setVec2(newValue);
+            this.bigHitbox.setDim(newValue);
             this.updateComponentInputsFromValue();
         }
+    }
+
+    _hideComponents() {
+        this.isHidingComponents = true;
+        this.xInput.hide();
+        this.yInput.hide();
+    }
+
+    _showComponents() {
+        this.isHidingComponents = false;
+        this.xInput.show();
+        this.yInput.show();
     }
 
     /**
@@ -53,10 +80,12 @@ export class VectorInput extends VectorLinearInput {
     }
     
     updateValueFromComponentInputs() {
-        this.setVec2(vec(
+        const newValue = vec(
             this.xInput.getVec2().x,
             this.yInput.getVec2().y
-        ));
+        );
+        this.setVec2(newValue);
+        this.bigHitbox.setDim(newValue);
         this.onUserChange.dispatch(this.valueVector);
     }
 
@@ -65,11 +94,15 @@ export class VectorInput extends VectorLinearInput {
         super.setTailPos(vec2);
         this.xInput.setTailPos(vec2);
         this.yInput.setTailPos(vec2);
+        this.bigHitbox.setPos(vec2);
     }
 
     draw() {
-        this.xInput.draw();
-        this.yInput.draw();
+        if (!this.isHidingComponents) {
+            this.xInput.draw();
+            this.yInput.draw();
+        }
+
         super.draw();
     }
 }
