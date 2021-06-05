@@ -52,6 +52,8 @@ export class VectorInput extends VectorLinearInput {
     }
 
     _hideComponents() {
+        // Todo: letting go while outside of hitbox doesn't hide components
+        if (this.xInput.dragging || this.yInput.dragging) { return; }
         this.isHidingComponents = true;
         this.xInput.hide();
         this.yInput.hide();
