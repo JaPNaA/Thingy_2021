@@ -66,8 +66,12 @@ export function start(simulationView) {
     })
     
     vInput.onUserChange.addHandler(() => updateTimePath());
-    initialPositionInput.onUserChange.addHandler(() => updateTimePath());
+    initialPositionInput.onUserChange.addHandler(() => {
+        updateTimePath();
+        putVInputOnInitialPositionVectorHead();
+    });
     updateTimePath();
+    putVInputOnInitialPositionVectorHead();
 }
 
 export function resize() {
@@ -85,7 +89,6 @@ export function update(timeElapsed) {
     const baseOffset = initialPositionInput.getTailPos();
     ball.pos = getPositionAtTime(time).subtract(baseOffset);
     ball.offset = baseOffset;
-    vInput.setTailPos(initialPositionInput.getVec2().add(baseOffset));
 
     world.draw();
 }
@@ -97,6 +100,10 @@ function updateTimePath() {
         const pos = getPositionAtTime(i);
         timePath.addNode(pos.x, pos.y, i);
     }
+}
+
+function putVInputOnInitialPositionVectorHead() {
+    vInput.setTailPos(initialPositionInput.getVec2().add(initialPositionInput.getTailPos()));
 }
 
 function getPositionAtTime(time) {

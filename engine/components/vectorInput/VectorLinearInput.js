@@ -3,6 +3,7 @@ import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { HitBox } from "../../canvas/HitBox.js";
 import { EventHandler } from "../../../utils/EventHandler.js";
 import { ScalarInputElm } from "../ScalarInputElm.js";
+import { VectorArrow } from "../VectorArrow.js";
 
 export class VectorLinearInput extends CanvasElm {
     /**
@@ -18,6 +19,8 @@ export class VectorLinearInput extends CanvasElm {
         this.tailPos = tailPos;
         this.valueVector = this.direction;
 
+        this.vectorArrow = new VectorArrow(tailPos, direction);
+
         this.hidden = false;
         this.dragging = false;
         this.hovering = false;
@@ -32,7 +35,7 @@ export class VectorLinearInput extends CanvasElm {
         this.inputElm.onUserChange.addHandler(value => this._inputElmChangeHandler(value));
 
         this.onUserChange = new EventHandler();
-        this.updateInputValue();
+        this.updateValueVectorDependencies();
     }
 
     /** @param {import("./World.js").World} Lorld */
@@ -40,6 +43,7 @@ export class VectorLinearInput extends CanvasElm {
         super.setup(world);
         world.addHitbox(this.hitbox);
         world.htmlCanvas.addElm(this.inputElm);
+        this.vectorArrow.setup(world);
     }
 
     update() {
@@ -54,22 +58,9 @@ export class VectorLinearInput extends CanvasElm {
         if (this.hidden) { return; }
         const canvas = this.world.canvas;
         const invCameraScale = 1 / this.world.camera.zoom;
-        const relTailPos = this.world.camera.transformPoint(this.tailPos);
-        const relHeadPos = this.world.camera.transformPoint(this.tailPos.add(this.valueVector));
 
-        canvas.X.strokeStyle = "#ffffff";
-        canvas.X.lineWidth = 1;
-        canvas.X.fillStyle = (this.hovering || this.dragging) ? "#ff0000" : "#aaaaaa";
-        canvas.X.beginPath();
-        canvas.X.moveTo(relTailPos.x, relTailPos.y);
-        canvas.X.lineTo(relHeadPos.x, relHeadPos.y);
-        canvas.X.stroke();
-        canvas.X.fillRect(
-            relHeadPos.x - 2,
-            relHeadPos.y - 2,
-            4,
-            4
-        );
+        this.vectorArrow.setTailHighlighted(this.dragging || this.hovering);
+        this.vectorArrow.draw();
 
         this.inputElm.setPos(this.tailPos.add(this.valueVector.scale(1 / 2)));
 
@@ -77,8 +68,9 @@ export class VectorLinearInput extends CanvasElm {
         this.hitbox.setDim(this.hitboxSize.scale(invCameraScale));
     }
 
-    updateInputValue() {
+    updateValueVectorDependencies() {
         this.inputElm.setValue(this.magnitude);
+        this.vectorArrow.setValue(this.valueVector);
     }
 
     getTailPos() {
@@ -88,6 +80,7 @@ export class VectorLinearInput extends CanvasElm {
     /** @param {Vec2} vec2 */
     setTailPos(vec2) {
         this.tailPos = vec2;
+        this.vectorArrow.setTail(vec2);
     }
 
     getVec2() {
@@ -99,7 +92,7 @@ export class VectorLinearInput extends CanvasElm {
         this.direction = vec2;
         this.magnitude = vec2.magnitude;
         this.valueVector = vec2;
-        this.updateInputValue();
+        this.updateValueVectorDependencies();
     }
 
     getMagnitude() {
@@ -109,7 +102,7 @@ export class VectorLinearInput extends CanvasElm {
     setMagnitude(magnitude) {
         this.magnitude = magnitude;
         this.valueVector = this.getVec2();
-        this.updateInputValue();
+        this.updateValueVectorDependencies();
     }
 
     hide() {
