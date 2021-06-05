@@ -3,6 +3,7 @@ import { Variable, Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
+import { VectorArrow } from "../engine/components/VectorArrow.js";
 
 const expressionSolver = new ExpressionSolver({
     variables: ["v", ["a", 40], ["r", 100]],
@@ -23,6 +24,13 @@ class OrbitBall extends CanvasElm {
         this.radius = 1;
         this.pos = vec(0, 0);
         this.angle = 0;
+
+        this.accelerationArrow = new VectorArrow();
+    }
+
+    setup(world) {
+        super.setup(world);
+        this.world.addElm(this.accelerationArrow);
     }
 
     draw() {
@@ -44,11 +52,9 @@ class OrbitBall extends CanvasElm {
         X.arc(ballPos.x, ballPos.y, 4 / this.world.camera.zoom, 0, Math.PI * 2);
         X.fill();
 
-        const accelerationVecHead = ballPosRel.withMagnitude(this.radius - expressionSolver.variables.a.eval()).add(this.pos);
-        X.beginPath();
-        X.moveTo(ballPos.x, ballPos.y);
-        X.lineTo(accelerationVecHead.x, accelerationVecHead.y);
-        X.stroke();
+        const accelerationVecHead = ballPosRel.withMagnitude(-expressionSolver.variables.a.eval());
+        this.accelerationArrow.setTail(ballPosRel.add(this.pos));
+        this.accelerationArrow.setValue(accelerationVecHead);
     }
 }
 
