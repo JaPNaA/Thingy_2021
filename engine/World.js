@@ -58,10 +58,17 @@ export class World {
     }
 
     draw() {
-        this.canvas.X.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.canvas.X.save();
-        this.canvas.X.translate(-this.camera.x, -this.camera.y);
-        this.canvas.X.scale(this.camera.zoom, this.camera.zoom);
+        /** @type {CanvasRenderingContext2D} */
+        const X = this.canvas.X;
+
+        const noTransform = X.getTransform();
+
+        X.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        X.save();
+        X.translate(-this.camera.x, -this.camera.y);
+        X.scale(this.camera.zoom, this.camera.zoom);
+
+        const cameraTransform = X.getTransform();
 
         this.htmlCanvas.setTransformation(this.camera.scale(-1), this.camera.zoom);
 
@@ -69,7 +76,20 @@ export class World {
             element.update();
         }
 
+        let isTransformed = true;
+
         for (const element of this.elements) {
+            if (element.staticPosition) {
+                if (isTransformed) {
+                    X.setTransform(noTransform);
+                    isTransformed = false;
+                }
+            } else {
+                if (!isTransformed) {
+                    X.setTransform(cameraTransform);
+                    isTransformed = true;
+                }
+            }
             element.draw();
         }
 
@@ -77,7 +97,7 @@ export class World {
             this._debugDrawHitboxes();
         }
 
-        this.canvas.X.restore();
+        X.restore();
     }
 
     _debugDrawHitboxes() {

@@ -14,6 +14,7 @@ export class Canvas extends Component {
 
     resizeToScreen() {
         this.X.restore();
+        this.X.resetTransform();
 
         const scaling = window.devicePixelRatio || 1;
         this.canvas.width = this.width = innerWidth * scaling;

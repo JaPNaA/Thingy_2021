@@ -11,6 +11,8 @@ export class VectorLinearInput extends CanvasElm {
      */
     constructor(direction, tailPos) {
         super();
+        this.staticPosition = true;
+
         this.direction = direction;
         this.magnitude = this.direction.magnitude;
         this.tailPos = tailPos;
