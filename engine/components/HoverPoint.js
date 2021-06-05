@@ -5,6 +5,7 @@ import { HitBox } from "../canvas/HitBox.js";
 export class HoverPoint extends CanvasElm {
     constructor() {
         super();
+        this.staticPosition = true;
         
         this.offset = vec(0, 0);
         this.pos = vec(0, 0);
@@ -24,7 +25,7 @@ export class HoverPoint extends CanvasElm {
     draw() {
         const X = this.world.canvas.X;
 
-        const {x, y} = this.pos.add(this.offset);
+        const {x, y} = this.world.camera.transformPoint(this.pos.add(this.offset));
 
         X.fillStyle = "#ff0000";
 

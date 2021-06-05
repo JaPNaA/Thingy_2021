@@ -53,24 +53,25 @@ export class VectorLinearInput extends CanvasElm {
     draw() {
         if (this.hidden) { return; }
         const canvas = this.world.canvas;
-        const headPos = this.tailPos.add(this.valueVector);
         const invCameraScale = 1 / this.world.camera.zoom;
+        const relTailPos = this.world.camera.transformPoint(this.tailPos);
+        const relHeadPos = this.world.camera.transformPoint(this.tailPos.add(this.valueVector));
 
         canvas.X.strokeStyle = "#ffffff";
-        canvas.X.lineWidth = invCameraScale;
+        canvas.X.lineWidth = 1;
         canvas.X.fillStyle = (this.hovering || this.dragging) ? "#ff0000" : "#aaaaaa";
         canvas.X.beginPath();
-        canvas.X.moveTo(this.tailPos.x, this.tailPos.y);
-        canvas.X.lineTo(headPos.x, headPos.y);
+        canvas.X.moveTo(relTailPos.x, relTailPos.y);
+        canvas.X.lineTo(relHeadPos.x, relHeadPos.y);
         canvas.X.stroke();
         canvas.X.fillRect(
-            headPos.x - 2 * invCameraScale,
-            headPos.y - 2 * invCameraScale,
-            4 * invCameraScale,
-            4 * invCameraScale
+            relHeadPos.x - 2,
+            relHeadPos.y - 2,
+            4,
+            4
         );
 
-        this.inputElm.setPos(headPos.add(this.tailPos).scale(1 / 2));
+        this.inputElm.setPos(this.tailPos.add(this.valueVector.scale(1 / 2)));
 
         this.hitbox.setPos(this._getHitboxCorner(invCameraScale));
         this.hitbox.setDim(this.hitboxSize.scale(invCameraScale));

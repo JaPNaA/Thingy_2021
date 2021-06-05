@@ -47,4 +47,8 @@ export class Camera extends Vec2 {
         this.x += this.world.cursor.x * dZoom;
         this.y += this.world.cursor.y * dZoom;
     }
+
+    transformPoint(vec2) {
+        return vec2.scale(this.zoom).subtract(this);
+    }
 }
