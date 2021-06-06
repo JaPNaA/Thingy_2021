@@ -78,7 +78,6 @@ class PresetSelector extends HTMLCanvasElm {
             const data = JSON.parse(this.selectElm.elm.value);
             expressionSolver.setVariableValue("r", data.radius);
             expressionSolver.setVariableValue("m", data.mass);
-            expressionSolver
         });
     }
 }
@@ -86,6 +85,7 @@ class PresetSelector extends HTMLCanvasElm {
 class OrbitDraw extends CanvasElm {
     constructor() {
         super();
+        this.staticPosition = true;
 
         this.angle = 0;
         this.distance = 0;
@@ -96,9 +96,10 @@ class OrbitDraw extends CanvasElm {
         /** @type {CanvasRenderingContext2D} */
         const X = this.world.canvas.X;
 
-        const pos =
+        const pos = this.world.camera.transformPoint(
             Vec2.fromPolar(this.distance, this.angle)
-            .add(this.pos);
+            .add(this.pos)
+        );
         
         X.beginPath();
         X.arc(pos.x, pos.y, 100, 0, 2*Math.PI);
