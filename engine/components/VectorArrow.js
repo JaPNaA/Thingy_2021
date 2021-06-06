@@ -1,6 +1,10 @@
 import { CanvasElm } from "../canvas/CanvasElm.js";
 
 export class VectorArrow extends CanvasElm {
+    /**
+     * @param {import("../../utils/vectors.js").Vec2} [tail]
+     * @param {import("../../utils/vectors.js").Vec2} [value]
+     */
     constructor(tail, value) {
         super();
 
@@ -13,6 +17,8 @@ export class VectorArrow extends CanvasElm {
     }
 
     draw() {
+        if (!(this.tailPos && this.value)) { throw new Error("Tail or value not set before draw"); }
+
         /** @type {CanvasRenderingContext2D} */
         const X = this.world.canvas.X;
 
