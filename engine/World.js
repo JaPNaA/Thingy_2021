@@ -21,7 +21,7 @@ export class World {
 
         /** @type {HitBox[]} */
         this.hitboxes = [];
-        this._debugDrawHitbox = false;
+        this._debugDrawHitbox = true;
 
         this.keyboard = new Keyboard();
         this.keyboard.setup();
@@ -94,6 +94,7 @@ export class World {
         }
 
         if (this._debugDrawHitbox) {
+            X.setTransform(cameraTransform);
             this._debugDrawHitboxes();
         }
 

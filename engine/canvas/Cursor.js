@@ -26,14 +26,14 @@ export class Cursor extends Vec2 {
         addEventListener("mousemove", this._mouseMoveHandler);
         addEventListener("mousedown", this._mouseDownHandler);
         addEventListener("mouseup", this._mouseUpHandler);
-        addEventListener("mousewheel", this._wheelHandler);
+        addEventListener("wheel", this._wheelHandler);
     }
 
     setdown() {
         removeEventListener("mousemove", this._mouseMoveHandler);
         removeEventListener("mousedown", this._mouseDownHandler);
         removeEventListener("mouseup", this._mouseUpHandler);
-        removeEventListener("mousewheel", this._wheelHandler);
+        removeEventListener("wheel", this._wheelHandler);
     }
 
     nextMouseUp() {
