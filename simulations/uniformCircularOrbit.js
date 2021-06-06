@@ -87,6 +87,8 @@ class PresetSelector extends HTMLCanvasElm {
     }
 }
 
+const vectArrow = new VectorArrow();
+
 class OrbitDraw extends CanvasElm {
     constructor() {
         super();
@@ -101,10 +103,8 @@ class OrbitDraw extends CanvasElm {
         /** @type {CanvasRenderingContext2D} */
         const X = this.world.canvas.X;
 
-        const pos = this.world.camera.transformPoint(
-            Vec2.fromPolar(this.orbitRadius, this.angle)
-                .add(this.pos)
-        );
+        const pos = Vec2.fromPolar(this.orbitRadius, this.angle).add(this.pos)
+        const absPos = this.world.camera.transformPoint(pos);
 
         const center = this.world.camera.transformPoint(vec(0, 0));
 
@@ -117,9 +117,14 @@ class OrbitDraw extends CanvasElm {
 
         // drawing orbiting object
         X.beginPath();
-        X.arc(pos.x, pos.y, 4, 0, 2*Math.PI);
+        X.arc(absPos.x, absPos.y, 4, 0, 2*Math.PI);
         X.fillStyle = "#ff0000";
         X.fill();
+
+        vectArrow.setTail(pos);
+        vectArrow.setValue(
+            Vec2.fromPolar(-this.orbitRadius / 5, this.angle)
+        );
     }
 }
 
@@ -149,6 +154,7 @@ export function start(asdf) {
     world = new World(asdf);
     world.addElm(orbitDraw);
     world.addElm(presetSelector);
+    world.addElm(vectArrow);
 
     expressionSolver.addFormToWorld(world);
 }
