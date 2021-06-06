@@ -5,6 +5,7 @@ import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm } from "../utils/elements.js";
+import { VectorArrow } from "../engine/components/VectorArrow.js";
 
 const G = 6.67e-11;
 
@@ -35,17 +36,17 @@ const planetData = {
 
     mars: {
         mass: 6.39e23,
-        radius: 3389.5e6,
+        radius: 3389.5e3,
     },
 
     venus: {
         mass: 4.867e24,
-        radius: 6051.8,
+        radius: 6051.8e3,
     },
 
-    jupitar: {
+    jupiter: {
         mass: 1.898e27,
-        radius: 69911,
+        radius: 69911e3,
     },
 
     neptune: {
@@ -92,7 +93,7 @@ class OrbitDraw extends CanvasElm {
         this.staticPosition = true;
 
         this.angle = 0;
-        this.distance = 0;
+        this.orbitRadius = 0;
         this.pos = vec(0, 0);
     }
 
@@ -101,15 +102,24 @@ class OrbitDraw extends CanvasElm {
         const X = this.world.canvas.X;
 
         const pos = this.world.camera.transformPoint(
-            Vec2.fromPolar(this.distance, this.angle)
-            .add(this.pos)
+            Vec2.fromPolar(this.orbitRadius, this.angle)
+                .add(this.pos)
         );
-        
+
+        const center = this.world.camera.transformPoint(vec(0, 0));
+
+        // drawing orbit
         X.beginPath();
-        X.arc(pos.x, pos.y, 100, 0, 2*Math.PI);
+        X.arc(center.x, center.y, this.orbitRadius * this.world.camera.zoom, 0, 2*Math.PI);
+        X.strokeStyle = "#ffffff";
+        X.lineWidth = 1;
+        X.stroke();
+
+        // drawing orbiting object
+        X.beginPath();
+        X.arc(pos.x, pos.y, 4, 0, 2*Math.PI);
         X.fillStyle = "#ff0000";
         X.fill();
-        
     }
 }
 
@@ -147,7 +157,7 @@ export function update(timeElapsed) {
     const angularVelocity = expressionSolver.variables.v.eval() / expressionSolver.variables.r.eval();
 
     orbitDraw.angle += angularVelocity * timeElapsed;
-    orbitDraw.distance = expressionSolver.variables.r.eval();
+    orbitDraw.orbitRadius = expressionSolver.variables.r.eval();
     
     world.draw();
 }
