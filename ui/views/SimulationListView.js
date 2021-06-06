@@ -10,7 +10,8 @@ export class SimulationListView extends View {
             new Elm().class("list").append(
                 this.createSimulationLink("Projectile Motion", "projectileMotion"),
                 this.createSimulationLink("1d Motion", "1dMotion"),
-                this.createSimulationLink("Uniform Circular Motion", "uniformCircularMotion")
+                this.createSimulationLink("Uniform Circular Motion", "uniformCircularMotion"),
+                this.createSimulationLink("Uniform Circular Orbit", "uniformCircularOrbit")
             )
         );
     }
