@@ -12,6 +12,8 @@ export class ExpressionSolver {
 
         this.variables = this._initVariables(variables);
         this.expression = expression(this.variables);
+
+        this._inputs = {};
     }
 
     addFormToWorld(world) {
@@ -21,9 +23,20 @@ export class ExpressionSolver {
             const variableInput = new VariableInput(this.variables[variableName]);
             variableInputForm.addVariableInput(variableInput);
             world.addElm(variableInput);
+            this._inputs[variableName] = variableInput;
         }
 
         variableInputForm.trySolve();
+        this._variableInputForm = variableInputForm;
+    }
+
+    /**
+     * @param {string} variable - variable name
+     * @param {number} value
+     */
+    setVariableValue(variable, value) {
+        this._inputs[variable].setValue(value);
+        this._variableInputForm.trySolve();
     }
 
     /**

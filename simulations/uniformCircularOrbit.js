@@ -3,6 +3,8 @@ import { Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
+import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
+import { Elm } from "../utils/elements.js";
 
 const G = 6.67e-11;
 
@@ -54,6 +56,33 @@ const planetData = {
     // saturn: 
 };
 
+class PresetSelector extends HTMLCanvasElm {
+    constructor() {
+        super();
+        this.staticPosition = true;
+
+        this.selectElm = new Elm("select");
+        this.append(this.selectElm);
+
+        const planets = Object.keys(planetData);
+        for (const planet of planets) {
+            this.selectElm.append(
+                new Elm("option")
+                    .append(planet)
+                    .attribute("value", JSON.stringify(planetData[planet]))
+            );
+        }
+
+        this.selectElm.on("change", () => {
+            /** @type {PlanetDataEntry} */
+            const data = JSON.parse(this.selectElm.elm.value);
+            expressionSolver.setVariableValue("r", data.radius);
+            expressionSolver.setVariableValue("m", data.mass);
+            expressionSolver
+        });
+    }
+}
+
 class OrbitDraw extends CanvasElm {
     constructor() {
         super();
@@ -98,11 +127,13 @@ const expressionSolver = new ExpressionSolver({
 });
 
 let world;
-let orbitDraw = new OrbitDraw();
+const orbitDraw = new OrbitDraw();
+const presetSelector = new PresetSelector();
 
 export function start(asdf) {
     world = new World(asdf);
     world.addElm(orbitDraw);
+    world.addElm(presetSelector);
 
     expressionSolver.addFormToWorld(world);
 }
