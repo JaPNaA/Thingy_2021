@@ -61,7 +61,11 @@ class PresetSelector extends HTMLCanvasElm {
         super();
         this.staticPosition = true;
 
-        this.selectElm = new Elm("select");
+        this.selectElm = new Elm("select")
+            .attribute("style", `
+                background: #000000;
+                color: inherit;
+            `);
         this.append(this.selectElm);
 
         const planets = Object.keys(planetData);
