@@ -1,4 +1,4 @@
-import { CanvasElm } from "../canvas/CanvasElm.js";
+import { CanvasElm } from "../../canvas/CanvasElm.js";
 
 export class VectorArrow extends CanvasElm {
     /**

@@ -21,7 +21,7 @@ export class World {
 
         /** @type {HitBox[]} */
         this.hitboxes = [];
-        this._debugDrawHitbox = true;
+        this._debugDrawHitbox = false;
 
         this.keyboard = new Keyboard();
         this.keyboard.setup();

@@ -3,7 +3,7 @@ import { CanvasElm } from "../../canvas/CanvasElm.js";
 import { HitBox } from "../../canvas/HitBox.js";
 import { EventHandler } from "../../../utils/EventHandler.js";
 import { ScalarInputElm } from "../ScalarInputElm.js";
-import { VectorArrow } from "../VectorArrow.js";
+import { VectorArrow } from "../vectorArrow/VectorArrow.js";
 
 export class VectorLinearInput extends CanvasElm {
     /**

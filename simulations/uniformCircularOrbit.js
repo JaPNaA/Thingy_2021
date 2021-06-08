@@ -5,7 +5,7 @@ import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm } from "../utils/elements.js";
-import { VectorArrow } from "../engine/components/VectorArrow.js";
+import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
 
 const G = 6.67e-11;
 
