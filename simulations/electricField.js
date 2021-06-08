@@ -1,7 +1,7 @@
 import { World } from "../engine/World.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec } from "../utils/vectors.js";
-import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
+import { AestheticVectorArrow } from "../engine/components/vectorArrow/AestheticVectorArrow.js";
 
 let world;
 
@@ -16,7 +16,7 @@ class ElectricVectorField extends CanvasElm {
         this.charges = [];
 
         this.vectors = this.initVectorField(20, 20);
-        this.vectorArrowDrawer = new VectorArrow();
+        this.vectorArrowDrawer = new AestheticVectorArrow();
     }
 
     setup(world) {
@@ -48,9 +48,6 @@ class ElectricVectorField extends CanvasElm {
         /** @type {CanvasRenderingContext2D} */
         const X = this.world.canvas.X;
 
-        X.strokeStyle = "#ffffff";
-        X.beginPath();
-
         for (let y = 0; y < this.vectors.length; y++) {
             const row = this.vectors[y];
 
@@ -60,8 +57,6 @@ class ElectricVectorField extends CanvasElm {
                 this.vectorArrowDrawer.draw();
             }
         }
-
-        X.stroke();
     }
 
     /** @param {ChargePoint} charge */
