@@ -54,7 +54,16 @@ const planetData = {
         radius: 24622e6
     },
 
-    // saturn: 
+    /*saturn: {
+        mass: 5.683e36
+        radius: 58232e3,
+    },
+
+    pluto: {
+        mass: 1.3900e22
+        radius: 1188.3e3,
+    }*/
+
 };
 
 class PresetSelector extends HTMLCanvasElm {
