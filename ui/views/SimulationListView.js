@@ -13,6 +13,9 @@ export class SimulationListView extends View {
                 this.createSimulationLink("Uniform Circular Motion", "uniformCircularMotion"),
                 this.createSimulationLink("Uniform Circular Orbit", "uniformCircularOrbit"),
                 this.createSimulationLink("Electric Field","electricField")
+            ),
+            new Elm().append(
+                new Elm("a").attribute("href", "#").append("Help")
             )
         );
     }
