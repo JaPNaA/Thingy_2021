@@ -121,7 +121,7 @@ class ChargePoint extends CanvasElm {
             this.dirty = true;
         }
 
-        X.fillStyle = "#ff0000";
+        X.fillStyle = this.coulombs < 0 ? "#0008ff" : "#ff0000";
         X.beginPath();
         X.arc(this.pos.x, this.pos.y, 4, 0, 2 * Math.PI);
         X.fill();
