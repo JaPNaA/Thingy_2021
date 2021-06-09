@@ -1,5 +1,7 @@
 import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
+import { DocsView } from "./DocsView.js";
+import { userInterface } from "../userInterface.js";
 
 export class SimulationListView extends View {
     constructor() {
@@ -16,6 +18,9 @@ export class SimulationListView extends View {
             ),
             new Elm().append(
                 new Elm("a").attribute("href", "#").append("Help")
+                    .on("click", () => {
+                        userInterface.addView(new DocsView("help"))
+                    })
             )
         );
     }
