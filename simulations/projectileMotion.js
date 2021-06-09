@@ -35,9 +35,17 @@ let world;
 
 const ball = new HoverPoint();
 
-const vInput = new VectorInput(vec(10, -10), vec(10, 400));
 const timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
+
+const vInput = new VectorInput(vec(10, -10), vec(10, 400));
+vInput.onUserChange.addHandler(() => updateTimePath());
+
 const initialPositionInput = new VectorInput(vec(100, -200), vec(200, 400));
+initialPositionInput.onUserChange.addHandler(() => {
+    updateTimePath();
+    putVInputOnInitialPositionVectorHead();
+});
+
 const timePath = new TimePath();
 
 const gravity = -9.8;
@@ -63,13 +71,8 @@ export function start(simulationView) {
     });
     world.keyboard.addKeyUpListener("Space", () => {
         realTimeMode = false;
-    })
-    
-    vInput.onUserChange.addHandler(() => updateTimePath());
-    initialPositionInput.onUserChange.addHandler(() => {
-        updateTimePath();
-        putVInputOnInitialPositionVectorHead();
     });
+    
     updateTimePath();
     putVInputOnInitialPositionVectorHead();
 }

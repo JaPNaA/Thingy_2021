@@ -39,6 +39,10 @@ export class ScalarInputElm extends HTMLCanvasElm {
         this._lastValue = value;
     }
 
+    getValue() {
+        return this._lastValue;
+    }
+
     addTextBefore(text) {
         this.appendAsFirst(text);
     }
