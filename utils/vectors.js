@@ -8,6 +8,10 @@ class Vec2 {
         return new Vec2(Math.cos(ang) * dist, Math.sin(ang) * dist);
     }
 
+    clone() {
+        return new Vec2(this.x, this.y);
+    }
+
     /** @param {Vec2} other */
     add(other) {
         return new Vec2(
