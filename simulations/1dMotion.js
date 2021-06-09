@@ -10,7 +10,10 @@ const equasions = {
 
 let world;
 const velocityInput = new VectorLinearInput(vec(10, 0), vec(50, 50));
+velocityInput.setUnitText("m/s");
+
 const accelerationInput = new VectorLinearInput(vec(10, 0), vec(50, 70));
+accelerationInput.setUnitText("m/s²");
 
 const timeInput = new ScalarInputElm();
 timeInput.onUserChange.addHandler(v => time = v);

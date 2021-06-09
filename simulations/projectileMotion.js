@@ -36,11 +36,14 @@ let world;
 const ball = new HoverPoint();
 
 const timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
+timeInput.setUnitText("s");
 
 const vInput = new VectorInput(vec(10, -10), vec(10, 400));
 vInput.onUserChange.addHandler(() => updateTimePath());
+vInput.setUnitText("m/s");
 
 const initialPositionInput = new VectorInput(vec(100, -200), vec(200, 400));
+initialPositionInput.setUnitText("m");
 initialPositionInput.onUserChange.addHandler(() => {
     updateTimePath();
     putVInputOnInitialPositionVectorHead();

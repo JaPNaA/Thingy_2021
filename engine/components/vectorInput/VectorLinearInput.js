@@ -105,6 +105,11 @@ export class VectorLinearInput extends CanvasElm {
         this.updateValueVectorDependencies();
     }
 
+    /** @param {string} unitStr */
+    setUnitText(unitStr) {
+        this.inputElm.addTextAfter(unitStr);
+    }
+
     hide() {
         this.hitbox.disable();
         this.inputElm.hide();
