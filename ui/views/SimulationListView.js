@@ -30,9 +30,10 @@ export class SimulationListView extends View {
      * @param {string} simulationId
      */
     createSimulationLink(title, simulationId) {
-        return new Elm("a")
-            .class("simulationLink")
-            .append(title)
-            .attribute("href", "#" + simulationId);
+        return new Elm().class("simulationLink").append(
+            new Elm("a")
+                .append(title)
+                .attribute("href", "#" + simulationId)
+        );
     }
 }

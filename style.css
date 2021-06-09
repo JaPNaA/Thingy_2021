@@ -6,6 +6,10 @@ body {
     font-family: Roboto, Arial, Helvetica, sans-serif;
 }
 
+body.DocsViewFrame {
+    overflow: auto;
+}
+
 a {
     color: #4ba8ff;
     text-decoration: none;
