@@ -25,6 +25,10 @@ class ElectricVectorField extends CanvasElm {
         this.vectorArrowDrawer.setup(world);
     }
 
+    setdown() {
+        this.charges.length = 0;
+    }
+
     /**
      * @param {number} width
      * @param {number} height

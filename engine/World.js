@@ -38,6 +38,9 @@ export class World {
     setdown() {
         this.cursor.setdown();
         this.keyboard.setdown();
+        for (const elm of this.elements) {
+            elm.setdown();
+        }
     }
 
     /** @param {(import("./canvas/CanvasElm.js").CanvasElm | HTMLCanvasElm)[]} ...elm */

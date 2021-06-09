@@ -16,6 +16,8 @@ export class CanvasElm {
 
     update() { }
 
+    setdown() { }
+
     draw() {
         throw new Error("CanvasElm doesn't have draw implemented");
     }
