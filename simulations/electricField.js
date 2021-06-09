@@ -126,16 +126,32 @@ class ChargePoint extends CanvasElm {
     }
 }
 
-const chargePoint = new ChargePoint(vec(4, 4), 1e-6);
+let chargePoints = [];
 const electricVectorField = new ElectricVectorField();
 
 export function start(simulationView) {
     world = new World(simulationView);
     world.addElm(electricVectorField);
-    electricVectorField.addCharge(chargePoint);
-    world.addElm(chargePoint);
 
-    console.log(electricVectorField);
+    chargePoints = initChargePoints();
+    for (const chargePoint of chargePoints) {
+        electricVectorField.addCharge(chargePoint);
+        world.addElm(chargePoint);
+    }
+}
+
+function initChargePoints() {
+    const arr = [];
+    
+    let i;
+    for (i = 0; i < 3; i++) {
+        arr.push(new ChargePoint(vec(i * 16, i * 16), 1e-6));
+    }
+    for (; i < 6; i++) {
+        arr.push(new ChargePoint(vec(i * 16, i * 16), -1e-6));
+    }
+
+    return arr;
 }
 
 export function update() {
