@@ -16,7 +16,7 @@ class ElectricVectorField extends CanvasElm {
         /** @type {ChargePoint[]} */
         this.charges = [];
 
-        this.vectors = this.initVectorField(20, 20);
+        this.vectors = this.initVectorField(40, 40);
         this.vectorArrowDrawer = new AestheticVectorArrow();
     }
 
@@ -97,6 +97,7 @@ class ChargePoint extends CanvasElm {
         this.coulombs = chargeCoulombs;
 
         this.dragging = false;
+        this.dirty = true;
 
         this.hitbox = new HitBox(this.pos, vec(0, 0), 8);
         this.hitbox.mousedownHandler = () => {
@@ -117,6 +118,7 @@ class ChargePoint extends CanvasElm {
         if (this.dragging) {
             this.pos = this.world.cursor.clone();
             this.hitbox.setPos(this.pos);
+            this.dirty = true;
         }
 
         X.fillStyle = "#ff0000";
@@ -126,6 +128,7 @@ class ChargePoint extends CanvasElm {
     }
 }
 
+/** @type {ChargePoint[]} */
 let chargePoints = [];
 const electricVectorField = new ElectricVectorField();
 
@@ -156,7 +159,18 @@ function initChargePoints() {
 
 export function update() {
     // chargePoint.pos = world.cursor;
-    electricVectorField.updateField(); 
+
+    let shouldUpdate = false;
+    for (const chargePoint of chargePoints) {
+        if (chargePoint.dirty) {
+            shouldUpdate = true;
+            chargePoint.dirty = false;
+        }
+    }
+
+    if (shouldUpdate) {
+        electricVectorField.updateField();
+    }
 
     world.draw();
 }
