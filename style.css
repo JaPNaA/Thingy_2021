@@ -51,6 +51,11 @@ a {
     display: block;
 }
 
+.view.Docs iframe {
+    width: 100%;
+    height: 50vh;
+}
+
 .view.Simulation .canvas canvas,
 .view.Simulation .HTMLCanvas {
     position: absolute;
