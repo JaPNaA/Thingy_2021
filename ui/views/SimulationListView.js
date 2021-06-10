@@ -1,6 +1,7 @@
 import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
 import { DocsView } from "./DocsView.js";
+import { SimulationView } from "./SimulationView.js";
 import { userInterface } from "../userInterface.js";
 
 export class SimulationListView extends View {
@@ -34,6 +35,11 @@ export class SimulationListView extends View {
             new Elm("a")
                 .append(title)
                 .attribute("href", "#" + simulationId)
+                .on("click", e => {
+                    e.preventDefault();
+                    userInterface.addView(new SimulationView(simulationId));
+                    userInterface.closeView(this);
+                })
         );
     }
 }
