@@ -15,7 +15,7 @@ export class DocsView extends View {
         this.backgroundElm = new Elm().class("background").appendTo(this.elm);
 
         this.contentElm = new Elm().class("content").append(
-            new Elm().class("title").append(
+            this.titleElm = new Elm().class("title").append(
                 new Elm("h1").append("Help: " + url),
                 new Elm().class("closeButton").append("✕")
                     .on("click", () => userInterface.closeView(this)),
@@ -29,6 +29,7 @@ export class DocsView extends View {
 
         this.frame.elm.addEventListener("load", async () => {
             const frameDoc = this.frame.elm.contentDocument;
+            this._setPropogateKeyboardAndMouseEvents(this.frame.elm.contentWindow);
             new Elm("base")
                 .attribute("href", "/docs/" + url)
                 .appendTo(frameDoc.head);
@@ -37,21 +38,21 @@ export class DocsView extends View {
             frameDoc.body.innerHTML = text;
         });
 
-        this.contentElm.on("mousedown", () => this.contentPosDragging = true);
+        this.titleElm.on("mousedown", () => this.contentPosDragging = true);
         this.mouseUpHandler = () => this.contentPosDragging = false;
-        this.contentElm.on("mousemove", e => {
-            console.log(e.button);
+        this.mouseMoveHandler = e => {
             if (!this.contentPosDragging) { return; }
             this.contentPosX += e.movementX;
             this.contentPosY += e.movementY;
             this._updateContentElmStyle();
             this._hideBackground();
-        });
+        };
     }
 
     _setup() {
         super._setup();
         addEventListener("mouseup", this.mouseUpHandler);
+        addEventListener("mousemove", this.mouseMoveHandler);
 
         const contentRect = this.contentElm.elm.getBoundingClientRect();
         this.contentPosX = (innerWidth - contentRect.width) / 2;
@@ -62,6 +63,28 @@ export class DocsView extends View {
     _setdown() {
         super._setdown();
         removeEventListener("mouseup", this.mouseUpHandler);
+        removeEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    /**
+     * @param {Window} iframeWindow
+     */
+    _setPropogateKeyboardAndMouseEvents(iframeWindow) {
+        for (const event of ["keydown", "keyup", "click", "mousedown", "mouseup", "mousemove"]) {
+            this._setPropogate(event, iframeWindow);
+        }
+    }
+
+    /**
+     * @param {string} eventName
+     * @param {Window} iframeWindow
+     */
+    _setPropogate(eventName, iframeWindow) {
+        iframeWindow.addEventListener(eventName, e => {
+            setTimeout(
+                () => this.frame.elm.dispatchEvent(e),
+                1);
+        });
     }
 
     _updateContentElmStyle() {
