@@ -3,6 +3,7 @@ import { Elm } from "../../utils/elements.js";
 import { DocsView } from "./DocsView.js";
 import { SimulationView } from "./SimulationView.js";
 import { userInterface } from "../userInterface.js";
+import { locationHash } from "../locationHash.js";
 
 export class SimulationListView extends View {
     constructor() {
@@ -38,6 +39,7 @@ export class SimulationListView extends View {
                 .on("click", e => {
                     e.preventDefault();
                     userInterface.addView(new SimulationView(simulationId));
+                    locationHash.setHash(simulationId);
                     userInterface.closeView(this);
                 })
         );

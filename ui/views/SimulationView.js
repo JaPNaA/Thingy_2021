@@ -2,6 +2,8 @@ import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
 import { Canvas } from "../../engine/canvas/Canvas.js";
 import { HTMLCanvas } from "../../engine/htmlCanvas/HTMLCanvas.js";
+import { DocsView } from "./DocsView.js";
+import { userInterface } from "../userInterface.js";
 import { loadingIndicator } from "../loadingIndicator.js";
 
 
@@ -27,8 +29,17 @@ export class SimulationView extends View {
         this.module = undefined;
         this.loadPromise = this.loadSimulation(simulationName);
 
-        this.elm.append(this.canvas);
-        this.elm.append(this.htmlCanvas);
+        this.elm.append(
+            this.canvas, this.htmlCanvas,
+            new Elm("a")
+                .attribute("href", "#")
+                .class("helpButton")
+                .append("Help")
+                .on("click", e => {
+                    e.preventDefault();
+                    userInterface.addView(new DocsView("simulations/" + simulationName));
+                })
+        );
 
         this.requestAnimationFrameId = 0;
         this.lastTime = performance.now();

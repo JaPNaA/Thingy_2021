@@ -1,4 +1,5 @@
 import { userInterface } from "./ui/userInterface.js";
+import { locationHash } from "./ui/locationHash.js";
 import { SimulationListView } from "./ui/views/SimulationListView.js"
 import { SimulationView } from "./ui/views/SimulationView.js";
 
@@ -12,4 +13,4 @@ function navigateByURL() {
 
 navigateByURL();
 
-addEventListener("hashchange", () => navigateByURL());
+locationHash.onUserHashChange.addHandler(() => navigateByURL());
