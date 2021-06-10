@@ -21,6 +21,12 @@ class UserInterface extends Component {
         view.open(this.elm);
     }
 
+    /** @param {View} view */
+    closeView(view) {
+        view.close();
+        this.views.splice(this.views.indexOf(view), 1);
+    }
+
     closeAllViews() {
         for (const view of this.views) {
             view.close();

@@ -51,9 +51,54 @@ a {
     display: block;
 }
 
+.view.Docs .background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #00000067;
+}
+
+.view.Docs .background.hideBackground {
+    background-color: transparent;
+    height: 0;
+    width: 0;
+}
+
+.view.Docs .content {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    max-width: 540px;
+    height: 90vh;
+    max-height: 720px;
+    background-color: #242424;
+    padding: 8px;
+    border: 1px solid #7979798e;
+}
+
+.view.Docs .title {
+    cursor: move;
+    user-select: none;
+    height: 80px;
+}
+
+.view.Docs .closeButton {
+    position: absolute;
+    top: 40px;
+    right: 16px;
+    transform: translateY(-50%);
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
 .view.Docs iframe {
     width: 100%;
-    height: 50vh;
+    height: 100%;
+    border: none;
+    background: transparent;
 }
 
 .view.Simulation .canvas canvas,
