@@ -12,18 +12,19 @@ export class SimulationListView extends View {
 
         this.elm.append(
             new Elm("h1").append("Physics simulations"),
+            new Elm().append(
+                new Elm("a").attribute("href", "#").append("Help")
+                    .on("click", () => {
+                        userInterface.addView(new DocsView("help"))
+                    })
+            ),
+            new Elm("h2").append("Simulations"),
             new Elm().class("list").append(
                 this.createSimulationLink("1dMotion"),
                 this.createSimulationLink("projectileMotion"),
                 this.createSimulationLink("uniformCircularMotion"),
                 this.createSimulationLink("uniformCircularOrbit"),
                 this.createSimulationLink("electricField")
-            ),
-            new Elm().append(
-                new Elm("a").attribute("href", "#").append("Help")
-                    .on("click", () => {
-                        userInterface.addView(new DocsView("help"))
-                    })
             )
         );
     }
