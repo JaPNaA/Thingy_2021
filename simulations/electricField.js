@@ -127,10 +127,10 @@ class ChargePoint extends CanvasElm {
         };
 
         this.chargeInput = new ScalarInputElm();
-        this.chargeInput.addTextAfter("C");
-        this.chargeInput.setValue(chargeCoulombs);
+        this.chargeInput.addTextAfter("μC");
+        this.chargeInput.setValue(chargeCoulombs * 1e6);
         this.chargeInput.onUserChange.addHandler(value => {
-            this.coulombs = value;
+            this.coulombs = value * 1e-6;
             this.dirty = true;
         });
     }
