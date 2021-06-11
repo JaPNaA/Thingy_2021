@@ -181,10 +181,10 @@ function initChargePoints() {
     
     let i;
     for (i = 0; i < 3; i++) {
-        arr.push(new ChargePoint(vec(i * 16, i * 16), 1e-6));
+        arr.push(new ChargePoint(vec(200 + i * 16, 200 + i * 16), 1e-6));
     }
     for (; i < 6; i++) {
-        arr.push(new ChargePoint(vec(i * 16, i * 16), -1e-6));
+        arr.push(new ChargePoint(vec(200 + i * 16, 200 + i * 16), -1e-6));
     }
 
     return arr;
