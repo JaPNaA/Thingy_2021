@@ -19,11 +19,12 @@ export class AestheticVectorArrow extends VectorArrow {
             )
         );
         const angle = this.value.angle;
+        const zoom = this.world.camera.zoom;
 
-        const arrowSize = this.arrowSize * sqrtMagnitude / 4;
+        const arrowSize = this.arrowSize * sqrtMagnitude / 16 * zoom;
 
         X.strokeStyle = "#ffffff";
-        X.lineWidth = sqrtMagnitude;
+        X.lineWidth = sqrtMagnitude / 4 * zoom;
         X.beginPath();
         X.moveTo(absTailPos.x, absTailPos.y);
         X.lineTo(absHeadPos.x, absHeadPos.y);
