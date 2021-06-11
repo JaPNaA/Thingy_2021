@@ -63,6 +63,8 @@ export class Graph extends HTMLCanvasElm {
     }
 
     draw() {
+        this._drawAxes();
+
         this.graphX.beginPath();
         this.graphX.strokeStyle = "#ffffff";
         for (const point of this.data) {
@@ -78,6 +80,22 @@ export class Graph extends HTMLCanvasElm {
         // for (let x = 0; x < this.width; x += this.xScale) {
         //     this.graphX.fillRect(x, 100, 1, 1);
         // }
+    }
+
+    _drawAxes() {
+        const y0Line = -this.yOffset * this.yScale;
+        const x0Line = -this.xOffset * this.xScale;
+
+        this.graphX.strokeStyle = "#888888";
+        this.graphX.beginPath();
+        
+        this.graphX.moveTo(0, y0Line);
+        this.graphX.lineTo(this.width, y0Line);
+
+        this.graphX.moveTo(x0Line, 0);
+        this.graphX.lineTo(x0Line, this.height);
+
+        this.graphX.stroke();
     }
 
     /** @param {MouseEvent} e */
