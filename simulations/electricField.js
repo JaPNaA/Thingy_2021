@@ -3,6 +3,9 @@ import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec } from "../utils/vectors.js";
 import { AestheticVectorArrow } from "../engine/components/vectorArrow/AestheticVectorArrow.js";
 import { HitBox } from "../engine/canvas/HitBox.js";
+import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
+import { Elm, InputElm } from "../utils/elements.js";
+import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 
 let world;
 
@@ -15,6 +18,8 @@ class ElectricVectorField extends CanvasElm {
 
         /** @type {ChargePoint[]} */
         this.charges = [];
+
+        this.spacing = 15;
 
         this.vectors = this.initVectorField(40, 40);
         this.vectorArrowDrawer = new AestheticVectorArrow();
@@ -57,7 +62,7 @@ class ElectricVectorField extends CanvasElm {
             const row = this.vectors[y];
 
             for (let x = 0; x < row.length; x++) {
-                this.vectorArrowDrawer.setTail(vec(x * 10, y * 10));
+                this.vectorArrowDrawer.setTail(vec(x * this.spacing, y * this.spacing));
                 this.vectorArrowDrawer.setValue(row[x]);
                 this.vectorArrowDrawer.draw();
             }
@@ -74,7 +79,7 @@ class ElectricVectorField extends CanvasElm {
             const row = this.vectors[y];
 
             for (let x = 0; x < row.length; x++) {
-                const pos = vec(x * 10, y * 10);
+                const pos = vec(x * this.spacing, y * this.spacing);
                 row[x] = this._calculateField(pos);
             }
         }
@@ -94,6 +99,18 @@ class ElectricVectorField extends CanvasElm {
     }
 }
 
+class CreateChargeButton extends HTMLCanvasElm {
+    constructor() {
+        super();
+
+        this.staticPosition = true;
+
+        this.append(
+            new Elm("button").append("Create particle")
+        );
+    }
+}
+
 class ChargePoint extends CanvasElm {
     constructor(pos, chargeCoulombs) {
         super();
@@ -108,10 +125,19 @@ class ChargePoint extends CanvasElm {
             this.dragging = true;
             this.world.cursor.nextMouseUp().then(() => this.dragging = false);
         };
+
+        this.chargeInput = new ScalarInputElm();
+        this.chargeInput.addTextAfter("C");
+        this.chargeInput.setValue(chargeCoulombs);
+        this.chargeInput.onUserChange.addHandler(value => {
+            this.coulombs = value;
+            this.dirty = true;
+        });
     }
 
     setup(world) {
         super.setup(world);
+        world.addElm(this.chargeInput);
         world.addHitbox(this.hitbox);
     }
 
@@ -129,6 +155,8 @@ class ChargePoint extends CanvasElm {
         X.beginPath();
         X.arc(this.pos.x, this.pos.y, 4, 0, 2 * Math.PI);
         X.fill();
+
+        this.chargeInput.setPos(this.pos);
     }
 }
 
@@ -139,6 +167,7 @@ const electricVectorField = new ElectricVectorField();
 export function start(simulationView) {
     world = new World(simulationView);
     world.addElm(electricVectorField);
+    world.addElm(new CreateChargeButton());
 
     chargePoints = initChargePoints();
     for (const chargePoint of chargePoints) {
