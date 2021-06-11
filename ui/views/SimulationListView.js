@@ -2,6 +2,7 @@ import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
 import { DocsView } from "./DocsView.js";
 import { SimulationView } from "./SimulationView.js";
+import { camelToTitleCase } from "../../utils/camelToTitleCase.js";
 import { userInterface } from "../userInterface.js";
 import { locationHash } from "../locationHash.js";
 
@@ -12,11 +13,11 @@ export class SimulationListView extends View {
         this.elm.append(
             new Elm("h1").append("Physics simulations"),
             new Elm().class("list").append(
-                this.createSimulationLink("1d Motion", "1dMotion"),
-                this.createSimulationLink("Projectile Motion", "projectileMotion"),
-                this.createSimulationLink("Uniform Circular Motion", "uniformCircularMotion"),
-                this.createSimulationLink("Uniform Circular Orbit", "uniformCircularOrbit"),
-                this.createSimulationLink("Electric Field","electricField")
+                this.createSimulationLink("1dMotion"),
+                this.createSimulationLink("projectileMotion"),
+                this.createSimulationLink("uniformCircularMotion"),
+                this.createSimulationLink("uniformCircularOrbit"),
+                this.createSimulationLink("electricField")
             ),
             new Elm().append(
                 new Elm("a").attribute("href", "#").append("Help")
@@ -28,13 +29,12 @@ export class SimulationListView extends View {
     }
 
     /**
-     * @param {string} title
      * @param {string} simulationId
      */
-    createSimulationLink(title, simulationId) {
+    createSimulationLink(simulationId) {
         return new Elm().class("simulationLink").append(
             new Elm("a")
-                .append(title)
+                .append(camelToTitleCase(simulationId))
                 .attribute("href", "#" + simulationId)
                 .on("click", e => {
                     e.preventDefault();

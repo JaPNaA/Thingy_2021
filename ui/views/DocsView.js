@@ -1,5 +1,6 @@
 import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
+import { camelToTitleCase } from "../../utils/camelToTitleCase.js";
 import { userInterface } from "../userInterface.js";
 
 export class DocsView extends View {
@@ -16,7 +17,8 @@ export class DocsView extends View {
 
         this.contentElm = new Elm().class("content").append(
             this.titleElm = new Elm().class("title").append(
-                new Elm("h1").append("Help: " + url),
+                new Elm("h1")
+                    .append(camelToTitleCase(url.slice(url.lastIndexOf("/") + 1))),
                 new Elm().class("closeButton").append("✕")
                     .on("click", () => userInterface.closeView(this)),
             ),
@@ -34,7 +36,7 @@ export class DocsView extends View {
                 .attribute("href", "/docs/" + url)
                 .appendTo(frameDoc.head);
 
-            const text = await this.docFetch.then(e => e.text());
+            const text = await this.docFetch.then(e => e.status === 404 ? "No help was found." : e.text());
             frameDoc.body.innerHTML = text;
         });
 
