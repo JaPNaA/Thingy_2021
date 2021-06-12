@@ -59,6 +59,9 @@ export class Keyboard {
 
     /** @param {KeyboardEvent} e */
     _keyDownHandler(e) {
+        // ignore if user is typing
+        if (this._isInputElm(e.target)) { return; }
+
         if (this.keyDownListeners[e.code]) {
             this.keyDownListeners[e.code].dispatch();
         }
@@ -66,8 +69,15 @@ export class Keyboard {
 
     /** @param {KeyboardEvent} e */
     _keyUpHandler(e) {
+        // ignore if user is typing
+        if (this._isInputElm(e.target)) { return; }
+
         if (this.keyUpListeners[e.code]) {
             this.keyUpListeners[e.code].dispatch();
         }
+    }
+
+    _isInputElm(elm) {
+        return elm.tagName === "INPUT" || elm.tagName === "BUTTON" || elm.tagName === "TEXTAREA";
     }
 }
