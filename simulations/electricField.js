@@ -129,7 +129,6 @@ class CreateChargeButton extends HTMLCanvasElm {
                 .on("mousedown", () => {
                     const chargePoint = new ChargePoint(world.cursor.clone(), 1e-6);
                     world.addElm(chargePoint);
-                    electricVectorField.addCharge(chargePoint);
                     this.button.elm.blur();
                 })
         );
