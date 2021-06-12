@@ -32,10 +32,6 @@ class ElectricVectorField extends CanvasElm {
         this.vectorArrowDrawer.setup(world);
     }
 
-    setdown() {
-        this.charges.length = 0;
-    }
-
     /**
      * @param {number} width
      * @param {number} height
@@ -176,7 +172,7 @@ class ChargePoint extends CanvasElm {
     }
 
     setdown() {
-        electricVectorField.removeCharge(this);
+        electricVectorField.removeCharge(this); console.log(this);
         world.removeElm(this.chargeInput);
         world.removeHitbox(this.hitbox);
     }
@@ -215,7 +211,6 @@ export function start(simulationView) {
 
     const chargePoints = initChargePoints();
     for (const chargePoint of chargePoints) {
-        electricVectorField.addCharge(chargePoint);
         world.addElm(chargePoint);
     }
 }
