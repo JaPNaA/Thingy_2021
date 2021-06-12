@@ -2,6 +2,7 @@ import { Cursor } from "./canvas/Cursor.js";
 import { Keyboard } from "./canvas/Keyboard.js";
 import { Camera } from "./canvas/Camera.js";
 import { HTMLCanvasElm } from "./htmlCanvas/HTMLCanvasElm.js";
+import { removeElmFromArray } from "../utils/removeElmFromArray.js";
 
 /**
  * @typedef {import("./HitBox.js").HitBox} HitBox
@@ -55,9 +56,26 @@ export class World {
         }
     }
 
+    /** @param {(import("./canvas/CanvasElm.js").CanvasElm | HTMLCanvasElm)[]} ...elm */
+    removeElm(...elms) {
+        for (const elm of elms) {
+            if (elm instanceof HTMLCanvasElm) {
+                this.htmlCanvas.removeElm(elm);
+            } else {
+                elm.setdown();
+                removeElmFromArray(elm, this.elements);
+            }
+        }
+    }
+
     /** @param {HitBox} hitbox */
     addHitbox(hitbox) {
         this.hitboxes.push(hitbox);
+    }
+
+    /** @param {HitBox} hitbox */
+    removeHitbox(hitbox) {
+        removeElmFromArray(hitbox, this.hitboxes);
     }
 
     draw() {

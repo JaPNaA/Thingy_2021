@@ -1,5 +1,6 @@
 import { Component } from "../../utils/elements.js";
 import { vec, Vec2 } from "../../utils/vectors.js";
+import { removeElmFromArray } from "../../utils/removeElmFromArray.js";
 
 /**
  * @typedef {import("./HTMLCanvasElm.js").HTMLCanvasElm} HTMLCanvasElm
@@ -30,5 +31,11 @@ export class HTMLCanvas extends Component {
         this.elms.push(elm);
         this.elm.append(elm);
         elm.setTransformation(this.displacement, this.scale);
+    }
+    
+    /** @param {HTMLCanvasElm} elm */
+    removeElm(elm) {
+        removeElmFromArray(elm, this.elms);
+        elm.remove();
     }
 }

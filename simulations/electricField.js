@@ -6,6 +6,7 @@ import { HitBox } from "../engine/canvas/HitBox.js";
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm, InputElm } from "../utils/elements.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
+import { removeElmFromArray } from "../utils/removeElmFromArray.js";
 
 let world;
 
@@ -20,6 +21,7 @@ class ElectricVectorField extends CanvasElm {
         this.charges = [];
 
         this.spacing = 15;
+        this.dirty = true;
 
         this.vectors = this.initVectorField(40, 40);
         this.vectorArrowDrawer = new AestheticVectorArrow();
@@ -74,6 +76,11 @@ class ElectricVectorField extends CanvasElm {
         this.charges.push(charge);
     }
 
+    removeCharge(charge) {
+        removeElmFromArray(charge, this.charges);
+        this.dirty = true;
+    }
+
     updateField() {
         if (!this._isDirty()) { return; }
 
@@ -101,6 +108,11 @@ class ElectricVectorField extends CanvasElm {
     }
 
     _isDirty() {
+        if (this.dirty) {
+            this.dirty = false;
+            return true;
+        }
+
         for (const charge of this.charges) {
             if (charge.dirty) {
                 return true;
@@ -148,6 +160,9 @@ class ChargePoint extends CanvasElm {
         this.chargeInput.onUserChange.addHandler(value => {
             this.coulombs = value * 1e-6;
             this.dirty = true;
+            if (value === 0 && !this.chargeInput.focused) {
+                this.remove();
+            }
         });
         this.chargeInput.setPos(this.pos);
     }
@@ -156,6 +171,13 @@ class ChargePoint extends CanvasElm {
         super.setup(world);
         world.addElm(this.chargeInput);
         world.addHitbox(this.hitbox);
+        electricVectorField.addCharge(this);
+    }
+
+    setdown() {
+        electricVectorField.removeCharge(this);
+        world.removeElm(this.chargeInput);
+        world.removeHitbox(this.hitbox);
     }
 
     update() {
@@ -176,6 +198,10 @@ class ChargePoint extends CanvasElm {
         X.beginPath();
         X.arc(this.pos.x, this.pos.y, 4, 0, 2 * Math.PI);
         X.fill();
+    }
+
+    remove() {
+        world.removeElm(this);
     }
 }
 

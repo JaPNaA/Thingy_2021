@@ -14,10 +14,12 @@ export class ScalarInputElm extends HTMLCanvasElm {
         this._lastValue = 0;
         this.setValue(this._lastValue);
 
+        this.focused = false;
+
         this.onUserChange = new EventHandler();
         this.inputElm.on("change", () => {
-            this._inputChangeHandler();
             this.inputElm.elm.blur();
+            this._inputChangeHandler();
         });
 
         this.inputElm.on("keydown", e => {
@@ -29,6 +31,9 @@ export class ScalarInputElm extends HTMLCanvasElm {
                 this._inputChangeHandler();
             }
         });
+
+        this.inputElm.on("focus", () => this.focused = true);
+        this.inputElm.on("blur", () => this.focused = false);
     }
 
     /** @param {number} value */
