@@ -165,6 +165,8 @@ export function start(asdf) {
     world.addElm(presetSelector);
     world.addElm(vectArrow);
 
+    world.camera.zoom = 0.00003;
+
     expressionSolver.addFormToWorld(world);
 }
 
