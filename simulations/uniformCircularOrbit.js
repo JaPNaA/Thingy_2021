@@ -51,11 +51,11 @@ const planetData = {
 
     neptune: {
         mass: 1.024e26,
-        radius: 24622e6
+        radius: 24622e3
     },
 
     saturn: {
-        mass: 5.683e36,
+        mass: 5.683e26,
         radius: 58232e3
     },
 
