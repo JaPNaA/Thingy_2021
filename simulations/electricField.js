@@ -129,11 +129,12 @@ class CreateChargeButton extends HTMLCanvasElm {
         this.staticPosition = true;
 
         this.append(
-            new Elm("button").append("Create particle")
-                .on("click", () => {
-                    const chargePoint = new ChargePoint(vec(0, 0), 1e-6);
+            this.button = new Elm("button").append("Create particle")
+                .on("mousedown", () => {
+                    const chargePoint = new ChargePoint(world.cursor.clone(), 1e-6);
                     world.addElm(chargePoint);
                     electricVectorField.addCharge(chargePoint);
+                    this.button.elm.blur();
                 })
         );
     }
