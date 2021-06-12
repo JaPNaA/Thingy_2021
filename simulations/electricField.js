@@ -75,6 +75,8 @@ class ElectricVectorField extends CanvasElm {
     }
 
     updateField() {
+        if (!this._isDirty()) { return; }
+
         for (let y = 0; y < this.vectors.length; y++) {
             const row = this.vectors[y];
 
@@ -97,6 +99,15 @@ class ElectricVectorField extends CanvasElm {
 
         return total;
     }
+
+    _isDirty() {
+        for (const charge of this.charges) {
+            if (charge.dirty) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 class CreateChargeButton extends HTMLCanvasElm {
@@ -107,6 +118,11 @@ class CreateChargeButton extends HTMLCanvasElm {
 
         this.append(
             new Elm("button").append("Create particle")
+                .on("click", () => {
+                    const chargePoint = new ChargePoint(vec(0, 0), 1e-6);
+                    world.addElm(chargePoint);
+                    electricVectorField.addCharge(chargePoint);
+                })
         );
     }
 }
@@ -133,6 +149,7 @@ class ChargePoint extends CanvasElm {
             this.coulombs = value * 1e-6;
             this.dirty = true;
         });
+        this.chargeInput.setPos(this.pos);
     }
 
     setup(world) {
@@ -141,27 +158,27 @@ class ChargePoint extends CanvasElm {
         world.addHitbox(this.hitbox);
     }
 
-    draw() {
-        /** @type {CanvasRenderingContext2D} */
-        const X = this.world.canvas.X;
-
+    update() {
         if (this.dragging) {
             this.pos = this.world.cursor.clone();
             this.hitbox.setPos(this.pos);
             this.dirty = true;
         }
 
+        this.chargeInput.setPos(this.pos);
+    }
+
+    draw() {
+        /** @type {CanvasRenderingContext2D} */
+        const X = this.world.canvas.X;
+
         X.fillStyle = this.coulombs < 0 ? "#0008ff" : "#ff0000";
         X.beginPath();
         X.arc(this.pos.x, this.pos.y, 4, 0, 2 * Math.PI);
         X.fill();
-
-        this.chargeInput.setPos(this.pos);
     }
 }
 
-/** @type {ChargePoint[]} */
-let chargePoints = [];
 const electricVectorField = new ElectricVectorField();
 
 export function start(simulationView) {
@@ -169,7 +186,7 @@ export function start(simulationView) {
     world.addElm(electricVectorField);
     world.addElm(new CreateChargeButton());
 
-    chargePoints = initChargePoints();
+    const chargePoints = initChargePoints();
     for (const chargePoint of chargePoints) {
         electricVectorField.addCharge(chargePoint);
         world.addElm(chargePoint);
@@ -193,17 +210,7 @@ function initChargePoints() {
 export function update() {
     // chargePoint.pos = world.cursor;
 
-    let shouldUpdate = false;
-    for (const chargePoint of chargePoints) {
-        if (chargePoint.dirty) {
-            shouldUpdate = true;
-            chargePoint.dirty = false;
-        }
-    }
-
-    if (shouldUpdate) {
-        electricVectorField.updateField();
-    }
+    electricVectorField.updateField();
 
     world.draw();
 }
