@@ -29,5 +29,6 @@ export class HTMLCanvas extends Component {
     addElm(elm) {
         this.elms.push(elm);
         this.elm.append(elm);
+        elm.setTransformation(this.displacement, this.scale);
     }
 }
