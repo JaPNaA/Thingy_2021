@@ -15,6 +15,16 @@ a {
     text-decoration: none;
 }
 
+::-webkit-scrollbar {
+    width: 4px;
+    background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background-color: #88888886;
+}
+
 #loading {
     position: fixed;
     padding: 64px 0;
