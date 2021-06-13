@@ -13,6 +13,7 @@ const G = 6.67e-11;
  * @typedef {Object} PlanetDataEntry
  * @property {number} mass - mass in kilograms
  * @property {number} radius - radius in meters
+ * @property {string | undefined} color - color of planet
  */
 
 /**
@@ -22,46 +23,55 @@ const planetData = {
     earth: {
         mass: 5.98e24,
         radius: 6.398e6,
+        color: "#3c469b"
     },
 
     moon: {
         mass: 7.34767309e22,
         radius: 1731.1e3,
+        color: "#817d7c"
     },
 
     mercury: {
         mass: 3.285e23,
         radius: 2439.7e3,
+        color: "#a77f68"
     },
 
     mars: {
         mass: 6.39e23,
         radius: 3389.5e3,
+        color: "#bd7954"
     },
 
     venus: {
         mass: 4.867e24,
         radius: 6051.8e3,
+        color: "#eedece"
     },
 
     jupiter: {
         mass: 1.898e27,
         radius: 69911e3,
+        color: "#cdb589"
     },
 
     neptune: {
         mass: 1.024e26,
-        radius: 24622e3
+        radius: 24622e3,
+        color: "#3e5ef3"
     },
 
     saturn: {
         mass: 5.683e26,
-        radius: 58232e3
+        radius: 58232e3,
+        color: "#d3b177"
     },
 
     pluto: {
         mass: 1.3900e22,
-        radius: 1188.3e3
+        radius: 1188.3e3,
+        color: "#d7c8b9"
     }
 
 };
@@ -92,6 +102,7 @@ class PresetSelector extends HTMLCanvasElm {
             const data = JSON.parse(this.selectElm.elm.value);
             expressionSolver.setVariableValue("r", data.radius);
             expressionSolver.setVariableValue("m", data.mass);
+            orbitDraw.planetColor = data.color;
         });
     }
 }
@@ -106,6 +117,9 @@ class OrbitDraw extends CanvasElm {
         this.angle = 0;
         this.orbitRadius = 0;
         this.pos = vec(0, 0);
+
+        this.planetRadius = 0;
+        this.planetColor = planetData.earth.color;
     }
 
     draw() {
@@ -117,16 +131,22 @@ class OrbitDraw extends CanvasElm {
 
         const center = this.world.camera.transformPoint(vec(0, 0));
 
+        // draw planet
+        X.beginPath();
+        X.arc(center.x, center.y, this.planetRadius * this.world.camera.zoom, 0, 2 * Math.PI);
+        X.fillStyle = this.planetColor || "#444444";
+        X.fill();
+
         // drawing orbit
         X.beginPath();
-        X.arc(center.x, center.y, this.orbitRadius * this.world.camera.zoom, 0, 2*Math.PI);
+        X.arc(center.x, center.y, this.orbitRadius * this.world.camera.zoom, 0, 2 * Math.PI);
         X.strokeStyle = "#ffffff";
         X.lineWidth = 1;
         X.stroke();
 
         // drawing orbiting object
         X.beginPath();
-        X.arc(absPos.x, absPos.y, 4, 0, 2*Math.PI);
+        X.arc(absPos.x, absPos.y, 4, 0, 2 * Math.PI);
         X.fillStyle = "#ff0000";
         X.fill();
 
@@ -138,19 +158,21 @@ class OrbitDraw extends CanvasElm {
 }
 
 const expressionSolver = new ExpressionSolver({
-    variables: ["v", ["m", planetData.earth.mass], ["r", planetData.earth.radius]],
+    variables: ["v", ["m", planetData.earth.mass], ["r", planetData.earth.radius], ["h", 500e3]],
     expression: vars => new Expression( // v^2 = GM / r
         "subtract",
         new Expression(
             "power", vars.v, 2
         ),
-        
+
         new Expression(
             "divide",
             new Expression(
-            "multiply", G, vars.m
+                "multiply", G, vars.m
             ),
-            vars.r
+            new Expression("add",
+                vars.r, vars.h
+            )
         )
     )
 });
@@ -171,11 +193,15 @@ export function start(asdf) {
 }
 
 export function update(timeElapsed) {
-    const angularVelocity = expressionSolver.variables.v.eval() / expressionSolver.variables.r.eval();
+    const planetRadius = expressionSolver.variables.r.eval();
+    const height = expressionSolver.variables.h.eval();
+    const orbitRadius = planetRadius + height;
+    const angularVelocity = expressionSolver.variables.v.eval() / orbitRadius;
 
     orbitDraw.angle += angularVelocity * timeElapsed;
-    orbitDraw.orbitRadius = expressionSolver.variables.r.eval();
-    
+    orbitDraw.orbitRadius = orbitRadius;
+    orbitDraw.planetRadius = planetRadius;
+
     world.draw();
 }
 
