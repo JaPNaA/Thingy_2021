@@ -2,6 +2,7 @@ import { View } from "../View.js";
 import { Elm } from "../../utils/elements.js";
 import { Canvas } from "../../engine/canvas/Canvas.js";
 import { HTMLCanvas } from "../../engine/htmlCanvas/HTMLCanvas.js";
+import { World } from "../../engine/World.js";
 import { DocsView } from "./DocsView.js";
 import { userInterface } from "../userInterface.js";
 import { loadingIndicator } from "../loadingIndicator.js";
@@ -10,11 +11,11 @@ import { loadingIndicator } from "../loadingIndicator.js";
 /**
  * View that loads a simulation module.
  * 
- * A module modular .js file with at least 3 exported functions:
- *   - start(): void
+ * A module modular .js file with at least 1 exported functions:
+ *   - start(newWorld: World): void
+ * and may also contain:
  *   - update(timeElapsedSeconds: number): void
  *   - end(): void
- * and may also contain:
  *   - resize(): void
  */
 export class SimulationView extends View {
@@ -25,6 +26,8 @@ export class SimulationView extends View {
         this.canvas.resizeToScreen();
 
         this.htmlCanvas = new HTMLCanvas();
+
+        this.world = new World(this);
 
         this.module = undefined;
         this.loadPromise = this.loadSimulation(simulationName);
@@ -61,7 +64,11 @@ export class SimulationView extends View {
     _setdown() {
         cancelAnimationFrame(this.requestAnimationFrameId);
         if (this.module) {
-            this.module.stop();
+            this.world.setdown();
+
+            if (this.module.stop) {
+                this.module.stop();
+            }
         }
     }
 
@@ -70,7 +77,11 @@ export class SimulationView extends View {
         const timeElapsed = now - this.lastTime;
         this.lastTime = now;
 
-        this.module.update(timeElapsed / 1000);
+        if (this.module.update) {
+            this.module.update(timeElapsed / 1000);
+        }
+        
+        this.world.draw();
         this.requestAnimationFrameId = requestAnimationFrame(() => this.requestAnimationFrameHandler());
     }
     
@@ -81,7 +92,7 @@ export class SimulationView extends View {
         try {
             module = await import(`/simulations/${name}.js`);
 
-            module.start(this);
+            module.start(this.world);
             this.module = module;
         } catch (err) {
             this.elm.append("Failed to load module -- it was probably not found.");

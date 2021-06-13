@@ -25,9 +25,8 @@ const ball = new HoverPoint();
 let realTimeMode = false;
 let time = 0;
 
-/** @param {SimulationView} simulationView */
-export function start(simulationView) {
-    world = new World(simulationView);
+export function start(newWorld) {
+    world = newWorld;
     world.addElm(velocityInput, accelerationInput, ball, timeInput);
 
     world.keyboard.addKeyDownListener("Space", () => {
@@ -47,14 +46,8 @@ export function update(timeElapsed) {
     }
 
     ball.pos = vec(getPositionAtTime(time), 0);
-
-    world.draw();
 }
 
 function getPositionAtTime(time) {
     return equasions.x(0, velocityInput.getMagnitude(), accelerationInput.getMagnitude(), time);
-}
-
-export function stop() {
-    world.setdown();
 }

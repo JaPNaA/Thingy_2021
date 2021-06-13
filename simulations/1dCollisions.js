@@ -55,14 +55,6 @@ class CollisionDraw extends CanvasElm {
 
 let world;
 
-export function start(simulationView) {
-    world = new World(simulationView);
-}
-
-export function stop() {
-    world.setdown();
-}
-
-export function update(timeElapsed) {
-    world.draw();
+export function start(newWorld) {
+    world = newWorld;
 }

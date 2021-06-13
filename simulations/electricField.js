@@ -203,8 +203,8 @@ class ChargePoint extends CanvasElm {
 
 const electricVectorField = new ElectricVectorField();
 
-export function start(simulationView) {
-    world = new World(simulationView);
+export function start(newWorld) {
+    world = newWorld;
     world.addElm(electricVectorField);
     world.addElm(new CreateChargeButton());
 
@@ -229,14 +229,5 @@ function initChargePoints() {
 }
 
 export function update() {
-    // chargePoint.pos = world.cursor;
-
     electricVectorField.updateField();
-
-    world.draw();
 }
-
-export function stop() {
-    world.setdown();
-}
-

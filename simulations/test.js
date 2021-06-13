@@ -3,9 +3,8 @@
 import { Graph } from "/engine/components/graph/Graph.js";
 import { World } from "/engine/World.js";
 
-/** @param {SimulationView} simulationView */
-export function start(simulationView) {
-    const world = new World(simulationView);
+export function start(newWorld) {
+    const world = newWorld;
     const graph = new Graph();
 
     world.addElm(graph);
@@ -22,7 +21,3 @@ export function start(simulationView) {
     graph.draw();
     console.log(graph);
 }
-
-export function update() { }
-
-export function stop() { }

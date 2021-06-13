@@ -181,8 +181,8 @@ let world;
 const orbitDraw = new OrbitDraw();
 const presetSelector = new PresetSelector();
 
-export function start(asdf) {
-    world = new World(asdf);
+export function start(newWorld) {
+    world = newWorld;
     world.addElm(orbitDraw);
     world.addElm(presetSelector);
     world.addElm(vectArrow);
@@ -201,10 +201,5 @@ export function update(timeElapsed) {
     orbitDraw.angle += angularVelocity * timeElapsed;
     orbitDraw.orbitRadius = orbitRadius;
     orbitDraw.planetRadius = planetRadius;
-
-    world.draw();
 }
 
-export function stop() {
-    world.setdown();
-}

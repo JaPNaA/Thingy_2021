@@ -43,11 +43,10 @@ const timePath = new TimePath();
 
 let realTimeMode = false;
 
-/** @param {SimulationView} simulationView */
-export function start(simulationView) {
+export function start(newWorld) {
     console.log("projectileMotion");
 
-    world = new World(simulationView);
+    world = newWorld;
 
     world.addElm(
         vInput,
@@ -86,8 +85,6 @@ export function update(timeElapsed) {
     const baseOffset = initialPositionInput.getTailPos();
     ball.pos = getPositionAtTime(time).subtract(baseOffset);
     ball.offset = baseOffset;
-
-    world.draw();
 }
 
 function updateTimePath() {
@@ -108,6 +105,3 @@ function getPositionAtTime(time) {
     return equation(time, aInput.getVec2(), vInput.getVec2(), initialPosition);
 }
 
-export function stop() {
-    world.setdown();
-}
