@@ -188,6 +188,7 @@ export function start(newWorld) {
     world.addElm(vectArrow);
 
     world.camera.zoom = 0.00003;
+    world.camera.centerOn(vec(0, 0));
 
     expressionSolver.addFormToWorld(world);
 }
@@ -202,4 +203,3 @@ export function update(timeElapsed) {
     orbitDraw.orbitRadius = orbitRadius;
     orbitDraw.planetRadius = planetRadius;
 }
-

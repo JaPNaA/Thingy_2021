@@ -38,6 +38,15 @@ export class Camera extends Vec2 {
         });
     }
 
+    transformPoint(vec2) {
+        return vec2.scale(this.zoom).subtract(this);
+    }
+
+    centerOn(vec2) {
+        this.x = vec2.x - innerWidth / 2;
+        this.y = vec2.y - innerHeight / 2;
+    }
+
     _zoomIn(scale) {
         const originalZoom = this.zoom;
         this.zoom *= scale;
@@ -46,9 +55,5 @@ export class Camera extends Vec2 {
         
         this.x += this.world.cursor.x * dZoom;
         this.y += this.world.cursor.y * dZoom;
-    }
-
-    transformPoint(vec2) {
-        return vec2.scale(this.zoom).subtract(this);
     }
 }
