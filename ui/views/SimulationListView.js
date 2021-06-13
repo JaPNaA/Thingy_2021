@@ -24,6 +24,7 @@ export class SimulationListView extends View {
                 this.createSimulationLink("projectileMotion"),
                 this.createSimulationLink("uniformCircularMotion"),
                 this.createSimulationLink("uniformCircularOrbit"),
+                this.createSimulationLink("uniformCircularMotionMagneticField"),
                 this.createSimulationLink("electricField")
             )
         );
