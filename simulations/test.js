@@ -2,6 +2,7 @@
 
 import { Graph } from "/engine/components/graph/Graph.js";
 import { World } from "/engine/World.js";
+import { Grid } from "/engine/components/Grid.js";
 
 export function start(newWorld) {
     const world = newWorld;
@@ -20,4 +21,6 @@ export function start(newWorld) {
     graph.fitScaleToData();
     graph.draw();
     console.log(graph);
+
+    world.addElm(new Grid());
 }

@@ -4,6 +4,7 @@ import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinear
 import { VectorInput } from "../engine/components/vectorInput/VectorInput.js";
 import { TimePath } from "../engine/components/timePath/TimePath.js";
 import { HoverPoint } from "../engine/components/HoverPoint.js";
+import { Grid } from "../engine/components/Grid.js";
 
 /**
  * Calculate a component position
@@ -54,7 +55,8 @@ export function start(newWorld) {
         timePath,
         initialPositionInput,
         ball,
-        aInput
+        aInput,
+        new Grid()
     );
     
     resize();
