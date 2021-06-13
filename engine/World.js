@@ -125,6 +125,7 @@ export class World {
     _debugDrawHitboxes() {
         this.canvas.X.fillStyle = "#4444ff20";
         this.canvas.X.strokeStyle = "#4444ff";
+        this.canvas.X.lineWidth = 1 / this.camera.zoom;
         for (const hitbox of this.hitboxes) {
             this.canvas.X.beginPath();
             this.canvas.X.rect(hitbox.pos.x, hitbox.pos.y, hitbox.dim.x, hitbox.dim.y);
