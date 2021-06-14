@@ -122,6 +122,11 @@ a {
     background: transparent;
 }
 
+body.DocsViewFrame math {
+    display: block;
+    margin: 8px 0;
+}
+
 .view.Simulation {
     padding: 0;
 }

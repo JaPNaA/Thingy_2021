@@ -38,6 +38,7 @@ export class DocsView extends View {
 
             const text = await this.docFetch.then(e => e.status === 404 ? "No help was found." : e.text());
             frameDoc.body.innerHTML = text;
+            this._renderMathInFrame(frameDoc);
         });
 
         this.titleElm.on("mousedown", () => this.contentPosDragging = true);
@@ -87,6 +88,16 @@ export class DocsView extends View {
                 () => this.frame.elm.dispatchEvent(e),
                 1);
         });
+    }
+
+    /** @param {Document} frameDocument */
+    _renderMathInFrame(frameDocument) {
+        const mathElms = [].slice.call(frameDocument.body.getElementsByTagName("math"));
+        for (const elm of mathElms) {
+            const mathHTML = katex.renderToString(elm.textContent, elm, { throwOnError: false });
+            console.log(mathHTML);
+            elm.innerHTML = mathHTML;
+        }
     }
 
     _updateContentElmStyle() {
