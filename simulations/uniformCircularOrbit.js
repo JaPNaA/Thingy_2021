@@ -6,6 +6,7 @@ import { ExpressionSolver } from "../engine/components/expressionSolver/Expressi
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm } from "../utils/elements.js";
 import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
+import { camelToTitleCase } from "../utils/camelToTitleCase.js";
 
 const G = 6.67e-11;
 
@@ -98,7 +99,7 @@ class PresetSelector extends HTMLCanvasElm {
         for (const planet of planets) {
             this.selectElm.append(
                 new Elm("option")
-                    .append(planet)
+                    .append(camelToTitleCase(planet))
                     .attribute("value", JSON.stringify(planetData[planet]))
             );
         }
