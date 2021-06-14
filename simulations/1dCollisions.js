@@ -28,13 +28,15 @@ class CollisionDraw extends CanvasElm {
         this.leftPos = CollisionDraw.initialPosLeft;
         this.leftVelocity = CollisionDraw.initalVelocities;
         this.leftMass = CollisionDraw.initialMasses;
+        this.leftWidth = 100;
+        this.leftHeight = 100;
 
         this.rightPos = CollisionDraw.initialPosRight;
         this.rightVelocity = CollisionDraw.initalVelocities.scale(-1);
         this.rightMass = CollisionDraw.initialMasses;
+        this.rightWidth = 100;
+        this.rightHeight = 100;
 
-        this.rectWidth = 400;
-        this.rectHeight = 200;
 
         this.collisionPoint = 0;
         this.updateCollisionPoint();
@@ -47,13 +49,13 @@ class CollisionDraw extends CanvasElm {
 
         //Object 1
         X.beginPath();
-        X.rect(this.leftPos.x, this.leftPos.y, this.rectWidth, this.rectHeight);
+        X.rect(this.leftPos.x, this.leftPos.y, this.leftWidth, this.leftHeight);
         X.fillStyle = "#ff0000";
         X.fill();
 
         //Object 2
         X.beginPath();
-        X.rect(this.rightPos.x, this.leftPos.y, this.rectWidth, this.rectHeight);
+        X.rect(this.rightPos.x, this.rightPos.y, this.rightWidth, this.rightHeight);
         X.fillStyle = "blue";
         X.fill();
 
@@ -63,7 +65,7 @@ class CollisionDraw extends CanvasElm {
 
     updateCollisionPoint() {
         this.collisionPoint = equations.collisionPoint(
-            this.leftPos.x + this.rectWidth, this.rightPos.x,
+            this.leftPos.x + this.leftWidth, this.rightPos.x,
             this.leftVelocity.x, this.rightVelocity.x
         );
     }
@@ -85,10 +87,12 @@ class ResetButton extends HTMLCanvasElm {
                     collisionDraw.leftVelocity = velocity1Input.getVec2();
                     collisionDraw.leftPos = CollisionDraw.initialPosLeft;
                     collisionDraw.leftMass = mass1Input.getVec2().magnitude;
+                    collisionDraw.leftWidth = collisionDraw.leftHeight = Math.sqrt(collisionDraw.leftMass) * 16;
 
                     collisionDraw.rightVelocity = velocity2Input.getVec2();
                     collisionDraw.rightPos = CollisionDraw.initialPosRight;
                     collisionDraw.rightMass = mass2Input.getVec2().magnitude;
+                    collisionDraw.rightWidth = collisionDraw.rightHeight = Math.sqrt(collisionDraw.rightMass) * 16;
 
                     collisionDraw.updateCollisionPoint();
                     collided = false;
@@ -129,7 +133,7 @@ export function update(timeElapsed) {
     collisionDraw.leftPos = collisionDraw.leftPos.add(collisionDraw.leftVelocity.scale(timeElapsed));
     collisionDraw.rightPos = collisionDraw.rightPos.add(collisionDraw.rightVelocity.scale(timeElapsed));
 
-    if (collisionDraw.leftPos.x + collisionDraw.rectWidth >= collisionDraw.rightPos.x && !collided) {
+    if (collisionDraw.leftPos.x + collisionDraw.leftWidth >= collisionDraw.rightPos.x && !collided) {
         const newVelLeft = vec(
             equations.vf1(
                 collisionDraw.leftMass, collisionDraw.rightMass,
@@ -146,7 +150,7 @@ export function update(timeElapsed) {
         collisionDraw.rightVelocity = newVelRight;
         
         // temp fix to the blocks 'gluing' together
-        collisionDraw.leftPos.x = collisionDraw.collisionPoint - collisionDraw.rectWidth;
+        collisionDraw.leftPos.x = collisionDraw.collisionPoint - collisionDraw.leftWidth;
         collisionDraw.rightPos.x = collisionDraw.collisionPoint;
         collided = true;
     }
