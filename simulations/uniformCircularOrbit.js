@@ -72,6 +72,12 @@ const planetData = {
         mass: 1.3900e22,
         radius: 1188.3e3,
         color: "#d7c8b9"
+    },
+
+    sun: {
+        mass: 1.989e30,
+        radius: 696340e3,
+        color: "#fd9237"
     }
 
 };
