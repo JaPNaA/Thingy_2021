@@ -7,6 +7,7 @@ import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm, InputElm } from "../utils/elements.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 import { removeElmFromArray } from "../utils/removeElmFromArray.js";
+import { colors } from "../ui/colors.js";
 
 let world;
 
@@ -190,7 +191,7 @@ class ChargePoint extends CanvasElm {
         /** @type {CanvasRenderingContext2D} */
         const X = this.world.canvas.X;
 
-        X.fillStyle = this.coulombs < 0 ? "#0008ff" : "#ff0000";
+        X.fillStyle = this.coulombs < 0 ? colors.blue : colors.red;
         X.beginPath();
         X.arc(this.pos.x, this.pos.y, 4, 0, 2 * Math.PI);
         X.fill();

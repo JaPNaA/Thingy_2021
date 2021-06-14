@@ -5,6 +5,7 @@ import { ExpressionSolver } from "../engine/components/expressionSolver/Expressi
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { Elm } from "../utils/elements.js";
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
+import { colors } from "../ui/colors.js";
 
 const equations = {
 
@@ -50,16 +51,16 @@ class CollisionDraw extends CanvasElm {
         //Object 1
         X.beginPath();
         X.rect(this.leftPos.x, this.leftPos.y, this.leftWidth, this.leftHeight);
-        X.fillStyle = "#ff0000";
+        X.fillStyle = colors.red;
         X.fill();
 
         //Object 2
         X.beginPath();
         X.rect(this.rightPos.x, this.rightPos.y, this.rightWidth, this.rightHeight);
-        X.fillStyle = "blue";
+        X.fillStyle = colors.blue;
         X.fill();
 
-        X.fillStyle = "#ffffff";
+        X.fillStyle = colors.white;
         X.fillRect(this.collisionPoint, 200, 1, 200);
     }
 

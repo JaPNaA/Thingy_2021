@@ -4,6 +4,7 @@ import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
+import { colors } from "../ui/colors.js";
 
 const expressionSolver = new ExpressionSolver({
     variables: ["v", ["a", 40], ["r", 100]],
@@ -37,8 +38,8 @@ class OrbitBall extends CanvasElm {
         /** @type {CanvasRenderingContext2D} */
         const X = this.world.canvas.X;
 
-        X.strokeStyle = "#ffffff";
-        X.fillStyle = "#ff0000";
+        X.strokeStyle = colors.white;
+        X.fillStyle = colors.red;
         X.lineWidth = 1 / this.world.camera.zoom;
 
         X.beginPath();
