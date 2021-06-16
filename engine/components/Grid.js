@@ -33,6 +33,7 @@ export class Grid extends CanvasElm {
         X.strokeStyle = "#ffffff";
         X.lineWidth = 0.5;
         X.globalAlpha = (cellSize / 100) * 0.25;
+        X.globalCompositeOperation = "destination-over";
         X.beginPath();
 
         for (let x = offsetX; x < gridWidth; x += cellSize) {
