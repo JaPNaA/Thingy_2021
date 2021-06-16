@@ -5,6 +5,7 @@ import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
 import { colors } from "../ui/colors.js";
+import { Grid } from "/engine/components/Grid.js";
 
 const expressionSolver = new ExpressionSolver({
     variables: ["v", ["a", 40], ["r", 100]],
@@ -65,10 +66,11 @@ let world;
 
 export function start(newWorld) {
     world = newWorld;
+    world.addElm(new Grid());
     world.addElm(orbitBall);
     expressionSolver.addFormToWorld(world);
 
-    resize();
+    world.camera.centerOn(orbitBall.pos);
 }
 
 export function update(timeElapsed) {
@@ -77,8 +79,4 @@ export function update(timeElapsed) {
 
     const angularSpeed = expressionSolver.variables.v.eval() / radius;
     orbitBall.angle += angularSpeed * timeElapsed;
-}
-
-export function resize() {
-    orbitBall.pos = vec(innerWidth / 2, innerHeight / 2);
 }
