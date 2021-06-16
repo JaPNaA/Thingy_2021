@@ -4,6 +4,7 @@ import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
+import { Grid } from "/engine/components/Grid.js";
 
 const expressionSolver = new ExpressionSolver({
     variables: ["v", ["r", 100], ["m", 0.1], ["q", 0.1], ["B", 0.5]],
@@ -68,10 +69,10 @@ let world;
 
 export function start(newWorld) {
     world = newWorld;
-    world.addElm(orbitBall);
+    world.addElm(new Grid(), orbitBall);
     expressionSolver.addFormToWorld(world);
 
-    resize();
+    world.camera.centerOn(orbitBall.pos);
 }
 
 export function update(timeElapsed) {
@@ -80,8 +81,4 @@ export function update(timeElapsed) {
 
     const angularSpeed = expressionSolver.variables.v.eval() / radius;
     orbitBall.angle += angularSpeed * timeElapsed;
-}
-
-export function resize() {
-    orbitBall.pos = vec(innerWidth / 2, innerHeight / 2);
 }
