@@ -2,6 +2,7 @@ import { vec } from "../utils/vectors.js";
 import { World } from "../engine/World.js";
 import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinearInput.js";
 import { VectorInput } from "../engine/components/vectorInput/VectorInput.js";
+import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 import { TimePath } from "../engine/components/timePath/TimePath.js";
 import { HoverPoint } from "../engine/components/HoverPoint.js";
 import { Grid } from "../engine/components/Grid.js";
@@ -22,16 +23,17 @@ let world;
 
 const ball = new HoverPoint();
 
-const timeInput = new VectorLinearInput(vec(10, 0), vec(10, 10));
-timeInput.setUnitText("s");
-
-const vInput = new VectorInput(vec(10, -10), vec(10, 400));
-vInput.onUserChange.addHandler(() => updateTimePath());
-vInput.setUnitText("m/s");
+const timeInput = new ScalarInputElm();
+timeInput.addTextAfter("s");
+timeInput.staticPosition = true;
 
 const aInput = new VectorInput(vec(0, 9.8), vec(10, 50));
 aInput.onUserChange.addHandler(() => updateTimePath());
 aInput.setUnitText("m/s²");
+
+const vInput = new VectorInput(vec(10, -10), vec(10, 400));
+vInput.onUserChange.addHandler(() => updateTimePath());
+vInput.setUnitText("m/s");
 
 const initialPositionInput = new VectorInput(vec(100, -200), vec(200, 400));
 initialPositionInput.setUnitText("m");
@@ -79,10 +81,10 @@ export function resize() {
 
 export function update(timeElapsed) {
     if (realTimeMode) {
-        timeInput.setMagnitude(timeInput.getMagnitude() + timeElapsed);
+        timeInput.setValue(timeInput.getValue() + timeElapsed);
     }
 
-    const time = timeInput.getMagnitude();
+    const time = timeInput.getValue();
 
     const baseOffset = initialPositionInput.getTailPos();
     ball.pos = getPositionAtTime(time).subtract(baseOffset);
