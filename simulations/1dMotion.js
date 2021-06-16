@@ -3,22 +3,23 @@ import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinear
 import { HoverPoint } from "../engine/components/HoverPoint.js";
 import { World } from "../engine/World.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
+import { Grid } from "../engine/components/Grid.js";
 
 const equasions = {
     x: (x0, v, a, t) => x0 + v * t + a * t*t / 2
 };
 
 let world;
-const velocityInput = new VectorLinearInput(vec(10, 0), vec(50, 50));
+const velocityInput = new VectorLinearInput(vec(10, 0), vec(100, 100));
 velocityInput.setUnitText("m/s");
 
-const accelerationInput = new VectorLinearInput(vec(10, 0), vec(50, 70));
+const accelerationInput = new VectorLinearInput(vec(10, 0), vec(100, 120));
 accelerationInput.setUnitText("m/s²");
 
 const timeInput = new ScalarInputElm();
 timeInput.onUserChange.addHandler(v => time = v);
 timeInput.addTextAfter("s");
-timeInput.setPos(vec(50, 90));
+timeInput.setPos(vec(100, 140));
 
 const ball = new HoverPoint();
 
@@ -27,7 +28,7 @@ let time = 0;
 
 export function start(newWorld) {
     world = newWorld;
-    world.addElm(velocityInput, accelerationInput, ball, timeInput);
+    world.addElm(velocityInput, accelerationInput, ball, timeInput, new Grid());
 
     world.keyboard.addKeyDownListener("Space", () => {
         realTimeMode = true;
@@ -36,7 +37,7 @@ export function start(newWorld) {
         realTimeMode = false;
     });
 
-    ball.offset = vec(0, 8);
+    ball.offset = vec(0, 200);
 }
 
 export function update(timeElapsed) {
