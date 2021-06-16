@@ -94,9 +94,7 @@ export class DocsView extends View {
     _renderMathInFrame(frameDocument) {
         const mathElms = [].slice.call(frameDocument.body.getElementsByTagName("math"));
         for (const elm of mathElms) {
-            const mathHTML = katex.renderToString(elm.textContent, elm, { throwOnError: false });
-            console.log(mathHTML);
-            elm.innerHTML = mathHTML;
+            katex.render(elm.textContent, elm, { throwOnError: false });
         }
     }
 
