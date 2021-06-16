@@ -8,6 +8,7 @@ body {
 
 body.DocsViewFrame {
     overflow: auto;
+    margin-right: 4px;
 }
 
 a {
