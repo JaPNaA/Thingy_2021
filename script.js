@@ -14,3 +14,6 @@ function navigateByURL() {
 navigateByURL();
 
 locationHash.onUserHashChange.addHandler(() => navigateByURL());
+
+// Prevent scroll restoration shifting everything up a bit
+history.scrollRestoration = "manual";
