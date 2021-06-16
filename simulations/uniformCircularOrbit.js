@@ -7,6 +7,7 @@ import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm } from "../utils/elements.js";
 import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
 import { camelToTitleCase } from "../utils/camelToTitleCase.js";
+import { Grid } from "/engine/components/Grid.js";
 
 const G = 6.67e-11;
 
@@ -190,6 +191,7 @@ const presetSelector = new PresetSelector();
 
 export function start(newWorld) {
     world = newWorld;
+    world.addElm(new Grid());
     world.addElm(orbitDraw);
     world.addElm(presetSelector);
     world.addElm(vectArrow);
