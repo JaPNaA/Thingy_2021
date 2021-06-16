@@ -127,6 +127,11 @@ body.DocsViewFrame math {
     margin: 8px 0;
 }
 
+body.DocsViewFrame p math {
+    display: inline-block;
+    margin: 0;
+}
+
 .view.Simulation {
     padding: 0;
 }

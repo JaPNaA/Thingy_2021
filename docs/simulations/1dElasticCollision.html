@@ -8,3 +8,18 @@
 <p>
     The <b>[Reset]</b> buttton will reset the simulation and apply any values you may have changed.
 </p>
+<p>
+    Note that the collision time is not always accurate.
+</p>
+
+<h2> The Math </h2>
+
+<p> Because this is an elastic collision, there are 2 conservation laws they blocks must follow. </p>
+
+<p> Conservation of momentum: </p>
+<math> m_1 v_1 + v_2 v_2 = m_1 v'_1 + v_2 v'_2 </math>
+
+<p> Conservation of kinetic energy: </p>
+<math> \frac{1}{2}m_1 v_1^2 + \frac{1}{2}m_2 v_2^2 = \frac{1}{2}m_1 v_1^{\prime 2} + \frac{1}{2}m_2 v_2^{\prime 2} </math>
+
+<p> Our unknowns are <math>v'</math> and <math>v_1'</math>. There are 2 equations and 2 unknowns, so we can begin solving immediately </p>
