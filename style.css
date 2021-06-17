@@ -133,6 +133,11 @@ body.DocsViewFrame p math {
     margin: 0;
 }
 
+body.DocsViewFrame img {
+    width: auto;
+    max-width: 100%;
+}
+
 .view.Simulation {
     padding: 0;
 }
