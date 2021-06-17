@@ -105,8 +105,11 @@ a {
 .view.Docs .title {
     cursor: move;
     user-select: none;
-    height: 80px;
     margin-left: 8px;
+}
+
+.view.Docs .title h1 {
+    margin-bottom: 8px;
 }
 
 .view.Docs .closeButton {
