@@ -8,7 +8,7 @@ import { HoverPoint } from "../engine/components/HoverPoint.js";
 import { Grid } from "../engine/components/Grid.js";
 
 /**
- * Calculate a component position
+ * Calculate a position in time
  * 
  * @param {number} t - time in seconds
  * @param {Vec2} a - acceleration in m/s^2
