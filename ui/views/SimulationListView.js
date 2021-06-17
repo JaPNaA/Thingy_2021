@@ -26,7 +26,8 @@ export class SimulationListView extends View {
                 this.createSimulationLink("uniformCircularOrbit"),
                 this.createSimulationLink("uniformCircularMotionMagneticField"),
                 this.createSimulationLink("1dElasticCollision"),
-                this.createSimulationLink("electricField")
+                this.createSimulationLink("electricField"),
+                this.createSimulationLink("waveInterference")
             )
         );
     }
