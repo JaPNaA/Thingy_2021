@@ -191,10 +191,10 @@ const presetSelector = new PresetSelector();
 
 export function start(newWorld) {
     world = newWorld;
-    world.addElm(new Grid());
     world.addElm(orbitDraw);
     world.addElm(presetSelector);
     world.addElm(vectArrow);
+    world.addElm(new Grid());
 
     world.camera.zoom = 0.00003;
     world.camera.centerOn(vec(0, 0));
