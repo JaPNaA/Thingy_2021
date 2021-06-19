@@ -12,13 +12,16 @@ const equasions = {
 let world;
 const velocityInput = new VectorLinearInput(vec(10, 0), vec(100, 100));
 velocityInput.setUnitText("m/s");
+velocityInput.setVariableName("v");
 
 const accelerationInput = new VectorLinearInput(vec(10, 0), vec(100, 120));
 accelerationInput.setUnitText("m/s²");
+accelerationInput.setVariableName("a");
 
 const timeInput = new ScalarInputElm();
 timeInput.onUserChange.addHandler(v => time = v);
 timeInput.addTextAfter("s");
+timeInput.addTextBefore("t =");
 timeInput.setPos(vec(100, 140));
 
 const ball = new HoverPoint();

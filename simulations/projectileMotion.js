@@ -25,18 +25,22 @@ const ball = new HoverPoint();
 
 const timeInput = new ScalarInputElm();
 timeInput.addTextAfter("s");
+timeInput.addTextBefore("t =");
 timeInput.staticPosition = true;
 
 const aInput = new VectorInput(vec(0, 9.8), vec(10, 50));
 aInput.onUserChange.addHandler(() => updateTimePath());
 aInput.setUnitText("m/s²");
+aInput.setVariableName("a");
 
 const vInput = new VectorInput(vec(10, -10), vec(10, 400));
 vInput.onUserChange.addHandler(() => updateTimePath());
 vInput.setUnitText("m/s");
+vInput.setVariableName("v");
 
 const initialPositionInput = new VectorInput(vec(100, -200), vec(200, 400));
 initialPositionInput.setUnitText("m");
+initialPositionInput.setVariableName("p₀");
 initialPositionInput.onUserChange.addHandler(() => {
     updateTimePath();
     putVInputOnInitialPositionVectorHead();
