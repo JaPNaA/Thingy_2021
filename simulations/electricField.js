@@ -8,6 +8,7 @@ import { Elm, InputElm } from "../utils/elements.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 import { removeElmFromArray } from "../utils/removeElmFromArray.js";
 import { colors } from "../ui/colors.js";
+import { Grid } from "../engine/components/Grid.js";
 
 let world;
 
@@ -21,10 +22,10 @@ class ElectricVectorField extends CanvasElm {
         /** @type {ChargePoint[]} */
         this.charges = [];
 
-        this.spacing = 15;
+        this.spacing = 20;
         this.dirty = true;
 
-        this.vectors = this.initVectorField(40, 40);
+        this.vectors = this.initVectorField(50, 50);
         this.vectorArrowDrawer = new AestheticVectorArrow();
     }
 
@@ -206,8 +207,11 @@ const electricVectorField = new ElectricVectorField();
 
 export function start(newWorld) {
     world = newWorld;
-    world.addElm(electricVectorField);
-    world.addElm(new CreateChargeButton());
+    world.addElm(
+        electricVectorField,
+        new CreateChargeButton(),
+        new Grid()
+    );
 
     const chargePoints = initChargePoints();
     for (const chargePoint of chargePoints) {
