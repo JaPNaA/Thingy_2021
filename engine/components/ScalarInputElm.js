@@ -2,6 +2,8 @@ import { HTMLCanvasElm } from "../htmlCanvas/HTMLCanvasElm.js";
 import { EventHandler } from "/utils/EventHandler.js";
 import { InputElm } from "/utils/elements.js";
 
+let xssWarningShown = false;
+
 export class ScalarInputElm extends HTMLCanvasElm {
     constructor() {
         super();
@@ -57,12 +59,41 @@ export class ScalarInputElm extends HTMLCanvasElm {
     }
 
     _inputChangeHandler() {
-        const value = parseFloat(this.inputElm.getValue());
-        if (isNaN(value)) {
-            this.setValue(this._lastValue);
-            return;
-        }
+        const strValue = this.inputElm.getValue();
+        const value = parseFloat(strValue);
+        if (isNaN(value) || strValue.match(/[^\d.]/)) {
+            try {
+                if (strValue.length > 20) {
+                    if (!xssWarningShown) {
+                        if (confirm("Warning: don't evaluate code you pasted. Press 'cancel' to cancel evaluation.\n(If you didn't paste anything, and this was a false alarm, you may continue.)\nCode you paste into here could be used for an XSS attack.")) {
+                            xssWarningShown = true;
+                        } else {
+                            throw new Error("Canceled evaluation");
+                        }
+                    }
+                }
 
+                // dangerous! could be used for XSS.
+                const evalFunc = new Function("pi", "return " + strValue);
+                const evalValue = evalFunc(Math.PI);
+                if (typeof evalValue === 'number' && !isNaN(evalValue)) {
+                    this._userSetValue(evalValue);
+                } else {
+                    this._resetToLastValue();
+                }
+            } catch (err) {
+                this._resetToLastValue();
+            }
+        } else {
+            this._userSetValue(value);
+        }
+    }
+
+    _resetToLastValue() {
+        this.setValue(this._lastValue);
+    }
+
+    _userSetValue(value) {
         this.setValue(value);
         this.onUserChange.dispatch(value);
     }
