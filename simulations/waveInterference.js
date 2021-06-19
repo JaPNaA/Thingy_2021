@@ -14,14 +14,14 @@ class Wave extends CanvasElm {
 
         this.phase = 0;
         this.amplitude = 4;
-        this.frequency = 2 * Math.PI / 100;
+        this.waveLength = 100;
         this.velocity = SPEED_SOUND;
 
         this.color = colors.white;
     }
 
     evalAtPos(pos) {
-        return this.amplitude * Math.sin(this.phase + this.frequency * (pos - this.velocity * time));
+        return this.amplitude * Math.sin(2 * Math.PI / this.waveLength * (this.phase + pos - this.velocity * time));
     }
 
     draw() {
@@ -54,13 +54,13 @@ class WaveInput extends Wave {
         this.amplitudeInput.onUserChange.addHandler(v => this.amplitude = v.y);
         this.amplitudeInput.setUnitText("m");
 
-        this.phaseInput = new VectorLinearInput(vec(1, 0), this.pos.add(vec(0, -20)));
+        this.phaseInput = new VectorLinearInput(vec(1, 0), this.pos.add(vec(0, -40)));
         this.phaseInput.setMagnitude(this.phase);
         this.phaseInput.onUserChange.addHandler(v => this.phase = -v.x);
         this.phaseInput.setUnitText("m");
 
-        this.waveLengthInput = new VectorLinearInput(vec(this.frequency, 0), this.pos.add(vec(0, 20)));
-        this.waveLengthInput.onUserChange.addHandler(v => this.frequency = v.x);
+        this.waveLengthInput = new VectorLinearInput(vec(this.waveLength, 0), this.pos.add(vec(0, 40)));
+        this.waveLengthInput.onUserChange.addHandler(v => this.waveLength = v.x);
         this.waveLengthInput.setUnitText("m");
     }
 
@@ -100,7 +100,7 @@ export function start(world) {
     world.addElm(resultantWave);
 
     for (let i = 0; i < 2; i++) {
-        const wave = new WaveInput(vec(0, (i + 1) * 100));
+        const wave = new WaveInput(vec(0, (i + 1) * 200));
         world.addElm(wave);
         resultantWave.addWave(wave);
     }
