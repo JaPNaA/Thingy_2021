@@ -92,7 +92,6 @@ class ResetButton extends HTMLCanvasElm {
         this.append(
             new Elm("button")
                 .append("Reset")
-                .attribute("style", "background-color: black; color: inherit; border: 1px solid #888;")
                 .on("click", () => {
                     collisionDraw.leftVelocity = velocity1Input.getVec2();
                     collisionDraw.leftPos = CollisionDraw.initialPosLeft;

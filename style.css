@@ -17,6 +17,19 @@ a {
     text-decoration: none;
 }
 
+button {
+    color: inherit;
+    background-color: #242424;
+    border: 1px solid #8888886e;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+button:hover, button:active {
+    background-color: #2b2b2b;
+    border-color: #888888;
+}
+
 ::-webkit-scrollbar {
     width: 4px;
     background-color: transparent;
