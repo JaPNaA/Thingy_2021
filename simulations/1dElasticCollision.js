@@ -79,7 +79,7 @@ class CollisionDraw extends CanvasElm {
 }
 
 CollisionDraw.initialPosLeft = vec(0, 200);
-CollisionDraw.initialPosRight = vec(600, 200);
+CollisionDraw.initialPosRight = vec(900, 200);
 CollisionDraw.initalVelocities = vec(50, 0);
 CollisionDraw.initialMasses = 10;
 
@@ -87,9 +87,12 @@ class ResetButton extends HTMLCanvasElm {
     constructor() {
         super();
 
+        this.staticPosition = true;
+
         this.append(
             new Elm("button")
                 .append("Reset")
+                .attribute("style", "background-color: black; color: inherit; border: 1px solid #888;")
                 .on("click", () => {
                     collisionDraw.leftVelocity = velocity1Input.getVec2();
                     collisionDraw.leftPos = CollisionDraw.initialPosLeft;
@@ -111,15 +114,19 @@ class ResetButton extends HTMLCanvasElm {
 // User Inputs
 const velocity1Input = new VectorLinearInput(CollisionDraw.initalVelocities, vec(100, 100));
 velocity1Input.setUnitText("m/s");
+velocity1Input.setVariableName("v");
 
 const mass1Input = new VectorLinearInput(vec(CollisionDraw.initialMasses, 0), vec(100, 140));
 mass1Input.setUnitText("kg");
+mass1Input.setVariableName("m");
 
-const velocity2Input = new VectorLinearInput(CollisionDraw.initalVelocities.scale(-1), vec(500, 100));
+const velocity2Input = new VectorLinearInput(CollisionDraw.initalVelocities.scale(-1), vec(900, 100));
 velocity2Input.setUnitText("m/s");
+velocity2Input.setVariableName("v");
 
-const mass2Input = new VectorLinearInput(vec(-CollisionDraw.initialMasses, 0), vec(500, 140));
+const mass2Input = new VectorLinearInput(vec(-CollisionDraw.initialMasses, 0), vec(900, 140));
 mass2Input.setUnitText("kg");
+mass2Input.setVariableName("m");
 
 
 const collisionDraw = new CollisionDraw();
