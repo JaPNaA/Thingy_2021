@@ -110,6 +110,11 @@ export class VectorLinearInput extends CanvasElm {
         this.inputElm.addTextAfter(unitStr);
     }
 
+    /** @param {string} varName */
+    setVariableName(varName) {
+        this.inputElm.addTextBefore(varName + " =");
+    }
+
     hide() {
         this.hitbox.disable();
         this.inputElm.hide();

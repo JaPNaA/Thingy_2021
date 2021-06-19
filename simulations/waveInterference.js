@@ -49,19 +49,23 @@ class WaveInput extends Wave {
         this.velocityInput = new VectorLinearInput(vec(this.velocity, 0), this.pos);
         this.velocityInput.onUserChange.addHandler(v => this.velocity = v.x);
         this.velocityInput.setUnitText("m/s");
+        this.velocityInput.setVariableName("v");
 
         this.amplitudeInput = new VectorLinearInput(vec(0, this.amplitude), this.pos);
         this.amplitudeInput.onUserChange.addHandler(v => this.amplitude = v.y);
         this.amplitudeInput.setUnitText("m");
+        this.amplitudeInput.setVariableName("A");
 
         this.phaseInput = new VectorLinearInput(vec(1, 0), this.pos.add(vec(0, -40)));
         this.phaseInput.setMagnitude(this.phase);
         this.phaseInput.onUserChange.addHandler(v => this.phase = -v.x);
         this.phaseInput.setUnitText("m");
+        this.phaseInput.setVariableName("Φ");
 
         this.waveLengthInput = new VectorLinearInput(vec(this.waveLength, 0), this.pos.add(vec(0, 40)));
         this.waveLengthInput.onUserChange.addHandler(v => this.waveLength = v.x);
         this.waveLengthInput.setUnitText("m");
+        this.waveLengthInput.setVariableName("λ");
     }
 
     setup(world) {
