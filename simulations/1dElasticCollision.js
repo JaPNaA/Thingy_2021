@@ -6,6 +6,7 @@ import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { Elm } from "../utils/elements.js";
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { colors } from "../ui/colors.js";
+import { Grid } from "../engine/components/Grid.js";
 
 const equations = {
 
@@ -38,10 +39,10 @@ class CollisionDraw extends CanvasElm {
         this.rightWidth = 100;
         this.rightHeight = 100;
 
-
         this.collisionPoint = 0;
-        this.updateCollisionPoint();
 
+        this.updateBlockSizes();
+        this.updateCollisionPoint();
     }
 
     draw() {
@@ -70,6 +71,11 @@ class CollisionDraw extends CanvasElm {
             this.leftVelocity.x, this.rightVelocity.x
         );
     }
+
+    updateBlockSizes() {
+        this.leftWidth = this.leftHeight = Math.sqrt(this.leftMass) * 16;
+        this.rightWidth = this.rightHeight = Math.sqrt(this.rightMass) * 16;
+    }
 }
 
 CollisionDraw.initialPosLeft = vec(0, 200);
@@ -88,13 +94,12 @@ class ResetButton extends HTMLCanvasElm {
                     collisionDraw.leftVelocity = velocity1Input.getVec2();
                     collisionDraw.leftPos = CollisionDraw.initialPosLeft;
                     collisionDraw.leftMass = mass1Input.getVec2().magnitude;
-                    collisionDraw.leftWidth = collisionDraw.leftHeight = Math.sqrt(collisionDraw.leftMass) * 16;
 
                     collisionDraw.rightVelocity = velocity2Input.getVec2();
                     collisionDraw.rightPos = CollisionDraw.initialPosRight;
                     collisionDraw.rightMass = mass2Input.getVec2().magnitude;
-                    collisionDraw.rightWidth = collisionDraw.rightHeight = Math.sqrt(collisionDraw.rightMass) * 16;
 
+                    collisionDraw.updateBlockSizes();
                     collisionDraw.updateCollisionPoint();
                     collided = false;
                 })
@@ -125,9 +130,15 @@ let collided = false;
 
 export function start(newWorld) {
     world = newWorld;
-    world.addElm(collisionDraw);
-    world.addElm(reset);
-    world.addElm(velocity1Input, mass1Input, velocity2Input, mass2Input);
+    world.addElm(
+        collisionDraw,
+        reset,
+        velocity1Input,
+        mass1Input,
+        velocity2Input,
+        mass2Input,
+        new Grid()
+    );
 }
 
 export function update(timeElapsed) {
