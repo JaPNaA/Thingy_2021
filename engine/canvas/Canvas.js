@@ -17,6 +17,7 @@ export class Canvas extends Component {
         this.X.resetTransform();
 
         const scaling = window.devicePixelRatio || 1;
+        this.scaling = scaling;
         this.width = innerWidth;
         this.height = innerHeight;
         this.canvas.width = innerWidth * scaling;

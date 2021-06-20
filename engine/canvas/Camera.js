@@ -21,8 +21,8 @@ export class Camera extends Vec2 {
         world.keyboard.addKeyUpListener("Space", () => this.panning = false);
         world.cursor.mouseMove.addHandler(e => {
             if (this.panning) {
-                this.y -= e.movementY;
-                this.x -= e.movementX;
+                this.y -= e.movementY / this.world.canvas.scaling;
+                this.x -= e.movementX / this.world.canvas.scaling;
             }
         });
 
