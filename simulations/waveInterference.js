@@ -3,6 +3,9 @@ import { Grid } from "../engine/components/Grid.js";
 import { colors } from "../ui/colors.js";
 import { vec } from "../utils/vectors.js";
 import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinearInput.js";
+import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
+import { Elm } from "../utils/elements.js";
+import { removeElmFromArray } from "../utils/removeElmFromArray.js";
 
 const SPEED_SOUND = 340.29;
 
@@ -52,7 +55,12 @@ class WaveInput extends Wave {
         this.velocityInput.setVariableName("v");
 
         this.amplitudeInput = new VectorLinearInput(vec(0, this.amplitude), this.pos);
-        this.amplitudeInput.onUserChange.addHandler(v => this.amplitude = v.y);
+        this.amplitudeInput.onUserChange.addHandler(v => {
+            this.amplitude = v.y;
+            if (this.amplitude === 0 && !this.amplitudeInput.inputElm.focused) {
+                removeWave(this);
+            }
+        });
         this.amplitudeInput.setUnitText("m");
         this.amplitudeInput.setVariableName("A");
 
@@ -68,9 +76,21 @@ class WaveInput extends Wave {
         this.waveLengthInput.setVariableName("λ");
     }
 
+    setPos(pos) {
+        this.pos = pos;
+        this.velocityInput.setTailPos(this.pos);
+        this.amplitudeInput.setTailPos(this.pos);
+        this.phaseInput.setTailPos(this.pos.add(vec(0, -40)));
+        this.waveLengthInput.setTailPos(this.pos.add(vec(0, 40)));
+    }
+
     setup(world) {
         super.setup(world);
         world.addElm(this.velocityInput, this.amplitudeInput, this.phaseInput, this.waveLengthInput);
+    }
+
+    setdown() {
+        this.world.removeElm(this.velocityInput, this.amplitudeInput, this.phaseInput, this.waveLengthInput);
     }
 }
 
@@ -88,6 +108,11 @@ class ResultantWave extends Wave {
         this.waves.push(wave);
     }
 
+    /** @param {Wave} wave */
+    removeWave(wave) {
+        removeElmFromArray(wave, this.waves);
+    }
+
     evalAtPos(pos) {
         let total = 0;
         for (const wave of this.waves) {
@@ -97,16 +122,64 @@ class ResultantWave extends Wave {
     }
 }
 
-export function start(world) {
-    world.addElm(new Grid());
+class CreateWaveButton extends HTMLCanvasElm {
+    constructor() {
+        super();
 
-    const resultantWave = new ResultantWave(vec(0, 0));
+        this.staticPosition = true;
+
+        this.append(
+            this.button = new Elm("button").append("Add wave")
+                .on("mousedown", () => {
+                    addWave();
+                    this.button.elm.blur();
+                })
+        );
+    }
+}
+
+/** @type {ResultantWave} */
+let resultantWave;
+
+/** @type {WaveInput[]} */
+let waves;
+
+let world;
+
+export function start(newWorld) {
+    world = newWorld;
+
+    world.addElm(new Grid(), new CreateWaveButton());
+
+    resultantWave = new ResultantWave(vec(0, 0));
     world.addElm(resultantWave);
 
+    waves = [];
+
     for (let i = 0; i < 2; i++) {
-        const wave = new WaveInput(vec(0, (i + 1) * 200));
-        world.addElm(wave);
-        resultantWave.addWave(wave);
+        addWave();
+    }
+}
+
+function addWave() {
+    const wave = new WaveInput(vec(0, 0));
+
+    waves.push(wave);
+    world.addElm(wave);
+    resultantWave.addWave(wave);
+
+    updateWavePositions();
+}
+
+function removeWave(wave) {
+    removeElmFromArray(wave, waves);
+    world.removeElm(wave);
+    resultantWave.removeWave(wave);
+}
+
+function updateWavePositions() {
+    for (let i = 0; i < waves.length; i++) {
+        waves[i].setPos(vec(0, (i + 1) * 200));
     }
 }
 
