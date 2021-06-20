@@ -175,6 +175,7 @@ function removeWave(wave) {
     removeElmFromArray(wave, waves);
     world.removeElm(wave);
     resultantWave.removeWave(wave);
+    updateWavePositions();
 }
 
 function updateWavePositions() {

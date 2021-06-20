@@ -46,6 +46,13 @@ export class VectorLinearInput extends CanvasElm {
         this.vectorArrow.setup(world);
     }
 
+    setdown() {
+        super.setdown();
+        this.world.removeHitbox(this.hitbox);
+        this.world.htmlCanvas.removeElm(this.inputElm);
+        this.vectorArrow.setdown(this.world);
+    }
+
     update() {
         if (!this.dragging) { return; }
         this.setMagnitude(
