@@ -177,6 +177,12 @@ body.DocsViewFrame p math {
     margin: 0;
 }
 
+body.DocsViewFrame math[highlight] {
+    display: inline-block;
+    outline: 1px solid #bdbdbd;
+    outline-offset: 4px;
+}
+
 body.DocsViewFrame img {
     width: auto;
     max-width: 100%;
