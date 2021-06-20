@@ -63,7 +63,7 @@ export class ScalarInputElm extends HTMLCanvasElm {
         const value = parseFloat(strValue);
         if (isNaN(value) || strValue.match(/[^\d.]/)) {
             try {
-                if (strValue.length > 20) {
+                if (strValue.replace(/ /g, "").length > 20) {
                     if (!xssWarningShown) {
                         if (confirm("Warning: don't evaluate code you pasted. Press 'cancel' to cancel evaluation.\n(If you didn't paste anything, and this was a false alarm, you may continue.)\nCode you paste into here could be used for an XSS attack.")) {
                             xssWarningShown = true;
