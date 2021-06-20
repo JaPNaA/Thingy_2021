@@ -14,16 +14,72 @@
 
 <h2> The Math </h2>
 
+<h3> Final velocities </h3>
+
 <p> Because this is an elastic collision, there are 2 conservation laws they blocks must follow. </p>
 
 <p> Conservation of momentum: </p>
-<math> m_1 v_1 + v_2 v_2 = m_1 v'_1 + v_2 v'_2 </math>
+<math> m_1 v_1 + m_2 v_2 = m_1 v'_1 + m_2 v'_2 </math>
 
 <p> Conservation of kinetic energy: </p>
 <math> \frac{1}{2}m_1 v_1^2 + \frac{1}{2}m_2 v_2^2 = \frac{1}{2}m_1 v_1^{\prime 2} + \frac{1}{2}m_2 v_2^{\prime 2} </math>
 
-<p> Our unknowns are <math>v'</math> and <math>v_1'</math>. There are 2 equations and 2 unknowns, so we can begin solving immediately </p>
+<p> Our unknowns are <math>v'_2</math> and <math>v_1'</math>. There are 2 equations and 2 unknowns, so we can begin solving immediately </p>
 
+<p>Cancel <math>\frac 12</math>s</p>
+
+<math> m_1 v_1^2 + m_2 v_2^2 = m_1 v_1^{\prime 2} + m_2 v_2^{\prime 2} </math>
+<math> m_1 v_1^2 - m_1 v_1^{\prime 2} = m_2 v_2^{\prime 2} - m_2 v_2^2 </math>
+<math> m_1( v_1^2 - v_1^{\prime 2} ) = m_2 ( v_2^{\prime 2} - v_2^2 ) </math>
+
+<p> Rearrange conservation of momentum </p>
+<math> m_1 v_1 - m_1 v'_1 = m_2 v'_2 - m_2 v_2 </math>
+<math> m_1( v_1 - v'_1 ) = m_2 ( v'_2 - v_2 ) </math>
+
+<p> Divide the two equations </p>
+<math> \frac{m_1( v_1^2 - v_1^{\prime 2} )}{m_1( v_1 - v'_1 )} = \frac{m_2 ( v_2^{\prime 2} - v_2^2 )}{m_2 ( v'_2 - v_2 )} </math>
+<math> \frac{\cancel{m_1} ( v_1^2 - v_1^{\prime 2} )}{\cancel{m_1} ( v_1 - v'_1 )} = \frac{\cancel{m_2} ( v_2^{\prime 2} - v_2^2 )}{\cancel{m_2} ( v'_2 - v_2 )} </math>
+<math> \frac{ v_1^2 - v_1^{\prime 2} }{ v_1 - v'_1 } = \frac{ v_2^{\prime 2} - v_2^2 }{ v'_2 - v_2 } </math>
+
+<p> Expand difference of squares </p>
+<math> \frac{ (v_1 - v_1')(v_1 + v_1') }{ v_1 - v'_1 } = \frac{ (v_2' - v_2)(v_2' + v_2) }{ v'_2 - v_2 } </math>
+<math> \frac{ \cancel{(v_1 - v_1')}(v_1 + v_1') }{ \cancel{v_1 - v'_1} } = \frac{ \cancel{(v_2' - v_2)}(v_2' + v_2) }{ \cancel{v'_2 - v_2} } </math>
+<math> v_1 + v_1' = v_2' + v_2 </math>
+
+<p> Solve for <math>v_1'</math> </p>
+<math> v_1' = v_2' + v_2 - v_1 </math>
+
+<p> Substitute into conservation of momentum </p>
+<math> m_1 v_1 + m_2 v_2 = m_1 (v_2' + v_2 - v_1) + m_2 v'_2 </math>
+<math> m_1 v_1 + m_2 v_2 = m_1 v_2' + m_1 v_2 - m_1 v_1 + m_2 v'_2 </math>
+<math> m_1 v_1 + m_2 v_2 = m_1 v_2 - m_1 v_1 + (m_1 + m_2) v'_2 </math>
+<math> m_1 v_1 + m_2 v_2 - m_1 v_2 + m_1 v_1 = (m_1 + m_2) v'_2 </math>
+<math> \frac{ m_1 v_1 + m_2 v_2 - m_1 v_2 + m_1 v_1 }{ m_1 + m_2 } = v'_2 </math>
+<math> v'_2 = \frac{ 2 m_1 v_1 + m_2 v_2 - m_1 v_2 }{ m_1 + m_2 } </math>
+
+<p> Rearrange </p>
+<math> v'_2 = \frac{ 2 m_1 v_1 }{ m_1 + m_2 } + \frac{m_2 v_2 - m_1 v_2 }{ m_1 + m_2 } </math>
+<math highlight> v'_2 = \frac{ 2 m_1 v_1 }{ m_1 + m_2 } + \frac{m_2 - m_1 }{ m_1 + m_2 } v_2 </math>
+
+<p> Returning and solve for <math>v_2'</math> </p>
+<math> v_1 + v_1' = v_2' + v_2 </math>
+<math> v_1 + v_1' - v_2 = v_2' </math>
+
+<p> Substitute into conservation of momentum </p>
+<math> m_1 v_1 + m_2 v_2 = m_1 v'_1 + m_2 v'_2 </math>
+<math> m_1 v_1 + m_2 v_2 = m_1 v'_1 + m_2 (v_1 + v_1' - v_2) </math>
+<math> m_1 v_1 + m_2 v_2 = m_1 v'_1 + m_2 v_1 + m_2 v_1' - m_2 v_2 </math>
+<math> m_1 v_1 + m_2 v_2 = m_2 v_1 + ( m_1 + m_2 ) v_1' - m_2 v_2 </math>
+<math> m_1 v_1 + m_2 v_2 + m_2 v_2 - m_2 v_1 = ( m_1 + m_2 ) v_1' </math>
+<math> \frac{m_1 v_1 + m_2 v_2 + m_2 v_2 - m_2 v_1}{ m_1 + m_2 } = v_1' </math>
+<math> \frac{m_1 v_1 + 2m_2 v_2 - m_2 v_1}{ m_1 + m_2 } = v_1' </math>
+
+<p> Rearrange </p>
+<math> \frac{ 2m_2 v_2 }{ m_1 + m_2 } + \frac{ m_1 v_1 - m_2 v_1 }{ m_1 + m_2 } = v_1' </math>
+<math> \frac{ 2m_2 v_2 }{ m_1 + m_2 } + \frac{ m_1 - m_2 }{ m_1 + m_2 } v_1 = v_1' </math>
+<math highlight> v_1' = \frac{ 2m_2 v_2 }{ m_1 + m_2 } + \frac{ m_1 - m_2 }{ m_1 + m_2 } v_1 </math>
+
+<h3> Point of collision </h3>
 <p> The equation to determine where the blocks would hit uses the kinematic equation </p>
 <math> x' = vt + x </math>
 
@@ -41,4 +97,4 @@
 
 <p> And we can determine the position by substituting <math>t</math> into one of the equations we started with. </p>
 <math> x_0' = v_0 t + x_0 </math>
-<math> x_0' = v_0 \cdot \frac{x_0 - x_1}{v_1 - v_0} + x_0 </math>
+<math highlight> x_0' = v_0 \cdot \frac{x_0 - x_1}{v_1 - v_0} + x_0 </math>
