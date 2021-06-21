@@ -37,8 +37,8 @@ export class VectorInput extends VectorLinearInput {
     setdown() {
         super.setdown();
 
-        this.xInput.setdown(world);
-        this.yInput.setdown(world);
+        this.xInput.setdown(this.world);
+        this.yInput.setdown(this.world);
     }
 
     /**
