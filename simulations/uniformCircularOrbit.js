@@ -23,26 +23,26 @@ const G = 6.67e-11;
  */
 const planetData = {
     earth: {
-        mass: 5.98e24,
-        radius: 6.398e6,
+        mass: 5.97e24,
+        radius: 6378e3,
         color: "#3c469b"
     },
 
     moon: {
-        mass: 7.34767309e22,
-        radius: 1731.1e3,
+        mass: 0.073e24,
+        radius: 1737.5e3,
         color: "#817d7c"
     },
 
     mercury: {
-        mass: 3.285e23,
-        radius: 2439.7e3,
+        mass: 0.330e24,
+        radius: 2439.5e3,
         color: "#a77f68"
     },
 
     mars: {
-        mass: 6.39e23,
-        radius: 3389.5e3,
+        mass: 0.642e24,
+        radius: 3396e3,
         color: "#bd7954"
     },
 
@@ -53,32 +53,32 @@ const planetData = {
     },
 
     jupiter: {
-        mass: 1.898e27,
-        radius: 69911e3,
+        mass: 1898e24,
+        radius: 71492e3,
         color: "#cdb589"
     },
 
     neptune: {
-        mass: 1.024e26,
-        radius: 24622e3,
+        mass: 102.4e24,
+        radius: 24764e3,
         color: "#3e5ef3"
     },
 
     saturn: {
-        mass: 5.683e26,
-        radius: 58232e3,
+        mass: 568.3e24,
+        radius: 60268e3,
         color: "#d3b177"
     },
 
     pluto: {
-        mass: 1.3900e22,
-        radius: 1188.3e3,
+        mass: 0.0146e24,
+        radius: 1185.3e3,
         color: "#d7c8b9"
     },
 
     sun: {
         mass: 1.989e30,
-        radius: 696340e3,
+        radius: 695000e3,
         color: "#fd9237"
     }
 
