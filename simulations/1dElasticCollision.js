@@ -119,11 +119,11 @@ const mass1Input = new VectorLinearInput(vec(CollisionDraw.initialMasses, 0), ve
 mass1Input.setUnitText("kg");
 mass1Input.setVariableName("m");
 
-const velocity2Input = new VectorLinearInput(CollisionDraw.initalVelocities.scale(-1), vec(900, 100));
+const velocity2Input = new VectorLinearInput(CollisionDraw.initalVelocities.scale(-1), vec(900, 500));
 velocity2Input.setUnitText("m/s");
 velocity2Input.setVariableName("v");
 
-const mass2Input = new VectorLinearInput(vec(-CollisionDraw.initialMasses, 0), vec(900, 140));
+const mass2Input = new VectorLinearInput(vec(-CollisionDraw.initialMasses, 0), vec(900, 540));
 mass2Input.setUnitText("kg");
 mass2Input.setVariableName("m");
 
