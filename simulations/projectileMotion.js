@@ -78,11 +78,6 @@ export function start(newWorld) {
     putVInputOnInitialPositionVectorHead();
 }
 
-export function resize() {
-    vInput.setTailPos(vec(32, innerHeight - 32));
-}
-
-
 export function update(timeElapsed) {
     if (realTimeMode) {
         timeInput.setValue(timeInput.getValue() + timeElapsed);
