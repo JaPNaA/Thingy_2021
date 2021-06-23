@@ -64,8 +64,7 @@ export function start(newWorld) {
         aInput,
         new Grid()
     );
-    
-    resize();
+
 
     world.keyboard.addKeyDownListener("Space", () => {
         realTimeMode = true;
