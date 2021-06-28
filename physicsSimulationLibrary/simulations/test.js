@@ -1,8 +1,7 @@
 // Testing grounds. Not an actual simulation
 
-import { Graph } from "/engine/components/graph/Graph.js";
-import { World } from "/engine/World.js";
-import { Grid } from "/engine/components/Grid.js";
+import { Graph } from "../engine/components/graph/Graph.js";
+import { Grid } from "../engine/components/Grid.js";
 
 export function start(newWorld) {
     const world = newWorld;

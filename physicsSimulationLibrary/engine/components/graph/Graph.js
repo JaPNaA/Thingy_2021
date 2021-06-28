@@ -1,6 +1,6 @@
 import { HTMLCanvasElm } from "../../htmlCanvas/HTMLCanvasElm.js";
-import { Elm } from "/utils/elements.js";
-import { vec } from "/utils/vectors.js";
+import { Elm } from "../../../utils/elements.js";
+import { vec } from "../../../utils/vectors.js";
 
 export class Graph extends HTMLCanvasElm {
     constructor() {

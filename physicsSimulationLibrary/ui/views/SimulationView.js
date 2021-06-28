@@ -90,7 +90,7 @@ export class SimulationView extends View {
         loadingIndicator.show();
 
         try {
-            module = await import(`/simulations/${name}.js`);
+            module = await import(`../../simulations/${name}.js`);
 
             module.start(this.world);
             this.module = module;

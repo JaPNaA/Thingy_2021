@@ -1,4 +1,4 @@
-import { vec } from "/utils/vectors.js";
+import { vec } from "../../utils/vectors.js";
 
 /**
  * @typedef {import("../../utils/vectors.js").Vec2} Vec2

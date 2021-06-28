@@ -1,6 +1,6 @@
 import { HTMLCanvasElm } from "../htmlCanvas/HTMLCanvasElm.js";
-import { EventHandler } from "/utils/EventHandler.js";
-import { InputElm } from "/utils/elements.js";
+import { EventHandler } from "../../utils/EventHandler.js";
+import { InputElm } from "../../utils/elements.js";
 
 let xssWarningShown = false;
 

@@ -1,6 +1,6 @@
 import { CanvasElm } from "../canvas/CanvasElm.js";
-import { vec } from "/utils/vectors.js";
-import { colors } from "/ui/colors.js";
+import { vec } from "../../utils/vectors.js";
+import { colors } from "../../ui/colors.js";
 
 export class Grid extends CanvasElm {
     constructor() {

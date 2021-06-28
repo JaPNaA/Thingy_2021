@@ -23,17 +23,17 @@ export class DocsView extends View {
                     .on("click", () => userInterface.closeView(this)),
             ),
             this.frame = new Elm("iframe")
-                .attribute("src", "/docs/_DocsView.html")
+                .attribute("src", "docs/_DocsView.html")
         ).appendTo(this.backgroundElm);
 
 
-        this.docFetch = fetch("/docs/" + url + ".html");
+        this.docFetch = fetch("docs/" + url + ".html");
 
         this.frame.elm.addEventListener("load", async () => {
             const frameDoc = this.frame.elm.contentDocument;
             this._setPropogateKeyboardAndMouseEvents(this.frame.elm.contentWindow);
             new Elm("base")
-                .attribute("href", "/docs/" + url)
+                .attribute("href", url)
                 .appendTo(frameDoc.head);
 
             const text = await this.docFetch.then(e => e.status === 404 ? "No help was found." : e.text());

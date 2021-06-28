@@ -1,11 +1,10 @@
-import { World } from "../engine/World.js";
-import { Variable, Expression } from "../utils/mathLib.js";
+import { Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
 import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
 import { colors } from "../ui/colors.js";
-import { Grid } from "/engine/components/Grid.js";
+import { Grid } from "../engine/components/Grid.js";
 
 const expressionSolver = new ExpressionSolver({
     variables: ["v", ["a", 40], ["r", 100]],

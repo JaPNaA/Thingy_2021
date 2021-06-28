@@ -1,4 +1,4 @@
-import { vec } from "/utils/vectors.js";
+import { vec } from "../../utils/vectors.js";
 import { CanvasElm } from "../canvas/CanvasElm.js";
 import { HitBox } from "../canvas/HitBox.js";
 

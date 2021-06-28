@@ -1,4 +1,3 @@
-import { World } from "../engine/World.js";
 import { Expression } from "../utils/mathLib.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec, Vec2 } from "../utils/vectors.js";
@@ -7,7 +6,7 @@ import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
 import { Elm } from "../utils/elements.js";
 import { VectorArrow } from "../engine/components/vectorArrow/VectorArrow.js";
 import { camelToTitleCase } from "../utils/camelToTitleCase.js";
-import { Grid } from "/engine/components/Grid.js";
+import { Grid } from "../engine/components/Grid.js";
 
 const G = 6.67e-11;
 

@@ -1,11 +1,11 @@
-import { Variable } from "/utils/mathLib.js";
+import { Variable } from "../../../utils/mathLib.js";
 import { VariableInputForm } from "./VariableInputForm.js";
 import { VariableInput } from "./VariableInput.js";
 
 export class ExpressionSolver {
     /** @param { {
      *   variables: (string | [string, number])[],
-     *   expression: (vars: { [x: string]: Variable }) => import("/utils/mathLib.js").Expression
+     *   expression: (vars: { [x: string]: Variable }) => import("../../../utils/mathLib.js").Expression
      * } } params */
     constructor( { variables, expression } ) {
         this._variablesList = [];
