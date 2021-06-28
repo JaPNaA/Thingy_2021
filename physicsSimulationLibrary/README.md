@@ -6,7 +6,6 @@ This project was originally done on replit.com, but was moved to this github rep
 
 ## Commit authors
 
-"21" or "2 1" is @JaPNaA
+"21" or "2 1" is [JaPNaA](https://github.com/JaPNaA)
 
-"Roxasbtg" is @Roxasbtg
-
+"Roxasbtg" is [Roxasbtg](https://github.com/Roxasbtg)
