@@ -1,0 +1,26 @@
+<img src="./assets/CircularOrbit.gif">
+
+<p>
+    Note: that the acceleration vector's magnitude is not to scale.
+    If we were to have made them to scale, the vector would be too small to see compared to their orbit.
+</p>
+<p>
+    The dropdown box allows you to select different planets with preset masses and radii. Note that all inputs can manipulated.
+</p>
+<h2> The Math</h2>
+<p> 
+    As we know the general equation for true gravitational force is
+</p>
+<math>
+    F_g = \frac{GMm}{r^2}
+</math>
+<p>Since the satellite is moving in a uniform circular motion, we can use Newton's Second Law of motion and the equation of uniform circular motion to tie the two equations together and solve for the velocity of the satellite.</p>
+<math> F_g = ma </math>
+<math>\frac{GMm}{r^2} = m\frac{v^2}{r}</math>
+<math>\frac{GM}{r^2} = \frac{v^2}{r}</math>
+<math>\frac{GM}{r} = v^2</math>
+<math>\sqrt{\frac{GM}{r}} = v</math>
+
+<p> Although we actually use the equation </p>
+<math>\sqrt{\frac{GM}{r \green{+ h}}} = v</math>
+<p> to allow you to set the height of the orbit </p>
