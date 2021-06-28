@@ -90,6 +90,10 @@ export class HitBox {
         this.mouseoffHandler = handler;
     }
 
+    /**
+     * @param {Vec2} pos
+     * @param {Vec2} dim
+     */
     setPosAndDim(pos, dim) {
         this.actualPos = pos;
         this.actualDim = dim;
@@ -97,7 +101,7 @@ export class HitBox {
         this._updatePos();
     }
 
-    /** @param {Vec2} dim */
+    /** @param {Vec2} pos */
     setPos(pos) {
         this.actualPos = pos;
         this._updatePos();
@@ -123,7 +127,7 @@ export class HitBox {
      * @param {number} y
      */
     _checkHit(x, y) {
-        return ((x >= this.pos.x) ^ (x >= this.pos.x + this.dim.x)) &&
-            ((y >= this.pos.y) ^ (y >= this.pos.y + this.dim.y));
+        return ((x >= this.pos.x) !== (x >= this.pos.x + this.dim.x)) &&
+            ((y >= this.pos.y) !== (y >= this.pos.y + this.dim.y));
     }
 }

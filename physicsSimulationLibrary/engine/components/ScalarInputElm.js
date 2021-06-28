@@ -59,6 +59,7 @@ export class ScalarInputElm extends HTMLCanvasElm {
     }
 
     _inputChangeHandler() {
+        /** @type {string} */ // @ts-ignore
         const strValue = this.inputElm.getValue();
         const value = parseFloat(strValue);
         if (isNaN(value) || strValue.match(/[^\d.]/)) {

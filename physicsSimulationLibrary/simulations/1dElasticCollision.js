@@ -1,7 +1,5 @@
 import { vec } from "../utils/vectors.js";
 import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinearInput.js";
-import { World } from "../engine/World.js";
-import { ExpressionSolver } from "../engine/components/expressionSolver/ExpressionSolver.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { Elm } from "../utils/elements.js";
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";

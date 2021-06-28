@@ -1,11 +1,13 @@
 import { vec } from "../utils/vectors.js";
-import { World } from "../engine/World.js";
-import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinearInput.js";
 import { VectorInput } from "../engine/components/vectorInput/VectorInput.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 import { TimePath } from "../engine/components/timePath/TimePath.js";
 import { HoverPoint } from "../engine/components/HoverPoint.js";
 import { Grid } from "../engine/components/Grid.js";
+
+/**
+ * @typedef {import("../utils/vectors.js").Vec2} Vec2
+ */
 
 /**
  * Calculate a position in time
@@ -18,7 +20,7 @@ import { Grid } from "../engine/components/Grid.js";
 const equation = (t, a, v, x) => 
     v.scale(t).add(a.scale(t * t / 2)).add(x);
 
-/** @type {import("../ui/canvas/World.js").World} */
+/** @type {import("../engine/World").World} */
 let world;
 
 const ball = new HoverPoint();

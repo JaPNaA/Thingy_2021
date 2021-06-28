@@ -20,7 +20,7 @@ export class Keyboard {
     }
 
     /**
-     * @param {number} key
+     * @param {string} key
      * @param {function} handler
      */
     addKeyDownListener(key, handler) {
@@ -31,7 +31,7 @@ export class Keyboard {
     }
 
     /**
-     * @param {number} key
+     * @param {string} key
      * @param {function} handler
      */
     removeKeyDownListener(key, handler) {
@@ -39,7 +39,7 @@ export class Keyboard {
     }
 
     /**
-     * @param {number} key
+     * @param {string} key
      * @param {function} handler
      */
     addKeyUpListener(key, handler) {
@@ -50,7 +50,7 @@ export class Keyboard {
     }
 
     /**
-     * @param {number} key
+     * @param {string} key
      * @param {function} handler
      */
     removeKeyUpListener(key, handler) {

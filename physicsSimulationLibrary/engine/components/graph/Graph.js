@@ -23,6 +23,7 @@ export class Graph extends HTMLCanvasElm {
         /** @type {CanvasRenderingContext2D} */
         this.uiX = this.uiCanvas.elm.getContext("2d");
 
+        /** @type {[number, number][]} */
         this.data = [];
 
         this.width = this.dataCanvas.elm.width;
@@ -100,7 +101,7 @@ export class Graph extends HTMLCanvasElm {
 
     /** @param {MouseEvent} e */
     _uiCanvasMousemoveHandler(e) {
-        const xPos = e.layerX / this.xScale + this.xOffset;
+        const xPos = e.offsetX / this.xScale + this.xOffset;
         const closestPoint = this.data[this._getClosestIndexForX(xPos)];
         const x = (closestPoint[0] - this.xOffset) * this.xScale;
         const y = (closestPoint[1] - this.yOffset) * this.yScale;

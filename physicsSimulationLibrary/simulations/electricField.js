@@ -1,10 +1,9 @@
-import { World } from "../engine/World.js";
 import { CanvasElm } from "../engine/canvas/CanvasElm.js";
 import { vec } from "../utils/vectors.js";
 import { AestheticVectorArrow } from "../engine/components/vectorArrow/AestheticVectorArrow.js";
 import { HitBox } from "../engine/canvas/HitBox.js";
 import { HTMLCanvasElm } from "../engine/htmlCanvas/HTMLCanvasElm.js";
-import { Elm, InputElm } from "../utils/elements.js";
+import { Elm } from "../utils/elements.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 import { removeElmFromArray } from "../utils/removeElmFromArray.js";
 import { colors } from "../ui/colors.js";

@@ -41,8 +41,10 @@ export class ExpressionSolver {
 
     /**
      * @param {(string | [string, number])[]} variables
+     * @returns { { [x: string]: Variable } }
      */
     _initVariables(variables) {
+        /** @type { { [x: string]: Variable } } */
         const obj = {};
 
         for (const variable of variables) {

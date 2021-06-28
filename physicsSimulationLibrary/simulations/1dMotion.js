@@ -1,7 +1,6 @@
 import { vec } from "../utils/vectors.js";
 import { VectorLinearInput } from "../engine/components/vectorInput/VectorLinearInput.js";
 import { HoverPoint } from "../engine/components/HoverPoint.js";
-import { World } from "../engine/World.js";
 import { ScalarInputElm } from "../engine/components/ScalarInputElm.js";
 import { Grid } from "../engine/components/Grid.js";
 
