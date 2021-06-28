@@ -1,4 +1,3 @@
-
 class Renderer {
     /**
      * @param {EntireMap} entireMap 
