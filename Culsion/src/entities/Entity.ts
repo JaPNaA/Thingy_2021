@@ -15,4 +15,8 @@ export abstract class Entity extends CanvasElm implements Rectangle {
         super.setWorld(world);
         world.collisionSystem.addHitbox(new Hitbox(this, this));
     }
+
+    public dispose() {
+        throw new Error("Not implemented");
+    }
 }

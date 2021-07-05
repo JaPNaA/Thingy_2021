@@ -182,6 +182,7 @@ System.register("engine/Keyboard", [], function (exports_6, context_6) {
                         promiseResFunc = res;
                         this.addKeydownHandler(keyCodes, promiseResFunc);
                     });
+                    //* Potential problem: removing promise during handler
                     promise.then(() => this.removeKeydownHandler(keyCodes, promiseResFunc));
                     return promise;
                 }
@@ -263,6 +264,14 @@ System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSys
                     elm.setWorld(this);
                     this.elms.push(elm);
                 }
+                removeElm(elm) {
+                    elm.dispose();
+                    const index = this.elms.indexOf(elm);
+                    if (index < 0) {
+                        throw new Error("Tried removing element that wasn't added");
+                    }
+                    this.elms.splice(index, 1);
+                }
                 draw() {
                     this.canvas.X.fillStyle = "#000000";
                     this.canvas.X.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -289,6 +298,10 @@ System.register("engine/CanvasElm", [], function (exports_8, context_8) {
             CanvasElm = class CanvasElm {
                 setWorld(world) {
                     this.world = world;
+                }
+                dispose() {
+                    // @ts-expect-error
+                    this.world = undefined;
                 }
             };
             exports_8("CanvasElm", CanvasElm);
@@ -324,6 +337,9 @@ System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox
                 setWorld(world) {
                     super.setWorld(world);
                     world.collisionSystem.addHitbox(new Hitbox_1.Hitbox(this, this));
+                }
+                dispose() {
+                    throw new Error("Not implemented");
                 }
             };
             exports_9("Entity", Entity);
@@ -418,11 +434,11 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     super();
                     this.dialog = dialog;
                     this.index = 0;
+                    this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
                 }
                 setWorld(world) {
                     super.setWorld(world);
-                    world.keyboard.nextKeydown(settings_1.settings.keybindings.advanceDialog)
-                        .then(() => this.index++);
+                    world.keyboard.addKeydownHandler(settings_1.settings.keybindings.advanceDialog, this.advanceDialogHandler);
                 }
                 draw() {
                     const X = this.world.canvas.X;
@@ -432,6 +448,16 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     X.font = "24px Arial";
                     X.textBaseline = "top";
                     X.fillText(this.dialog[this.index], 16, 308);
+                }
+                advanceDialogHandler() {
+                    this.index++;
+                    if (this.dialog[this.index] === undefined) {
+                        this.world.removeElm(this);
+                    }
+                }
+                dispose() {
+                    this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.advanceDialog, this.advanceDialogHandler);
+                    super.dispose();
                 }
             };
             exports_12("NPCDialog", NPCDialog);
@@ -490,6 +516,9 @@ System.register("entities/NPCWithDialog", ["ui/NPCDialog", "entities/NPC"], func
                     }
                     this.dialogOpen = true;
                     this.world.addElm(new NPCDialog_1.NPCDialog(["こら！", "ケンカ売ってのか！？"]));
+                }
+                dispose() {
+                    throw new Error("Not implemented");
                 }
             };
             exports_14("NPCWithDialog", NPCWithDialog);

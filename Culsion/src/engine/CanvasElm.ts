@@ -8,4 +8,9 @@ export abstract class CanvasElm {
     public setWorld(world: World) {
         this.world = world;
     }
+
+    public dispose() {
+        // @ts-expect-error
+        this.world = undefined;
+    }
 }

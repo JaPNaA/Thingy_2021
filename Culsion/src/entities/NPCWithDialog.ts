@@ -10,4 +10,8 @@ export class NPCWithDialog extends NPC {
 
         this.world.addElm(new NPCDialog(["こら！", "ケンカ売ってのか！？"]));
     }
+
+    public dispose() {
+        throw new Error("Not implemented");
+    }
 }

@@ -28,6 +28,7 @@ export default class Keyboard {
             promiseResFunc = res;
             this.addKeydownHandler(keyCodes, promiseResFunc);
         });
+        //* Potential problem: removing promise during handler
         promise.then(() => this.removeKeydownHandler(keyCodes, promiseResFunc));
 
         return promise;

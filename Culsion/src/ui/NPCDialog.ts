@@ -7,13 +7,14 @@ export class NPCDialog extends CanvasElm {
 
     constructor(private dialog: string[]) {
         super();
+
+        this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
     }
 
     public setWorld(world: World) {
         super.setWorld(world);
 
-        world.keyboard.nextKeydown(settings.keybindings.advanceDialog)
-            .then(() => this.index++);
+        world.keyboard.addKeydownHandler(settings.keybindings.advanceDialog, this.advanceDialogHandler);
     }
 
     public draw() {
@@ -25,5 +26,17 @@ export class NPCDialog extends CanvasElm {
         X.font = "24px Arial";
         X.textBaseline = "top";
         X.fillText(this.dialog[this.index], 16, 308);
+    }
+
+    private advanceDialogHandler() {
+        this.index++;
+        if (this.dialog[this.index] === undefined) {
+            this.world.removeElm(this);
+        }
+    }
+
+    public dispose() {
+        this.world.keyboard.removeKeydownHandler(settings.keybindings.advanceDialog, this.advanceDialogHandler);
+        super.dispose();
     }
 }
