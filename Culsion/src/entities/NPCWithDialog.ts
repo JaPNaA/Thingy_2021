@@ -8,6 +8,6 @@ export class NPCWithDialog extends NPC {
         if (this.dialogOpen) { return; }
         this.dialogOpen = true;
 
-        this.world.addElm(new NPCDialog(["こら！"]));
+        this.world.addElm(new NPCDialog(["こら！", "ケンカ売ってのか！？"]));
     }
 }

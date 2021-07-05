@@ -3,6 +3,7 @@ export const settings = {
         moveUp: ["KeyW"],
         moveDown: ["KeyS"],
         moveLeft: ["KeyA"],
-        moveRight: ["KeyD"]
+        moveRight: ["KeyD"],
+        advanceDialog: ["Enter", "NumpadEnter", "Space"]
     }
 };

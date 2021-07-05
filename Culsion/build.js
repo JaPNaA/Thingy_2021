@@ -163,6 +163,7 @@ System.register("engine/Keyboard", [], function (exports_6, context_6) {
             Keyboard = class Keyboard {
                 constructor() {
                     this.keys = {};
+                    this.handlers = {};
                     this.keyupHandler = this.keyupHandler.bind(this);
                     this.keydownHandler = this.keydownHandler.bind(this);
                     console.log(this.keys);
@@ -174,6 +175,39 @@ System.register("engine/Keyboard", [], function (exports_6, context_6) {
                 stopListen() {
                     removeEventListener("keyup", this.keyupHandler);
                     removeEventListener("keydown", this.keydownHandler);
+                }
+                async nextKeydown(keyCodes) {
+                    let promiseResFunc;
+                    const promise = new Promise(res => {
+                        promiseResFunc = res;
+                        this.addKeydownHandler(keyCodes, promiseResFunc);
+                    });
+                    promise.then(() => this.removeKeydownHandler(keyCodes, promiseResFunc));
+                    return promise;
+                }
+                addKeydownHandler(keyCodes, handler) {
+                    for (const code of keyCodes) {
+                        const existing = this.handlers[code];
+                        if (existing) {
+                            existing.push(handler);
+                        }
+                        else {
+                            this.handlers[code] = [handler];
+                        }
+                    }
+                }
+                removeKeydownHandler(keyCodes, handler) {
+                    for (const code of keyCodes) {
+                        const existing = this.handlers[code];
+                        if (!existing) {
+                            throw new Error("Tried to remove handler that doesn't exist");
+                        }
+                        const index = existing.indexOf(handler);
+                        if (index < 0) {
+                            throw new Error("Tried to remove handler that doesn't exist");
+                        }
+                        existing.splice(index, 1);
+                    }
                 }
                 isDown(keyCodes) {
                     for (const code of keyCodes) {
@@ -188,6 +222,12 @@ System.register("engine/Keyboard", [], function (exports_6, context_6) {
                 }
                 keydownHandler(event) {
                     this.keys[event.code] = true;
+                    const handlers = this.handlers[event.code];
+                    if (handlers) {
+                        for (const handler of handlers) {
+                            handler(event);
+                        }
+                    }
                 }
             };
             exports_6("default", Keyboard);
@@ -340,14 +380,36 @@ System.register("entities/collisions", [], function (exports_10, context_10) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/CanvasElm"], function (exports_11, context_11) {
+System.register("settings", [], function (exports_11, context_11) {
     "use strict";
-    var CanvasElm_2, NPCDialog;
+    var settings;
     var __moduleName = context_11 && context_11.id;
+    return {
+        setters: [],
+        execute: function () {
+            exports_11("settings", settings = {
+                keybindings: {
+                    moveUp: ["KeyW"],
+                    moveDown: ["KeyS"],
+                    moveLeft: ["KeyA"],
+                    moveRight: ["KeyD"],
+                    advanceDialog: ["Enter", "NumpadEnter", "Space"]
+                }
+            });
+        }
+    };
+});
+System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_12, context_12) {
+    "use strict";
+    var CanvasElm_2, settings_1, NPCDialog;
+    var __moduleName = context_12 && context_12.id;
     return {
         setters: [
             function (CanvasElm_2_1) {
                 CanvasElm_2 = CanvasElm_2_1;
+            },
+            function (settings_1_1) {
+                settings_1 = settings_1_1;
             }
         ],
         execute: function () {
@@ -355,6 +417,12 @@ System.register("ui/NPCDialog", ["engine/CanvasElm"], function (exports_11, cont
                 constructor(dialog) {
                     super();
                     this.dialog = dialog;
+                    this.index = 0;
+                }
+                setWorld(world) {
+                    super.setWorld(world);
+                    world.keyboard.nextKeydown(settings_1.settings.keybindings.advanceDialog)
+                        .then(() => this.index++);
                 }
                 draw() {
                     const X = this.world.canvas.X;
@@ -363,17 +431,17 @@ System.register("ui/NPCDialog", ["engine/CanvasElm"], function (exports_11, cont
                     X.fillStyle = "#aaa";
                     X.font = "24px Arial";
                     X.textBaseline = "top";
-                    X.fillText(this.dialog[0], 16, 308);
+                    X.fillText(this.dialog[this.index], 16, 308);
                 }
             };
-            exports_11("NPCDialog", NPCDialog);
+            exports_12("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_12, context_12) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_13, context_13) {
     "use strict";
     var Entity_1, NPC;
-    var __moduleName = context_12 && context_12.id;
+    var __moduleName = context_13 && context_13.id;
     return {
         setters: [
             function (Entity_1_1) {
@@ -393,14 +461,14 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_12, conte
                     X.fillRect(this.x, this.y, this.width, this.height);
                 }
             };
-            exports_12("NPC", NPC);
+            exports_13("NPC", NPC);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["ui/NPCDialog", "entities/NPC"], function (exports_13, context_13) {
+System.register("entities/NPCWithDialog", ["ui/NPCDialog", "entities/NPC"], function (exports_14, context_14) {
     "use strict";
     var NPCDialog_1, NPC_1, NPCWithDialog;
-    var __moduleName = context_13 && context_13.id;
+    var __moduleName = context_14 && context_14.id;
     return {
         setters: [
             function (NPCDialog_1_1) {
@@ -421,39 +489,21 @@ System.register("entities/NPCWithDialog", ["ui/NPCDialog", "entities/NPC"], func
                         return;
                     }
                     this.dialogOpen = true;
-                    this.world.addElm(new NPCDialog_1.NPCDialog(["こら！"]));
+                    this.world.addElm(new NPCDialog_1.NPCDialog(["こら！", "ケンカ売ってのか！？"]));
                 }
             };
-            exports_13("NPCWithDialog", NPCWithDialog);
-        }
-    };
-});
-System.register("settings", [], function (exports_14, context_14) {
-    "use strict";
-    var settings;
-    var __moduleName = context_14 && context_14.id;
-    return {
-        setters: [],
-        execute: function () {
-            exports_14("settings", settings = {
-                keybindings: {
-                    moveUp: ["KeyW"],
-                    moveDown: ["KeyS"],
-                    moveLeft: ["KeyA"],
-                    moveRight: ["KeyD"]
-                }
-            });
+            exports_14("NPCWithDialog", NPCWithDialog);
         }
     };
 });
 System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_15, context_15) {
     "use strict";
-    var settings_1, collisions_2, Entity_2, Player;
+    var settings_2, collisions_2, Entity_2, Player;
     var __moduleName = context_15 && context_15.id;
     return {
         setters: [
-            function (settings_1_1) {
-                settings_1 = settings_1_1;
+            function (settings_2_1) {
+                settings_2 = settings_2_1;
             },
             function (collisions_2_1) {
                 collisions_2 = collisions_2_1;
@@ -474,16 +524,16 @@ System.register("entities/Player", ["settings", "entities/collisions", "entities
                     X.fillRect(this.x, this.y, this.width, this.height);
                     let dirX = 0;
                     let dirY = 0;
-                    if (this.world.keyboard.isDown(settings_1.settings.keybindings.moveLeft)) {
+                    if (this.world.keyboard.isDown(settings_2.settings.keybindings.moveLeft)) {
                         dirX--;
                     }
-                    if (this.world.keyboard.isDown(settings_1.settings.keybindings.moveRight)) {
+                    if (this.world.keyboard.isDown(settings_2.settings.keybindings.moveRight)) {
                         dirX++;
                     }
-                    if (this.world.keyboard.isDown(settings_1.settings.keybindings.moveDown)) {
+                    if (this.world.keyboard.isDown(settings_2.settings.keybindings.moveDown)) {
                         dirY++;
                     }
-                    if (this.world.keyboard.isDown(settings_1.settings.keybindings.moveUp)) {
+                    if (this.world.keyboard.isDown(settings_2.settings.keybindings.moveUp)) {
                         dirY--;
                     }
                     this.x += dirX * 10;
