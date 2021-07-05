@@ -1,7 +1,7 @@
 import { CanvasElm } from "./engine/CanvasElm";
 import { World } from "./engine/World";
 import { registerCollisions } from "./entities/collisions";
-import { NPC } from "./entities/NPC";
+import { NPCWithDialog } from "./entities/NPCWithDialog";
 import { Player } from "./entities/Player";
 
 const world = new World();
@@ -13,7 +13,7 @@ world.addElm(new class TestElm extends CanvasElm {
     }
 });
 world.addElm(new Player());
-world.addElm(new NPC(50, 200));
+world.addElm(new NPCWithDialog(50, 200));
 
 world.appendTo(document.body);
 world.keyboard.startListen();

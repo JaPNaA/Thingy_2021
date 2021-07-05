@@ -340,10 +340,40 @@ System.register("entities/collisions", [], function (exports_10, context_10) {
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_11, context_11) {
+System.register("ui/NPCDialog", ["engine/CanvasElm"], function (exports_11, context_11) {
+    "use strict";
+    var CanvasElm_2, NPCDialog;
+    var __moduleName = context_11 && context_11.id;
+    return {
+        setters: [
+            function (CanvasElm_2_1) {
+                CanvasElm_2 = CanvasElm_2_1;
+            }
+        ],
+        execute: function () {
+            NPCDialog = class NPCDialog extends CanvasElm_2.CanvasElm {
+                constructor(dialog) {
+                    super();
+                    this.dialog = dialog;
+                }
+                draw() {
+                    const X = this.world.canvas.X;
+                    X.fillStyle = "#4448";
+                    X.fillRect(8, 300, 500, 200);
+                    X.fillStyle = "#aaa";
+                    X.font = "24px Arial";
+                    X.textBaseline = "top";
+                    X.fillText(this.dialog[0], 16, 308);
+                }
+            };
+            exports_11("NPCDialog", NPCDialog);
+        }
+    };
+});
+System.register("entities/NPC", ["entities/Entity"], function (exports_12, context_12) {
     "use strict";
     var Entity_1, NPC;
-    var __moduleName = context_11 && context_11.id;
+    var __moduleName = context_12 && context_12.id;
     return {
         setters: [
             function (Entity_1_1) {
@@ -363,18 +393,49 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_11, conte
                     X.fillRect(this.x, this.y, this.width, this.height);
                 }
             };
-            exports_11("NPC", NPC);
+            exports_12("NPC", NPC);
         }
     };
 });
-System.register("settings", [], function (exports_12, context_12) {
+System.register("entities/NPCWithDialog", ["ui/NPCDialog", "entities/NPC"], function (exports_13, context_13) {
+    "use strict";
+    var NPCDialog_1, NPC_1, NPCWithDialog;
+    var __moduleName = context_13 && context_13.id;
+    return {
+        setters: [
+            function (NPCDialog_1_1) {
+                NPCDialog_1 = NPCDialog_1_1;
+            },
+            function (NPC_1_1) {
+                NPC_1 = NPC_1_1;
+            }
+        ],
+        execute: function () {
+            NPCWithDialog = class NPCWithDialog extends NPC_1.NPC {
+                constructor() {
+                    super(...arguments);
+                    this.dialogOpen = false;
+                }
+                onCollision() {
+                    if (this.dialogOpen) {
+                        return;
+                    }
+                    this.dialogOpen = true;
+                    this.world.addElm(new NPCDialog_1.NPCDialog(["こら！"]));
+                }
+            };
+            exports_13("NPCWithDialog", NPCWithDialog);
+        }
+    };
+});
+System.register("settings", [], function (exports_14, context_14) {
     "use strict";
     var settings;
-    var __moduleName = context_12 && context_12.id;
+    var __moduleName = context_14 && context_14.id;
     return {
         setters: [],
         execute: function () {
-            exports_12("settings", settings = {
+            exports_14("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW"],
                     moveDown: ["KeyS"],
@@ -385,10 +446,10 @@ System.register("settings", [], function (exports_12, context_12) {
         }
     };
 });
-System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_13, context_13) {
+System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_15, context_15) {
     "use strict";
     var settings_1, collisions_2, Entity_2, Player;
-    var __moduleName = context_13 && context_13.id;
+    var __moduleName = context_15 && context_15.id;
     return {
         setters: [
             function (settings_1_1) {
@@ -432,22 +493,22 @@ System.register("entities/Player", ["settings", "entities/collisions", "entities
                     console.log("ow!");
                 }
             };
-            exports_13("Player", Player);
+            exports_15("Player", Player);
         }
     };
 });
-System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPC", "entities/Player"], function (exports_14, context_14) {
+System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player"], function (exports_16, context_16) {
     "use strict";
-    var CanvasElm_2, World_1, collisions_3, NPC_1, Player_1, world;
-    var __moduleName = context_14 && context_14.id;
+    var CanvasElm_3, World_1, collisions_3, NPCWithDialog_1, Player_1, world;
+    var __moduleName = context_16 && context_16.id;
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);
     }
     return {
         setters: [
-            function (CanvasElm_2_1) {
-                CanvasElm_2 = CanvasElm_2_1;
+            function (CanvasElm_3_1) {
+                CanvasElm_3 = CanvasElm_3_1;
             },
             function (World_1_1) {
                 World_1 = World_1_1;
@@ -455,8 +516,8 @@ System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisio
             function (collisions_3_1) {
                 collisions_3 = collisions_3_1;
             },
-            function (NPC_1_1) {
-                NPC_1 = NPC_1_1;
+            function (NPCWithDialog_1_1) {
+                NPCWithDialog_1 = NPCWithDialog_1_1;
             },
             function (Player_1_1) {
                 Player_1 = Player_1_1;
@@ -464,7 +525,7 @@ System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisio
         ],
         execute: function () {
             world = new World_1.World();
-            world.addElm(new class TestElm extends CanvasElm_2.CanvasElm {
+            world.addElm(new class TestElm extends CanvasElm_3.CanvasElm {
                 draw() {
                     const X = this.world.canvas.X;
                     X.fillStyle = "#fff";
@@ -472,7 +533,7 @@ System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisio
                 }
             });
             world.addElm(new Player_1.Player());
-            world.addElm(new NPC_1.NPC(50, 200));
+            world.addElm(new NPCWithDialog_1.NPCWithDialog(50, 200));
             world.appendTo(document.body);
             world.keyboard.startListen();
             collisions_3.registerCollisions(world.collisionSystem.reactions);
