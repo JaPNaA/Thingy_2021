@@ -1,5 +1,6 @@
 import { CanvasElm } from "./engine/CanvasElm";
 import { World } from "./engine/World";
+import { registerCollisions } from "./entities/collisions";
 import { NPC } from "./entities/NPC";
 import { Player } from "./entities/Player";
 
@@ -16,6 +17,8 @@ world.addElm(new NPC(50, 200));
 
 world.appendTo(document.body);
 world.keyboard.startListen();
+
+registerCollisions(world.collisionSystem.reactions);
 
 function requanf() {
     world.draw();

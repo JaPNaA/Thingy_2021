@@ -1,7 +1,10 @@
 import { settings } from "../settings";
+import { collisions } from "./collisions";
 import { Entity } from "./Entity";
 
 export class Player extends Entity {
+    public collisionType = collisions.types.moving;
+
     draw() {
         const X = this.world.canvas.X;
         X.fillStyle = "#f00";
@@ -25,5 +28,9 @@ export class Player extends Entity {
 
         this.x += dirX * 10;
         this.y += dirY * 10;
+    }
+
+    onCollision() {
+        console.log("ow!");
     }
 }
