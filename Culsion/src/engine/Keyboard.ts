@@ -11,12 +11,12 @@ export class Keyboard {
         console.log(this.keys);
     }
 
-    public startListen() {
+    public _startListen() {
         addEventListener("keyup", this.keyupHandler);
         addEventListener("keydown", this.keydownHandler);
     }
 
-    public stopListen() {
+    public _stopListen() {
         removeEventListener("keyup", this.keyupHandler);
         removeEventListener("keydown", this.keydownHandler);
     }

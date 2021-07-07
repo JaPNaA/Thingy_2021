@@ -2,16 +2,28 @@ import { Canvas } from "./Canvas";
 import { CanvasElm } from "./CanvasElm";
 import { CollisionSystem } from "./collision/CollisionSystem";
 import { Keyboard } from "./Keyboard";
+import { Mouse } from "./Mouse";
 
 export class World {
     public canvas = new Canvas();
     public keyboard = new Keyboard();
+    public mouse = new Mouse();
     public collisionSystem = new CollisionSystem();
 
     private elms: CanvasElm[] = [];
 
     constructor() {
         this.canvas.resizeToScreen();
+    }
+
+    public startListen() {
+        this.keyboard._startListen();
+        this.mouse._startListen();
+    }
+
+    public stopListen() {
+        this.keyboard._stopListen();
+        this.mouse._stopListen();
     }
 
     public addElm(elm: CanvasElm) {

@@ -8,7 +8,7 @@ const world = new World();
 registerCollisions(world.collisionSystem.reactions);
 
 world.appendTo(document.body);
-world.keyboard.startListen();
+world.startListen();
 
 if (location.hash == "#mapEditor") {
     world.addElm(new MapEditor());
