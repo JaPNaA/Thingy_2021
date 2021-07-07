@@ -30,10 +30,31 @@ System.register("engine/Canvas", [], function (exports_1, context_1) {
         }
     };
 });
-System.register("engine/util/Rectangle", [], function (exports_2, context_2) {
+System.register("engine/CanvasElm", [], function (exports_2, context_2) {
+    "use strict";
+    var CanvasElm;
+    var __moduleName = context_2 && context_2.id;
+    return {
+        setters: [],
+        execute: function () {
+            CanvasElm = class CanvasElm {
+                tick() { }
+                setWorld(world) {
+                    this.world = world;
+                }
+                dispose() {
+                    // @ts-expect-error
+                    this.world = undefined;
+                }
+            };
+            exports_2("CanvasElm", CanvasElm);
+        }
+    };
+});
+System.register("engine/util/Rectangle", [], function (exports_3, context_3) {
     "use strict";
     var Rectangle;
-    var __moduleName = context_2 && context_2.id;
+    var __moduleName = context_3 && context_3.id;
     return {
         setters: [],
         execute: function () {
@@ -45,14 +66,14 @@ System.register("engine/util/Rectangle", [], function (exports_2, context_2) {
                     this.height = height;
                 }
             };
-            exports_2("Rectangle", Rectangle);
+            exports_3("Rectangle", Rectangle);
         }
     };
 });
-System.register("engine/collision/Hitbox", [], function (exports_3, context_3) {
+System.register("engine/collision/Hitbox", [], function (exports_4, context_4) {
     "use strict";
     var Hitbox;
-    var __moduleName = context_3 && context_3.id;
+    var __moduleName = context_4 && context_4.id;
     return {
         setters: [],
         execute: function () {
@@ -62,14 +83,14 @@ System.register("engine/collision/Hitbox", [], function (exports_3, context_3) {
                     this.elm = elm;
                 }
             };
-            exports_3("Hitbox", Hitbox);
+            exports_4("Hitbox", Hitbox);
         }
     };
 });
-System.register("engine/collision/CollisionReactionMap", [], function (exports_4, context_4) {
+System.register("engine/collision/CollisionReactionMap", [], function (exports_5, context_5) {
     "use strict";
     var CollisionReactionMap;
-    var __moduleName = context_4 && context_4.id;
+    var __moduleName = context_5 && context_5.id;
     return {
         setters: [],
         execute: function () {
@@ -110,30 +131,30 @@ System.register("engine/collision/CollisionReactionMap", [], function (exports_4
                     }
                 }
             };
-            exports_4("CollisionReactionMap", CollisionReactionMap);
+            exports_5("CollisionReactionMap", CollisionReactionMap);
         }
     };
 });
-System.register("engine/collision/isRectanglesColliding", [], function (exports_5, context_5) {
+System.register("engine/collision/isRectanglesColliding", [], function (exports_6, context_6) {
     "use strict";
-    var __moduleName = context_5 && context_5.id;
+    var __moduleName = context_6 && context_6.id;
     function isRectanglesColliding(rect1, rect2) {
         return rect1.x < rect2.x + rect2.width &&
             rect1.x + rect1.width > rect2.x &&
             rect1.y < rect2.y + rect2.height &&
             rect1.y + rect1.height > rect2.y;
     }
-    exports_5("isRectanglesColliding", isRectanglesColliding);
+    exports_6("isRectanglesColliding", isRectanglesColliding);
     return {
         setters: [],
         execute: function () {
         }
     };
 });
-System.register("engine/collision/CollisionSystem", ["engine/collision/CollisionReactionMap", "engine/collision/isRectanglesColliding"], function (exports_6, context_6) {
+System.register("engine/collision/CollisionSystem", ["engine/collision/CollisionReactionMap", "engine/collision/isRectanglesColliding"], function (exports_7, context_7) {
     "use strict";
     var CollisionReactionMap_1, isRectanglesColliding_1, CollisionSystem;
-    var __moduleName = context_6 && context_6.id;
+    var __moduleName = context_7 && context_7.id;
     return {
         setters: [
             function (CollisionReactionMap_1_1) {
@@ -165,14 +186,14 @@ System.register("engine/collision/CollisionSystem", ["engine/collision/Collision
                     }
                 }
             };
-            exports_6("CollisionSystem", CollisionSystem);
+            exports_7("CollisionSystem", CollisionSystem);
         }
     };
 });
-System.register("engine/Keyboard", [], function (exports_7, context_7) {
+System.register("engine/Keyboard", [], function (exports_8, context_8) {
     "use strict";
     var Keyboard;
-    var __moduleName = context_7 && context_7.id;
+    var __moduleName = context_8 && context_8.id;
     return {
         setters: [],
         execute: function () {
@@ -247,14 +268,14 @@ System.register("engine/Keyboard", [], function (exports_7, context_7) {
                     }
                 }
             };
-            exports_7("Keyboard", Keyboard);
+            exports_8("Keyboard", Keyboard);
         }
     };
 });
-System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSystem", "engine/Keyboard"], function (exports_8, context_8) {
+System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSystem", "engine/Keyboard"], function (exports_9, context_9) {
     "use strict";
     var Canvas_1, CollisionSystem_1, Keyboard_1, World;
-    var __moduleName = context_8 && context_8.id;
+    var __moduleName = context_9 && context_9.id;
     return {
         setters: [
             function (Canvas_1_1) {
@@ -303,28 +324,7 @@ System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSys
                     this.canvas.appendTo(parent);
                 }
             };
-            exports_8("World", World);
-        }
-    };
-});
-System.register("engine/CanvasElm", [], function (exports_9, context_9) {
-    "use strict";
-    var CanvasElm;
-    var __moduleName = context_9 && context_9.id;
-    return {
-        setters: [],
-        execute: function () {
-            CanvasElm = class CanvasElm {
-                tick() { }
-                setWorld(world) {
-                    this.world = world;
-                }
-                dispose() {
-                    // @ts-expect-error
-                    this.world = undefined;
-                }
-            };
-            exports_9("CanvasElm", CanvasElm);
+            exports_9("World", World);
         }
     };
 });
@@ -640,10 +640,58 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
         }
     };
 });
-System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_15, context_15) {
+System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_15, context_15) {
+    "use strict";
+    var CanvasElm_2, ParentCanvasElm;
+    var __moduleName = context_15 && context_15.id;
+    return {
+        setters: [
+            function (CanvasElm_2_1) {
+                CanvasElm_2 = CanvasElm_2_1;
+            }
+        ],
+        execute: function () {
+            ParentCanvasElm = class ParentCanvasElm extends CanvasElm_2.CanvasElm {
+                constructor() {
+                    super(...arguments);
+                    this.children = [];
+                }
+                draw() {
+                    for (const child of this.children) {
+                        child.draw();
+                    }
+                }
+                tick() {
+                    for (const child of this.children) {
+                        child.tick();
+                    }
+                }
+                setWorld(world) {
+                    super.setWorld(world);
+                    for (const child of this.children) {
+                        child.setWorld(world);
+                    }
+                }
+                dispose() {
+                    for (const child of this.children) {
+                        child.dispose();
+                    }
+                }
+                addChild(child) {
+                    this.children.push(child);
+                    if (this.world) {
+                        child.setWorld(this.world);
+                    }
+                }
+            };
+            exports_15("ParentCanvasElm", ParentCanvasElm);
+        }
+    };
+});
+System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_16, context_16) {
     "use strict";
     var resourceFetcher_2, DialogFetcher, dialogFetcher;
-    var __moduleName = context_15 && context_15.id;
+    var __moduleName = context_16 && context_16.id;
     return {
         setters: [
             function (resourceFetcher_2_1) {
@@ -672,18 +720,18 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
                     return arr;
                 }
             };
-            exports_15("dialogFetcher", dialogFetcher = new DialogFetcher());
+            exports_16("dialogFetcher", dialogFetcher = new DialogFetcher());
         }
     };
 });
-System.register("settings", [], function (exports_16, context_16) {
+System.register("settings", [], function (exports_17, context_17) {
     "use strict";
     var settings;
-    var __moduleName = context_16 && context_16.id;
+    var __moduleName = context_17 && context_17.id;
     return {
         setters: [],
         execute: function () {
-            exports_16("settings", settings = {
+            exports_17("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW", "ArrowUp"],
                     moveDown: ["KeyS", "ArrowDown"],
@@ -695,21 +743,21 @@ System.register("settings", [], function (exports_16, context_16) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_17, context_17) {
+System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_18, context_18) {
     "use strict";
-    var CanvasElm_2, settings_1, NPCDialog;
-    var __moduleName = context_17 && context_17.id;
+    var CanvasElm_3, settings_1, NPCDialog;
+    var __moduleName = context_18 && context_18.id;
     return {
         setters: [
-            function (CanvasElm_2_1) {
-                CanvasElm_2 = CanvasElm_2_1;
+            function (CanvasElm_3_1) {
+                CanvasElm_3 = CanvasElm_3_1;
             },
             function (settings_1_1) {
                 settings_1 = settings_1_1;
             }
         ],
         execute: function () {
-            NPCDialog = class NPCDialog extends CanvasElm_2.CanvasElm {
+            NPCDialog = class NPCDialog extends CanvasElm_3.CanvasElm {
                 constructor(dialog) {
                     super();
                     this.dialog = dialog;
@@ -743,14 +791,14 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     super.dispose();
                 }
             };
-            exports_17("NPCDialog", NPCDialog);
+            exports_18("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_18, context_18) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_19, context_19) {
     "use strict";
     var Entity_2, NPC;
-    var __moduleName = context_18 && context_18.id;
+    var __moduleName = context_19 && context_19.id;
     return {
         setters: [
             function (Entity_2_1) {
@@ -770,14 +818,14 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_18, conte
                     X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
             };
-            exports_18("NPC", NPC);
+            exports_19("NPC", NPC);
         }
     };
 });
-System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_19, context_19) {
+System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_20, context_20) {
     "use strict";
     var MovingRectangle_2, settings_2, collisions_3, Entity_3, Player;
-    var __moduleName = context_19 && context_19.id;
+    var __moduleName = context_20 && context_20.id;
     return {
         setters: [
             function (MovingRectangle_2_1) {
@@ -825,14 +873,14 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
                     this.rect.y += dirY * 10;
                 }
             };
-            exports_19("Player", Player);
+            exports_20("Player", Player);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_20, context_20) {
+System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_21, context_21) {
     "use strict";
     var dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
-    var __moduleName = context_20 && context_20.id;
+    var __moduleName = context_21 && context_21.id;
     return {
         setters: [
             function (dialogFetcher_1_1) {
@@ -870,28 +918,21 @@ System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDia
                     throw new Error("Not implemented");
                 }
             };
-            exports_20("NPCWithDialog", NPCWithDialog);
+            exports_21("NPCWithDialog", NPCWithDialog);
         }
     };
 });
-System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_21, context_21) {
+System.register("view/GameView", ["engine/CanvasElm", "engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_22, context_22) {
     "use strict";
-    var CanvasElm_3, World_1, collisions_4, NPCWithDialog_1, Player_2, TileMap_1, world;
-    var __moduleName = context_21 && context_21.id;
-    function requanf() {
-        world.draw();
-        requestAnimationFrame(requanf);
-    }
+    var CanvasElm_4, ParentCanvasElm_1, NPCWithDialog_1, Player_2, TileMap_1, GameView;
+    var __moduleName = context_22 && context_22.id;
     return {
         setters: [
-            function (CanvasElm_3_1) {
-                CanvasElm_3 = CanvasElm_3_1;
+            function (CanvasElm_4_1) {
+                CanvasElm_4 = CanvasElm_4_1;
             },
-            function (World_1_1) {
-                World_1 = World_1_1;
-            },
-            function (collisions_4_1) {
-                collisions_4 = collisions_4_1;
+            function (ParentCanvasElm_1_1) {
+                ParentCanvasElm_1 = ParentCanvasElm_1_1;
             },
             function (NPCWithDialog_1_1) {
                 NPCWithDialog_1 = NPCWithDialog_1_1;
@@ -904,81 +945,85 @@ System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisio
             }
         ],
         execute: function () {
-            world = new World_1.World();
-            world.addElm(new class TestElm extends CanvasElm_3.CanvasElm {
-                draw() {
-                    const X = this.world.canvas.X;
-                    X.fillStyle = "#fff";
-                    X.fillRect(performance.now() / 100, performance.now() / 100, 50, 50);
-                }
-            });
-            world.addElm(new Player_2.Player());
-            world.addElm(new NPCWithDialog_1.NPCWithDialog(70, 600));
-            world.addElm(new NPCWithDialog_1.NPCWithDialog(94, 624));
-            world.addElm(new TileMap_1.TileMap());
-            world.appendTo(document.body);
-            world.keyboard.startListen();
-            collisions_4.registerCollisions(world.collisionSystem.reactions);
-            requanf();
-        }
-    };
-});
-System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_22, context_22) {
-    "use strict";
-    var CanvasElm_4, ParentCanvasElm;
-    var __moduleName = context_22 && context_22.id;
-    return {
-        setters: [
-            function (CanvasElm_4_1) {
-                CanvasElm_4 = CanvasElm_4_1;
-            }
-        ],
-        execute: function () {
-            ParentCanvasElm = class ParentCanvasElm extends CanvasElm_4.CanvasElm {
+            GameView = class GameView extends ParentCanvasElm_1.ParentCanvasElm {
                 constructor() {
-                    super(...arguments);
-                    this.children = [];
-                }
-                draw() {
-                    for (const child of this.children) {
-                        child.draw();
-                    }
-                }
-                tick() {
-                    for (const child of this.children) {
-                        child.tick();
-                    }
-                }
-                setWorld(world) {
-                    super.setWorld(world);
-                    for (const child of this.children) {
-                        child.setWorld(world);
-                    }
-                }
-                dispose() {
-                    for (const child of this.children) {
-                        child.dispose();
-                    }
+                    super();
+                    this.addChild(new class TestElm extends CanvasElm_4.CanvasElm {
+                        draw() {
+                            const X = this.world.canvas.X;
+                            X.fillStyle = "#fff";
+                            X.fillRect(performance.now() / 100, performance.now() / 100, 50, 50);
+                        }
+                    });
+                    this.addChild(new Player_2.Player());
+                    this.addChild(new NPCWithDialog_1.NPCWithDialog(70, 600));
+                    this.addChild(new NPCWithDialog_1.NPCWithDialog(94, 624));
+                    this.addChild(new TileMap_1.TileMap());
                 }
             };
-            exports_22("ParentCanvasElm", ParentCanvasElm);
+            exports_22("GameView", GameView);
         }
     };
 });
-System.register("mapEditor/MapEditor", ["engine/ParentCanvasElm"], function (exports_23, context_23) {
+System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities/TileMap"], function (exports_23, context_23) {
     "use strict";
-    var ParentCanvasElm_1, MapEditor;
+    var ParentCanvasElm_2, TileMap_2, MapEditor;
     var __moduleName = context_23 && context_23.id;
     return {
         setters: [
-            function (ParentCanvasElm_1_1) {
-                ParentCanvasElm_1 = ParentCanvasElm_1_1;
+            function (ParentCanvasElm_2_1) {
+                ParentCanvasElm_2 = ParentCanvasElm_2_1;
+            },
+            function (TileMap_2_1) {
+                TileMap_2 = TileMap_2_1;
             }
         ],
         execute: function () {
-            MapEditor = class MapEditor extends ParentCanvasElm_1.ParentCanvasElm {
+            MapEditor = class MapEditor extends ParentCanvasElm_2.ParentCanvasElm {
+                constructor() {
+                    super();
+                    this.addChild(new TileMap_2.TileMap());
+                }
             };
             exports_23("MapEditor", MapEditor);
+        }
+    };
+});
+System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_24, context_24) {
+    "use strict";
+    var World_1, collisions_4, GameView_1, MapEditor_1, world;
+    var __moduleName = context_24 && context_24.id;
+    function requanf() {
+        world.draw();
+        requestAnimationFrame(requanf);
+    }
+    return {
+        setters: [
+            function (World_1_1) {
+                World_1 = World_1_1;
+            },
+            function (collisions_4_1) {
+                collisions_4 = collisions_4_1;
+            },
+            function (GameView_1_1) {
+                GameView_1 = GameView_1_1;
+            },
+            function (MapEditor_1_1) {
+                MapEditor_1 = MapEditor_1_1;
+            }
+        ],
+        execute: function () {
+            world = new World_1.World();
+            collisions_4.registerCollisions(world.collisionSystem.reactions);
+            world.appendTo(document.body);
+            world.keyboard.startListen();
+            if (location.hash == "#mapEditor") {
+                world.addElm(new MapEditor_1.MapEditor());
+            }
+            else {
+                world.addElm(new GameView_1.GameView());
+            }
+            requanf();
         }
     };
 });
