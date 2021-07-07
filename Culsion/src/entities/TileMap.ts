@@ -44,56 +44,82 @@ export default class TileMap extends Entity {
 
         const rects = [];
 
+        let capturedTopLeft = false;
+        let capturedTopRight = false;
+        let capturedBottomLeft = false;
+        let capturedBottomRight = false;
+
         if (this.isBlock(xIndex, yIndex)) {
-            rects.push(new Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize));
+            rects.push(this.rectFromIndexes(xIndex, yIndex));
         }
 
         if (this.isBlock(xIndex - 1, yIndex)) {
-            let rect = new Rectangle((xIndex - 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+            let rect = this.rectFromIndexes(xIndex - 1, yIndex);
             if (this.isBlock(xIndex - 1, yIndex - 1)) {
                 rect.y -= this.tileSize;
                 rect.height += this.tileSize;
+                capturedTopLeft = true;
             }
             if (this.isBlock(xIndex - 1, yIndex + 1)) {
                 rect.height += this.tileSize;
+                capturedBottomLeft = true;
             }
             rects.push(rect);
         }
 
         if (this.isBlock(xIndex + 1, yIndex)) {
-            let rect = new Rectangle((xIndex + 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+            let rect = this.rectFromIndexes(xIndex + 1, yIndex);
             if (this.isBlock(xIndex + 1, yIndex - 1)) {
                 rect.y -= this.tileSize;
                 rect.height += this.tileSize;
+                capturedTopRight = true;
             }
             if (this.isBlock(xIndex + 1, yIndex + 1)) {
                 rect.height += this.tileSize;
+                capturedBottomRight = true;
             }
             rects.push(rect);
         }
 
         if (this.isBlock(xIndex, yIndex + 1)) {
-            let rect = new Rectangle(xIndex * this.tileSize, (yIndex + 1) * this.tileSize, this.tileSize, this.tileSize);
+            let rect = this.rectFromIndexes(xIndex, yIndex + 1);
             if (this.isBlock(xIndex - 1, yIndex + 1)) {
                 rect.x -= this.tileSize;
                 rect.width += this.tileSize;
+                capturedBottomLeft = true;
             }
             if (this.isBlock(xIndex + 1, yIndex + 1)) {
                 rect.width += this.tileSize;
+                capturedBottomRight = true;
             }
             rects.push(rect);
         }
 
         if (this.isBlock(xIndex, yIndex - 1)) {
-            let rect = new Rectangle(xIndex * this.tileSize, (yIndex - 1) * this.tileSize, this.tileSize, this.tileSize);
+            let rect = this.rectFromIndexes(xIndex, yIndex - 1);
             if (this.isBlock(xIndex - 1, yIndex - 1)) {
                 rect.x -= this.tileSize;
                 rect.width += this.tileSize;
+                capturedTopLeft = true;
             }
             if (this.isBlock(xIndex + 1, yIndex - 1)) {
                 rect.width += this.tileSize;
+                capturedTopRight = true;
             }
             rects.push(rect);
+        }
+
+        if (!capturedBottomLeft && this.isBlock(xIndex - 1, yIndex + 1)) {
+            rects.push(this.rectFromIndexes(xIndex - 1, yIndex + 1));
+        }
+        if (!capturedBottomRight && this.isBlock(xIndex + 1, yIndex + 1)) {
+            rects.push(this.rectFromIndexes(xIndex + 1, yIndex + 1));
+        }
+        if (!capturedTopLeft && this.isBlock(xIndex - 1, yIndex - 1)) {
+            rects.push(this.rectFromIndexes(xIndex - 1, yIndex - 1));
+        }
+        if (!capturedTopRight && this.isBlock(xIndex + 1, yIndex - 1)) {
+            rects.push(this.rectFromIndexes(xIndex + 1, yIndex - 1));
         }
 
         return rects;
@@ -102,5 +128,9 @@ export default class TileMap extends Entity {
     private isBlock(xIndex: number, yIndex: number) {
         if (!this.map) { return false; }
         return this.map[yIndex] && this.map[yIndex][xIndex] && this.map[yIndex][xIndex] !== ' ';
+    }
+
+    private rectFromIndexes(xIndex: number, yIndex: number): Rectangle {
+        return new Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
     }
 }

@@ -472,52 +472,76 @@ System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourc
                     const xIndex = Math.floor(x / this.tileSize);
                     const yIndex = Math.floor(y / this.tileSize);
                     const rects = [];
+                    let capturedTopLeft = false;
+                    let capturedTopRight = false;
+                    let capturedBottomLeft = false;
+                    let capturedBottomRight = false;
                     if (this.isBlock(xIndex, yIndex)) {
-                        rects.push(new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize));
+                        rects.push(this.rectFromIndexes(xIndex, yIndex));
                     }
                     if (this.isBlock(xIndex - 1, yIndex)) {
-                        let rect = new Rectangle_3.Rectangle((xIndex - 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = this.rectFromIndexes(xIndex - 1, yIndex);
                         if (this.isBlock(xIndex - 1, yIndex - 1)) {
                             rect.y -= this.tileSize;
                             rect.height += this.tileSize;
+                            capturedTopLeft = true;
                         }
                         if (this.isBlock(xIndex - 1, yIndex + 1)) {
                             rect.height += this.tileSize;
+                            capturedBottomLeft = true;
                         }
                         rects.push(rect);
                     }
                     if (this.isBlock(xIndex + 1, yIndex)) {
-                        let rect = new Rectangle_3.Rectangle((xIndex + 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = this.rectFromIndexes(xIndex + 1, yIndex);
                         if (this.isBlock(xIndex + 1, yIndex - 1)) {
                             rect.y -= this.tileSize;
                             rect.height += this.tileSize;
+                            capturedTopRight = true;
                         }
                         if (this.isBlock(xIndex + 1, yIndex + 1)) {
                             rect.height += this.tileSize;
+                            capturedBottomRight = true;
                         }
                         rects.push(rect);
                     }
                     if (this.isBlock(xIndex, yIndex + 1)) {
-                        let rect = new Rectangle_3.Rectangle(xIndex * this.tileSize, (yIndex + 1) * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = this.rectFromIndexes(xIndex, yIndex + 1);
                         if (this.isBlock(xIndex - 1, yIndex + 1)) {
                             rect.x -= this.tileSize;
                             rect.width += this.tileSize;
+                            capturedBottomLeft = true;
                         }
                         if (this.isBlock(xIndex + 1, yIndex + 1)) {
                             rect.width += this.tileSize;
+                            capturedBottomRight = true;
                         }
                         rects.push(rect);
                     }
                     if (this.isBlock(xIndex, yIndex - 1)) {
-                        let rect = new Rectangle_3.Rectangle(xIndex * this.tileSize, (yIndex - 1) * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = this.rectFromIndexes(xIndex, yIndex - 1);
                         if (this.isBlock(xIndex - 1, yIndex - 1)) {
                             rect.x -= this.tileSize;
                             rect.width += this.tileSize;
+                            capturedTopLeft = true;
                         }
                         if (this.isBlock(xIndex + 1, yIndex - 1)) {
                             rect.width += this.tileSize;
+                            capturedTopRight = true;
                         }
                         rects.push(rect);
+                    }
+                    if (!capturedBottomLeft && this.isBlock(xIndex - 1, yIndex + 1)) {
+                        rects.push(this.rectFromIndexes(xIndex - 1, yIndex + 1));
+                    }
+                    if (!capturedBottomRight && this.isBlock(xIndex + 1, yIndex + 1)) {
+                        rects.push(this.rectFromIndexes(xIndex + 1, yIndex + 1));
+                    }
+                    if (!capturedTopLeft && this.isBlock(xIndex - 1, yIndex - 1)) {
+                        rects.push(this.rectFromIndexes(xIndex - 1, yIndex - 1));
+                    }
+                    if (!capturedTopRight && this.isBlock(xIndex + 1, yIndex - 1)) {
+                        rects.push(this.rectFromIndexes(xIndex + 1, yIndex - 1));
                     }
                     return rects;
                 }
@@ -526,6 +550,9 @@ System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourc
                         return false;
                     }
                     return this.map[yIndex] && this.map[yIndex][xIndex] && this.map[yIndex][xIndex] !== ' ';
+                }
+                rectFromIndexes(xIndex, yIndex) {
+                    return new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
                 }
             };
             exports_13("default", TileMap);
