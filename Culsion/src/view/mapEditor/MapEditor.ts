@@ -8,6 +8,7 @@ export class MapEditor extends ParentCanvasElm {
     constructor() {
         super();
         this.addChild(this.tileMap);
+        console.log(this);
     }
 
     public setWorld(world: World) {
@@ -22,5 +23,13 @@ export class MapEditor extends ParentCanvasElm {
         } else if (this.world.mouse.rightDown) {
             this.tileMap.setBlock(this.world.mouse.x, this.world.mouse.y, false);
         }
+    }
+
+    public exportMap() {
+        // @ts-expect-error -- temporary
+        const map = this.tileMap.map;
+        if (!map) { return; }
+
+        return map.map(row => row.map(block => block ? "x" : " ").join("")).join("\n");
     }
 }
