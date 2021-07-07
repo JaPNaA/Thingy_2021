@@ -114,14 +114,33 @@ System.register("engine/collision/CollisionReactionMap", [], function (exports_4
         }
     };
 });
-System.register("engine/collision/CollisionSystem", ["engine/collision/CollisionReactionMap"], function (exports_5, context_5) {
+System.register("engine/collision/isRectanglesColliding", [], function (exports_5, context_5) {
     "use strict";
-    var CollisionReactionMap_1, CollisionSystem;
     var __moduleName = context_5 && context_5.id;
+    function isRectanglesColliding(rect1, rect2) {
+        return rect1.x < rect2.x + rect2.width &&
+            rect1.x + rect1.width > rect2.x &&
+            rect1.y < rect2.y + rect2.height &&
+            rect1.y + rect1.height > rect2.y;
+    }
+    exports_5("isRectanglesColliding", isRectanglesColliding);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
+});
+System.register("engine/collision/CollisionSystem", ["engine/collision/CollisionReactionMap", "engine/collision/isRectanglesColliding"], function (exports_6, context_6) {
+    "use strict";
+    var CollisionReactionMap_1, isRectanglesColliding_1, CollisionSystem;
+    var __moduleName = context_6 && context_6.id;
     return {
         setters: [
             function (CollisionReactionMap_1_1) {
                 CollisionReactionMap_1 = CollisionReactionMap_1_1;
+            },
+            function (isRectanglesColliding_1_1) {
+                isRectanglesColliding_1 = isRectanglesColliding_1_1;
             }
         ],
         execute: function () {
@@ -139,24 +158,21 @@ System.register("engine/collision/CollisionSystem", ["engine/collision/Collision
                         const rect1 = this.hitboxes[i].rectangle;
                         for (let j = i + 1; j < numHitboxes; j++) {
                             const rect2 = this.hitboxes[j].rectangle;
-                            if (rect1.x < rect2.x + rect2.width &&
-                                rect1.x + rect1.width > rect2.x &&
-                                rect1.y < rect2.y + rect2.height &&
-                                rect1.y + rect1.height > rect2.y) {
+                            if (isRectanglesColliding_1.isRectanglesColliding(rect1, rect2)) {
                                 this.reactions.triggerReaction(this.hitboxes[i], this.hitboxes[j]);
                             }
                         }
                     }
                 }
             };
-            exports_5("CollisionSystem", CollisionSystem);
+            exports_6("CollisionSystem", CollisionSystem);
         }
     };
 });
-System.register("engine/Keyboard", [], function (exports_6, context_6) {
+System.register("engine/Keyboard", [], function (exports_7, context_7) {
     "use strict";
     var Keyboard;
-    var __moduleName = context_6 && context_6.id;
+    var __moduleName = context_7 && context_7.id;
     return {
         setters: [],
         execute: function () {
@@ -231,14 +247,14 @@ System.register("engine/Keyboard", [], function (exports_6, context_6) {
                     }
                 }
             };
-            exports_6("default", Keyboard);
+            exports_7("default", Keyboard);
         }
     };
 });
-System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSystem", "engine/Keyboard"], function (exports_7, context_7) {
+System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSystem", "engine/Keyboard"], function (exports_8, context_8) {
     "use strict";
     var Canvas_1, CollisionSystem_1, Keyboard_1, World;
-    var __moduleName = context_7 && context_7.id;
+    var __moduleName = context_8 && context_8.id;
     return {
         setters: [
             function (Canvas_1_1) {
@@ -284,14 +300,14 @@ System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSys
                     this.canvas.appendTo(parent);
                 }
             };
-            exports_7("World", World);
+            exports_8("World", World);
         }
     };
 });
-System.register("engine/CanvasElm", [], function (exports_8, context_8) {
+System.register("engine/CanvasElm", [], function (exports_9, context_9) {
     "use strict";
     var CanvasElm;
-    var __moduleName = context_8 && context_8.id;
+    var __moduleName = context_9 && context_9.id;
     return {
         setters: [],
         execute: function () {
@@ -304,14 +320,14 @@ System.register("engine/CanvasElm", [], function (exports_8, context_8) {
                     this.world = undefined;
                 }
             };
-            exports_8("CanvasElm", CanvasElm);
+            exports_9("CanvasElm", CanvasElm);
         }
     };
 });
-System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox", "entities/collisions"], function (exports_9, context_9) {
+System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox", "entities/collisions"], function (exports_10, context_10) {
     "use strict";
     var CanvasElm_1, Hitbox_1, collisions_1, Entity;
-    var __moduleName = context_9 && context_9.id;
+    var __moduleName = context_10 && context_10.id;
     return {
         setters: [
             function (CanvasElm_1_1) {
@@ -342,57 +358,7 @@ System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox
                     throw new Error("Not implemented");
                 }
             };
-            exports_9("Entity", Entity);
-        }
-    };
-});
-System.register("entities/collisions", [], function (exports_10, context_10) {
-    "use strict";
-    var collisions;
-    var __moduleName = context_10 && context_10.id;
-    function registerCollisions(collisionReactionMap) {
-        collisionReactionMap.setCollisionReaction(collisions.types.moving, collisions.types.static, function (moving, block) {
-            // modified from https://stackoverflow.com/a/29861691
-            const dx = (moving.rectangle.x + moving.rectangle.width / 2)
-                - (block.rectangle.x + block.rectangle.width / 2);
-            const dy = (moving.rectangle.y + moving.rectangle.height / 2)
-                - (block.rectangle.y + block.rectangle.height / 2);
-            const avgWidth = (moving.rectangle.width + block.rectangle.width) / 2;
-            const avgHeight = (moving.rectangle.height + block.rectangle.height) / 2;
-            const crossWidth = avgWidth * dy;
-            const crossHeight = avgHeight * dx;
-            if (crossWidth > crossHeight) {
-                if (crossWidth > -crossHeight) {
-                    // collision at bottom of block
-                    moving.rectangle.y = block.rectangle.y + block.rectangle.height;
-                }
-                else {
-                    // collision at left of block
-                    moving.rectangle.x = block.rectangle.x - moving.rectangle.width;
-                }
-            }
-            else {
-                if (crossWidth > -crossHeight) {
-                    // collision at right of block
-                    moving.rectangle.x = block.rectangle.x + block.rectangle.width;
-                }
-                else {
-                    // collision at top of block
-                    moving.rectangle.y = block.rectangle.y - moving.rectangle.height;
-                }
-            }
-        });
-    }
-    exports_10("registerCollisions", registerCollisions);
-    return {
-        setters: [],
-        execute: function () {
-            exports_10("collisions", collisions = {
-                types: {
-                    static: Symbol(),
-                    moving: Symbol()
-                }
-            });
+            exports_10("Entity", Entity);
         }
     };
 });
@@ -424,20 +390,210 @@ System.register("resources/resourceFetcher", [], function (exports_11, context_1
         }
     };
 });
-System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_12, context_12) {
+System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetcher", "entities/collisions", "entities/Entity"], function (exports_12, context_12) {
     "use strict";
-    var resourceFetcher_1, DialogFetcher, dialogFetcher;
+    var Rectangle_1, resourceFetcher_1, collisions_2, Entity_1, TileMap;
     var __moduleName = context_12 && context_12.id;
     return {
         setters: [
+            function (Rectangle_1_1) {
+                Rectangle_1 = Rectangle_1_1;
+            },
             function (resourceFetcher_1_1) {
                 resourceFetcher_1 = resourceFetcher_1_1;
+            },
+            function (collisions_2_1) {
+                collisions_2 = collisions_2_1;
+            },
+            function (Entity_1_1) {
+                Entity_1 = Entity_1_1;
+            }
+        ],
+        execute: function () {
+            TileMap = class TileMap extends Entity_1.Entity {
+                constructor() {
+                    super();
+                    this.collisionType = collisions_2.collisions.types.map;
+                    this.tileSize = 64;
+                    resourceFetcher_1.resourceFetcher.fetch("assets/map.txt").then(str => {
+                        this.map = str.split("\n");
+                        this.height = this.map.length * this.tileSize;
+                        this.width = this.map[0].length * this.tileSize;
+                    });
+                }
+                draw() {
+                    if (!this.map) {
+                        return;
+                    }
+                    const X = this.world.canvas.X;
+                    X.fillStyle = "#aaa8";
+                    for (let y = 0; y < this.map.length; y++) {
+                        for (let x = 0; x < this.map[y].length; x++) {
+                            if (this.map[y][x] !== " ") {
+                                X.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                            }
+                        }
+                    }
+                }
+                getCollisionTiles(x, y) {
+                    if (!this.map) {
+                        return;
+                    }
+                    const xIndex = Math.floor(x / this.tileSize);
+                    const yIndex = Math.floor(y / this.tileSize);
+                    const rects = [];
+                    if (this.isBlock(xIndex, yIndex)) {
+                        rects.push(new Rectangle_1.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize));
+                    }
+                    if (this.isBlock(xIndex - 1, yIndex)) {
+                        let rect = new Rectangle_1.Rectangle((xIndex - 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+                        if (this.isBlock(xIndex - 1, yIndex - 1)) {
+                            rect.y -= this.tileSize;
+                            rect.height += this.tileSize;
+                        }
+                        if (this.isBlock(xIndex - 1, yIndex + 1)) {
+                            rect.height += this.tileSize;
+                        }
+                        rects.push(rect);
+                    }
+                    if (this.isBlock(xIndex + 1, yIndex)) {
+                        let rect = new Rectangle_1.Rectangle((xIndex + 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+                        if (this.isBlock(xIndex + 1, yIndex - 1)) {
+                            rect.y -= this.tileSize;
+                            rect.height += this.tileSize;
+                        }
+                        if (this.isBlock(xIndex + 1, yIndex + 1)) {
+                            rect.height += this.tileSize;
+                        }
+                        rects.push(rect);
+                    }
+                    if (this.isBlock(xIndex, yIndex + 1)) {
+                        let rect = new Rectangle_1.Rectangle(xIndex * this.tileSize, (yIndex + 1) * this.tileSize, this.tileSize, this.tileSize);
+                        if (this.isBlock(xIndex - 1, yIndex + 1)) {
+                            rect.x -= this.tileSize;
+                            rect.width += this.tileSize;
+                        }
+                        if (this.isBlock(xIndex + 1, yIndex + 1)) {
+                            rect.width += this.tileSize;
+                        }
+                        rects.push(rect);
+                    }
+                    if (this.isBlock(xIndex, yIndex - 1)) {
+                        let rect = new Rectangle_1.Rectangle(xIndex * this.tileSize, (yIndex - 1) * this.tileSize, this.tileSize, this.tileSize);
+                        if (this.isBlock(xIndex - 1, yIndex - 1)) {
+                            rect.x -= this.tileSize;
+                            rect.width += this.tileSize;
+                        }
+                        if (this.isBlock(xIndex + 1, yIndex - 1)) {
+                            rect.width += this.tileSize;
+                        }
+                        rects.push(rect);
+                    }
+                    return rects;
+                }
+                isBlock(xIndex, yIndex) {
+                    if (!this.map) {
+                        return false;
+                    }
+                    return this.map[yIndex] && this.map[yIndex][xIndex] && this.map[yIndex][xIndex] !== ' ';
+                }
+            };
+            exports_12("default", TileMap);
+        }
+    };
+});
+System.register("entities/collisions", ["engine/collision/isRectanglesColliding"], function (exports_13, context_13) {
+    "use strict";
+    var isRectanglesColliding_2, collisions;
+    var __moduleName = context_13 && context_13.id;
+    function registerCollisions(collisionReactionMap) {
+        collisionReactionMap.setCollisionReaction(collisions.types.moving, collisions.types.static, function (moving, block) {
+            handleMovingStaticCollision(moving.rectangle, block.rectangle);
+        });
+        collisionReactionMap.setCollisionReaction(collisions.types.map, collisions.types.moving, function (map, moving) {
+            const closestBlocks = map.elm.getCollisionTiles(moving.rectangle.x + moving.rectangle.width / 2, moving.rectangle.y + moving.rectangle.height / 2);
+            if (!closestBlocks) {
+                return;
+            }
+            for (const block of closestBlocks) {
+                // @ts-expect-error -- DEBUG
+                const X = map.elm.world.canvas.X;
+                X.beginPath();
+                X.fillStyle = "#ff000088";
+                X.strokeStyle = "#cc0000";
+                X.lineWidth = 4;
+                X.rect(block.x, block.y, block.width, block.height);
+                X.fill();
+                X.stroke();
+                if (isRectanglesColliding_2.isRectanglesColliding(block, moving.rectangle)) {
+                    handleMovingStaticCollision(moving.rectangle, block);
+                }
+            }
+        });
+    }
+    exports_13("registerCollisions", registerCollisions);
+    function handleMovingStaticCollision(moving, block) {
+        // modified from https://stackoverflow.com/a/29861691
+        const dx = (moving.x + moving.width / 2)
+            - (block.x + block.width / 2);
+        const dy = (moving.y + moving.height / 2)
+            - (block.y + block.height / 2);
+        const avgWidth = (moving.width + block.width) / 2;
+        const avgHeight = (moving.height + block.height) / 2;
+        const crossWidth = avgWidth * dy;
+        const crossHeight = avgHeight * dx;
+        if (crossWidth > crossHeight) {
+            if (crossWidth > -crossHeight) {
+                // collision at bottom of block
+                moving.y = block.y + block.height;
+            }
+            else {
+                // collision at left of block
+                moving.x = block.x - moving.width;
+            }
+        }
+        else {
+            if (crossWidth > -crossHeight) {
+                // collision at right of block
+                moving.x = block.x + block.width;
+            }
+            else {
+                // collision at top of block
+                moving.y = block.y - moving.height;
+            }
+        }
+    }
+    return {
+        setters: [
+            function (isRectanglesColliding_2_1) {
+                isRectanglesColliding_2 = isRectanglesColliding_2_1;
+            }
+        ],
+        execute: function () {
+            exports_13("collisions", collisions = {
+                types: {
+                    static: Symbol(),
+                    moving: Symbol(),
+                    map: Symbol()
+                }
+            });
+        }
+    };
+});
+System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_14, context_14) {
+    "use strict";
+    var resourceFetcher_2, DialogFetcher, dialogFetcher;
+    var __moduleName = context_14 && context_14.id;
+    return {
+        setters: [
+            function (resourceFetcher_2_1) {
+                resourceFetcher_2 = resourceFetcher_2_1;
             }
         ],
         execute: function () {
             DialogFetcher = class DialogFetcher {
                 async fetch(url) {
-                    const str = await resourceFetcher_1.resourceFetcher.fetch("assets/" + url + ".txt");
+                    const str = await resourceFetcher_2.resourceFetcher.fetch("assets/" + url + ".txt");
                     const lines = str.split("\n");
                     const arr = [];
                     let currArrElm = [];
@@ -456,18 +612,18 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
                     return arr;
                 }
             };
-            exports_12("dialogFetcher", dialogFetcher = new DialogFetcher());
+            exports_14("dialogFetcher", dialogFetcher = new DialogFetcher());
         }
     };
 });
-System.register("settings", [], function (exports_13, context_13) {
+System.register("settings", [], function (exports_15, context_15) {
     "use strict";
     var settings;
-    var __moduleName = context_13 && context_13.id;
+    var __moduleName = context_15 && context_15.id;
     return {
         setters: [],
         execute: function () {
-            exports_13("settings", settings = {
+            exports_15("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW", "ArrowUp"],
                     moveDown: ["KeyS", "ArrowDown"],
@@ -479,10 +635,10 @@ System.register("settings", [], function (exports_13, context_13) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_14, context_14) {
+System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_16, context_16) {
     "use strict";
     var CanvasElm_2, settings_1, NPCDialog;
-    var __moduleName = context_14 && context_14.id;
+    var __moduleName = context_16 && context_16.id;
     return {
         setters: [
             function (CanvasElm_2_1) {
@@ -511,7 +667,10 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     X.fillStyle = "#aaa";
                     X.font = "24px Arial";
                     X.textBaseline = "top";
-                    X.fillText(this.dialog[this.index] || "[...]", 16, 308);
+                    const lines = this.dialog[this.index].split("\n");
+                    for (let y = 0; y < lines.length; y++) {
+                        X.fillText(lines[y] || "[...]", 16, 308 + y * 36);
+                    }
                 }
                 advanceDialogHandler() {
                     this.index++;
@@ -524,22 +683,22 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     super.dispose();
                 }
             };
-            exports_14("NPCDialog", NPCDialog);
+            exports_16("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_15, context_15) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_17, context_17) {
     "use strict";
-    var Entity_1, NPC;
-    var __moduleName = context_15 && context_15.id;
+    var Entity_2, NPC;
+    var __moduleName = context_17 && context_17.id;
     return {
         setters: [
-            function (Entity_1_1) {
-                Entity_1 = Entity_1_1;
+            function (Entity_2_1) {
+                Entity_2 = Entity_2_1;
             }
         ],
         execute: function () {
-            NPC = class NPC extends Entity_1.Entity {
+            NPC = class NPC extends Entity_2.Entity {
                 constructor(x, y) {
                     super();
                     this.x = x;
@@ -551,70 +710,33 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_15, conte
                     X.fillRect(this.x, this.y, this.width, this.height);
                 }
             };
-            exports_15("NPC", NPC);
+            exports_17("NPC", NPC);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC"], function (exports_16, context_16) {
+System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_18, context_18) {
     "use strict";
-    var dialogFetcher_1, NPCDialog_1, NPC_1, NPCWithDialog;
-    var __moduleName = context_16 && context_16.id;
-    return {
-        setters: [
-            function (dialogFetcher_1_1) {
-                dialogFetcher_1 = dialogFetcher_1_1;
-            },
-            function (NPCDialog_1_1) {
-                NPCDialog_1 = NPCDialog_1_1;
-            },
-            function (NPC_1_1) {
-                NPC_1 = NPC_1_1;
-            }
-        ],
-        execute: function () {
-            NPCWithDialog = class NPCWithDialog extends NPC_1.NPC {
-                constructor() {
-                    super(...arguments);
-                    this.dialogOpen = false;
-                }
-                onCollision() {
-                    if (this.dialogOpen) {
-                        return;
-                    }
-                    this.dialogOpen = true;
-                    dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
-                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog));
-                    });
-                }
-                dispose() {
-                    throw new Error("Not implemented");
-                }
-            };
-            exports_16("NPCWithDialog", NPCWithDialog);
-        }
-    };
-});
-System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_17, context_17) {
-    "use strict";
-    var settings_2, collisions_2, Entity_2, Player;
-    var __moduleName = context_17 && context_17.id;
+    var settings_2, collisions_3, Entity_3, Player;
+    var __moduleName = context_18 && context_18.id;
     return {
         setters: [
             function (settings_2_1) {
                 settings_2 = settings_2_1;
             },
-            function (collisions_2_1) {
-                collisions_2 = collisions_2_1;
+            function (collisions_3_1) {
+                collisions_3 = collisions_3_1;
             },
-            function (Entity_2_1) {
-                Entity_2 = Entity_2_1;
+            function (Entity_3_1) {
+                Entity_3 = Entity_3_1;
             }
         ],
         execute: function () {
-            Player = class Player extends Entity_2.Entity {
+            Player = class Player extends Entity_3.Entity {
                 constructor() {
                     super(...arguments);
-                    this.collisionType = collisions_2.collisions.types.moving;
+                    this.collisionType = collisions_3.collisions.types.moving;
+                    this.x = 500;
+                    this.y = 500;
                 }
                 draw() {
                     const X = this.world.canvas.X;
@@ -637,18 +759,60 @@ System.register("entities/Player", ["settings", "entities/collisions", "entities
                     this.x += dirX * 10;
                     this.y += dirY * 10;
                 }
-                onCollision() {
-                    console.log("ow!");
-                }
             };
-            exports_17("Player", Player);
+            exports_18("Player", Player);
         }
     };
 });
-System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player"], function (exports_18, context_18) {
+System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_19, context_19) {
     "use strict";
-    var CanvasElm_3, World_1, collisions_3, NPCWithDialog_1, Player_1, world;
-    var __moduleName = context_18 && context_18.id;
+    var dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
+    var __moduleName = context_19 && context_19.id;
+    return {
+        setters: [
+            function (dialogFetcher_1_1) {
+                dialogFetcher_1 = dialogFetcher_1_1;
+            },
+            function (NPCDialog_1_1) {
+                NPCDialog_1 = NPCDialog_1_1;
+            },
+            function (NPC_1_1) {
+                NPC_1 = NPC_1_1;
+            },
+            function (Player_1_1) {
+                Player_1 = Player_1_1;
+            }
+        ],
+        execute: function () {
+            NPCWithDialog = class NPCWithDialog extends NPC_1.NPC {
+                constructor() {
+                    super(...arguments);
+                    this.dialogOpen = false;
+                }
+                onCollision(other) {
+                    if (!(other instanceof Player_1.Player)) {
+                        return;
+                    }
+                    if (this.dialogOpen) {
+                        return;
+                    }
+                    this.dialogOpen = true;
+                    dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
+                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog));
+                    });
+                }
+                dispose() {
+                    throw new Error("Not implemented");
+                }
+            };
+            exports_19("NPCWithDialog", NPCWithDialog);
+        }
+    };
+});
+System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_20, context_20) {
+    "use strict";
+    var CanvasElm_3, World_1, collisions_4, NPCWithDialog_1, Player_2, TileMap_1, world;
+    var __moduleName = context_20 && context_20.id;
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);
@@ -661,14 +825,17 @@ System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisio
             function (World_1_1) {
                 World_1 = World_1_1;
             },
-            function (collisions_3_1) {
-                collisions_3 = collisions_3_1;
+            function (collisions_4_1) {
+                collisions_4 = collisions_4_1;
             },
             function (NPCWithDialog_1_1) {
                 NPCWithDialog_1 = NPCWithDialog_1_1;
             },
-            function (Player_1_1) {
-                Player_1 = Player_1_1;
+            function (Player_2_1) {
+                Player_2 = Player_2_1;
+            },
+            function (TileMap_1_1) {
+                TileMap_1 = TileMap_1_1;
             }
         ],
         execute: function () {
@@ -680,11 +847,13 @@ System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisio
                     X.fillRect(performance.now() / 100, performance.now() / 100, 50, 50);
                 }
             });
-            world.addElm(new Player_1.Player());
-            world.addElm(new NPCWithDialog_1.NPCWithDialog(50, 200));
+            world.addElm(new Player_2.Player());
+            world.addElm(new NPCWithDialog_1.NPCWithDialog(70, 600));
+            world.addElm(new NPCWithDialog_1.NPCWithDialog(94, 624));
+            world.addElm(new TileMap_1.default());
             world.appendTo(document.body);
             world.keyboard.startListen();
-            collisions_3.registerCollisions(world.collisionSystem.reactions);
+            collisions_4.registerCollisions(world.collisionSystem.reactions);
             requanf();
         }
     };

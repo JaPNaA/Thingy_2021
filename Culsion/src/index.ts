@@ -14,7 +14,8 @@ world.addElm(new class TestElm extends CanvasElm {
     }
 });
 world.addElm(new Player());
-world.addElm(new NPCWithDialog(70, 200));
+world.addElm(new NPCWithDialog(70, 600));
+world.addElm(new NPCWithDialog(94, 624));
 world.addElm(new TileMap());
 
 world.appendTo(document.body);
