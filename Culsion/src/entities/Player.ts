@@ -12,7 +12,9 @@ export class Player extends Entity {
         const X = this.world.canvas.X;
         X.fillStyle = "#f00";
         X.fillRect(this.x, this.y, this.width, this.height);
+    }
 
+    tick() {
         let dirX = 0;
         let dirY = 0;
 

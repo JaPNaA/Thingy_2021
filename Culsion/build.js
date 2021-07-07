@@ -292,9 +292,12 @@ System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSys
                     this.canvas.X.fillStyle = "#000000";
                     this.canvas.X.fillRect(0, 0, this.canvas.width, this.canvas.height);
                     for (const elm of this.elms) {
-                        elm.draw();
+                        elm.tick();
                     }
                     this.collisionSystem._checkCollisions();
+                    for (const elm of this.elms) {
+                        elm.draw();
+                    }
                 }
                 appendTo(parent) {
                     this.canvas.appendTo(parent);
@@ -312,6 +315,7 @@ System.register("engine/CanvasElm", [], function (exports_9, context_9) {
         setters: [],
         execute: function () {
             CanvasElm = class CanvasElm {
+                tick() { }
                 setWorld(world) {
                     this.world = world;
                 }
@@ -733,6 +737,8 @@ System.register("entities/Player", ["settings", "entities/collisions", "entities
                     const X = this.world.canvas.X;
                     X.fillStyle = "#f00";
                     X.fillRect(this.x, this.y, this.width, this.height);
+                }
+                tick() {
                     let dirX = 0;
                     let dirY = 0;
                     if (this.world.keyboard.isDown(settings_2.settings.keybindings.moveLeft)) {

@@ -30,11 +30,16 @@ export class World {
     public draw() {
         this.canvas.X.fillStyle = "#000000";
         this.canvas.X.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
         for (const elm of this.elms) {
-            elm.draw();
+            elm.tick();
         }
 
         this.collisionSystem._checkCollisions();
+
+        for (const elm of this.elms) {
+            elm.draw();
+        }
     }
 
     public appendTo(parent: HTMLElement) {
