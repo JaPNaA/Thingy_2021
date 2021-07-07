@@ -516,15 +516,6 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
                 return;
             }
             for (const block of closestBlocks) {
-                // @ts-expect-error -- DEBUG
-                const X = map.elm.world.canvas.X;
-                X.beginPath();
-                X.fillStyle = "#ff000088";
-                X.strokeStyle = "#cc0000";
-                X.lineWidth = 4;
-                X.rect(block.x, block.y, block.width, block.height);
-                X.fill();
-                X.stroke();
                 if (isRectanglesColliding_2.isRectanglesColliding(block, moving.rectangle)) {
                     handleMovingStaticCollision(moving.rectangle, block);
                 }
