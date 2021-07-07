@@ -761,13 +761,13 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_18, conte
             NPC = class NPC extends Entity_2.Entity {
                 constructor(x, y) {
                     super();
-                    this.x = x;
-                    this.y = y;
+                    this.rect.x = x;
+                    this.rect.y = y;
                 }
                 draw() {
                     const X = this.world.canvas.X;
                     X.fillStyle = "#0f0";
-                    X.fillRect(this.x, this.y, this.rect.width, this.rect.height);
+                    X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
             };
             exports_18("NPC", NPC);
