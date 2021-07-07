@@ -1,4 +1,4 @@
-import { Rectangle } from "../Rectangle";
+import { Rectangle } from "../util/Rectangle";
 
 export interface Collidable {
     collisionType: Symbol;

@@ -1,4 +1,4 @@
-import { Rectangle } from "../engine/Rectangle";
+import { Rectangle } from "../engine/util/Rectangle";
 import { resourceFetcher } from "../resources/resourceFetcher";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
@@ -15,8 +15,8 @@ export default class TileMap extends Entity {
 
         resourceFetcher.fetch("assets/map.txt").then(str => {
             this.map = str.split("\n");
-            this.height = this.map.length * this.tileSize;
-            this.width = this.map[0].length * this.tileSize;
+            this.rect.height = this.map.length * this.tileSize;
+            this.rect.width = this.map[0].length * this.tileSize;
         });
     }
 

@@ -8,6 +8,6 @@ export class NPC extends Entity {
     draw() {
         const X = this.world.canvas.X;
         X.fillStyle = "#0f0";
-        X.fillRect(this.x, this.y, this.width, this.height);
+        X.fillRect(this.x, this.y, this.rect.width, this.rect.height);
     }
 }

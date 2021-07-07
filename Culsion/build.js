@@ -30,7 +30,7 @@ System.register("engine/Canvas", [], function (exports_1, context_1) {
         }
     };
 });
-System.register("engine/Rectangle", [], function (exports_2, context_2) {
+System.register("engine/util/Rectangle", [], function (exports_2, context_2) {
     "use strict";
     var Rectangle;
     var __moduleName = context_2 && context_2.id;
@@ -328,10 +328,36 @@ System.register("engine/CanvasElm", [], function (exports_9, context_9) {
         }
     };
 });
-System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox", "entities/collisions"], function (exports_10, context_10) {
+System.register("engine/util/MovingRectangle", ["engine/util/Rectangle"], function (exports_10, context_10) {
     "use strict";
-    var CanvasElm_1, Hitbox_1, collisions_1, Entity;
+    var Rectangle_1, MovingRectangle;
     var __moduleName = context_10 && context_10.id;
+    return {
+        setters: [
+            function (Rectangle_1_1) {
+                Rectangle_1 = Rectangle_1_1;
+            }
+        ],
+        execute: function () {
+            MovingRectangle = class MovingRectangle extends Rectangle_1.Rectangle {
+                constructor(x, y, width, height) {
+                    super(x, y, width, height);
+                    this.lastX = x;
+                    this.lastY = y;
+                }
+                setLasts() {
+                    this.lastX = this.x;
+                    this.lastY = this.y;
+                }
+            };
+            exports_10("MovingRectangle", MovingRectangle);
+        }
+    };
+});
+System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox", "engine/util/Rectangle", "entities/collisions"], function (exports_11, context_11) {
+    "use strict";
+    var CanvasElm_1, Hitbox_1, Rectangle_2, collisions_1, Entity;
+    var __moduleName = context_11 && context_11.id;
     return {
         setters: [
             function (CanvasElm_1_1) {
@@ -339,6 +365,9 @@ System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox
             },
             function (Hitbox_1_1) {
                 Hitbox_1 = Hitbox_1_1;
+            },
+            function (Rectangle_2_1) {
+                Rectangle_2 = Rectangle_2_1;
             },
             function (collisions_1_1) {
                 collisions_1 = collisions_1_1;
@@ -348,28 +377,25 @@ System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox
             Entity = class Entity extends CanvasElm_1.CanvasElm {
                 constructor() {
                     super(...arguments);
-                    this.x = 0;
-                    this.y = 0;
-                    this.width = 24;
-                    this.height = 24;
+                    this.rect = new Rectangle_2.Rectangle(0, 0, 24, 24);
                     this.collisionType = collisions_1.collisions.types.static;
                 }
                 setWorld(world) {
                     super.setWorld(world);
-                    world.collisionSystem.addHitbox(new Hitbox_1.Hitbox(this, this));
+                    world.collisionSystem.addHitbox(new Hitbox_1.Hitbox(this.rect, this));
                 }
                 dispose() {
                     throw new Error("Not implemented");
                 }
             };
-            exports_10("Entity", Entity);
+            exports_11("Entity", Entity);
         }
     };
 });
-System.register("resources/resourceFetcher", [], function (exports_11, context_11) {
+System.register("resources/resourceFetcher", [], function (exports_12, context_12) {
     "use strict";
     var ResourceFetcher, resourceFetcher;
-    var __moduleName = context_11 && context_11.id;
+    var __moduleName = context_12 && context_12.id;
     return {
         setters: [],
         execute: function () {
@@ -390,18 +416,18 @@ System.register("resources/resourceFetcher", [], function (exports_11, context_1
                     }
                 }
             };
-            exports_11("resourceFetcher", resourceFetcher = new ResourceFetcher());
+            exports_12("resourceFetcher", resourceFetcher = new ResourceFetcher());
         }
     };
 });
-System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetcher", "entities/collisions", "entities/Entity"], function (exports_12, context_12) {
+System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourceFetcher", "entities/collisions", "entities/Entity"], function (exports_13, context_13) {
     "use strict";
-    var Rectangle_1, resourceFetcher_1, collisions_2, Entity_1, TileMap;
-    var __moduleName = context_12 && context_12.id;
+    var Rectangle_3, resourceFetcher_1, collisions_2, Entity_1, TileMap;
+    var __moduleName = context_13 && context_13.id;
     return {
         setters: [
-            function (Rectangle_1_1) {
-                Rectangle_1 = Rectangle_1_1;
+            function (Rectangle_3_1) {
+                Rectangle_3 = Rectangle_3_1;
             },
             function (resourceFetcher_1_1) {
                 resourceFetcher_1 = resourceFetcher_1_1;
@@ -421,8 +447,8 @@ System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetc
                     this.tileSize = 64;
                     resourceFetcher_1.resourceFetcher.fetch("assets/map.txt").then(str => {
                         this.map = str.split("\n");
-                        this.height = this.map.length * this.tileSize;
-                        this.width = this.map[0].length * this.tileSize;
+                        this.rect.height = this.map.length * this.tileSize;
+                        this.rect.width = this.map[0].length * this.tileSize;
                     });
                 }
                 draw() {
@@ -447,10 +473,10 @@ System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetc
                     const yIndex = Math.floor(y / this.tileSize);
                     const rects = [];
                     if (this.isBlock(xIndex, yIndex)) {
-                        rects.push(new Rectangle_1.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize));
+                        rects.push(new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize));
                     }
                     if (this.isBlock(xIndex - 1, yIndex)) {
-                        let rect = new Rectangle_1.Rectangle((xIndex - 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = new Rectangle_3.Rectangle((xIndex - 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
                         if (this.isBlock(xIndex - 1, yIndex - 1)) {
                             rect.y -= this.tileSize;
                             rect.height += this.tileSize;
@@ -461,7 +487,7 @@ System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetc
                         rects.push(rect);
                     }
                     if (this.isBlock(xIndex + 1, yIndex)) {
-                        let rect = new Rectangle_1.Rectangle((xIndex + 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = new Rectangle_3.Rectangle((xIndex + 1) * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
                         if (this.isBlock(xIndex + 1, yIndex - 1)) {
                             rect.y -= this.tileSize;
                             rect.height += this.tileSize;
@@ -472,7 +498,7 @@ System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetc
                         rects.push(rect);
                     }
                     if (this.isBlock(xIndex, yIndex + 1)) {
-                        let rect = new Rectangle_1.Rectangle(xIndex * this.tileSize, (yIndex + 1) * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = new Rectangle_3.Rectangle(xIndex * this.tileSize, (yIndex + 1) * this.tileSize, this.tileSize, this.tileSize);
                         if (this.isBlock(xIndex - 1, yIndex + 1)) {
                             rect.x -= this.tileSize;
                             rect.width += this.tileSize;
@@ -483,7 +509,7 @@ System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetc
                         rects.push(rect);
                     }
                     if (this.isBlock(xIndex, yIndex - 1)) {
-                        let rect = new Rectangle_1.Rectangle(xIndex * this.tileSize, (yIndex - 1) * this.tileSize, this.tileSize, this.tileSize);
+                        let rect = new Rectangle_3.Rectangle(xIndex * this.tileSize, (yIndex - 1) * this.tileSize, this.tileSize, this.tileSize);
                         if (this.isBlock(xIndex - 1, yIndex - 1)) {
                             rect.x -= this.tileSize;
                             rect.width += this.tileSize;
@@ -502,14 +528,14 @@ System.register("entities/TileMap", ["engine/Rectangle", "resources/resourceFetc
                     return this.map[yIndex] && this.map[yIndex][xIndex] && this.map[yIndex][xIndex] !== ' ';
                 }
             };
-            exports_12("default", TileMap);
+            exports_13("default", TileMap);
         }
     };
 });
-System.register("entities/collisions", ["engine/collision/isRectanglesColliding"], function (exports_13, context_13) {
+System.register("entities/collisions", ["engine/collision/isRectanglesColliding", "engine/util/MovingRectangle"], function (exports_14, context_14) {
     "use strict";
-    var isRectanglesColliding_2, collisions;
-    var __moduleName = context_13 && context_13.id;
+    var isRectanglesColliding_2, MovingRectangle_1, collisions;
+    var __moduleName = context_14 && context_14.id;
     function registerCollisions(collisionReactionMap) {
         collisionReactionMap.setCollisionReaction(collisions.types.moving, collisions.types.static, function (moving, block) {
             handleMovingStaticCollision(moving.rectangle, block.rectangle);
@@ -526,13 +552,22 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
             }
         });
     }
-    exports_13("registerCollisions", registerCollisions);
+    exports_14("registerCollisions", registerCollisions);
     function handleMovingStaticCollision(moving, block) {
         // modified from https://stackoverflow.com/a/29861691
-        const dx = (moving.x + moving.width / 2)
-            - (block.x + block.width / 2);
-        const dy = (moving.y + moving.height / 2)
-            - (block.y + block.height / 2);
+        let dx, dy;
+        if (moving instanceof MovingRectangle_1.MovingRectangle) {
+            dx = (moving.lastX + moving.width / 2)
+                - (block.x + block.width / 2);
+            dy = (moving.lastY + moving.height / 2)
+                - (block.y + block.height / 2);
+        }
+        else {
+            dx = (moving.x + moving.width / 2)
+                - (block.x + block.width / 2);
+            dy = (moving.y + moving.height / 2)
+                - (block.y + block.height / 2);
+        }
         const avgWidth = (moving.width + block.width) / 2;
         const avgHeight = (moving.height + block.height) / 2;
         const crossWidth = avgWidth * dy;
@@ -562,10 +597,13 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
         setters: [
             function (isRectanglesColliding_2_1) {
                 isRectanglesColliding_2 = isRectanglesColliding_2_1;
+            },
+            function (MovingRectangle_1_1) {
+                MovingRectangle_1 = MovingRectangle_1_1;
             }
         ],
         execute: function () {
-            exports_13("collisions", collisions = {
+            exports_14("collisions", collisions = {
                 types: {
                     static: Symbol(),
                     moving: Symbol(),
@@ -575,10 +613,10 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
         }
     };
 });
-System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_14, context_14) {
+System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_15, context_15) {
     "use strict";
     var resourceFetcher_2, DialogFetcher, dialogFetcher;
-    var __moduleName = context_14 && context_14.id;
+    var __moduleName = context_15 && context_15.id;
     return {
         setters: [
             function (resourceFetcher_2_1) {
@@ -607,18 +645,18 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
                     return arr;
                 }
             };
-            exports_14("dialogFetcher", dialogFetcher = new DialogFetcher());
+            exports_15("dialogFetcher", dialogFetcher = new DialogFetcher());
         }
     };
 });
-System.register("settings", [], function (exports_15, context_15) {
+System.register("settings", [], function (exports_16, context_16) {
     "use strict";
     var settings;
-    var __moduleName = context_15 && context_15.id;
+    var __moduleName = context_16 && context_16.id;
     return {
         setters: [],
         execute: function () {
-            exports_15("settings", settings = {
+            exports_16("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW", "ArrowUp"],
                     moveDown: ["KeyS", "ArrowDown"],
@@ -630,10 +668,10 @@ System.register("settings", [], function (exports_15, context_15) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_16, context_16) {
+System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_17, context_17) {
     "use strict";
     var CanvasElm_2, settings_1, NPCDialog;
-    var __moduleName = context_16 && context_16.id;
+    var __moduleName = context_17 && context_17.id;
     return {
         setters: [
             function (CanvasElm_2_1) {
@@ -678,14 +716,14 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     super.dispose();
                 }
             };
-            exports_16("NPCDialog", NPCDialog);
+            exports_17("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_17, context_17) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_18, context_18) {
     "use strict";
     var Entity_2, NPC;
-    var __moduleName = context_17 && context_17.id;
+    var __moduleName = context_18 && context_18.id;
     return {
         setters: [
             function (Entity_2_1) {
@@ -702,19 +740,22 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_17, conte
                 draw() {
                     const X = this.world.canvas.X;
                     X.fillStyle = "#0f0";
-                    X.fillRect(this.x, this.y, this.width, this.height);
+                    X.fillRect(this.x, this.y, this.rect.width, this.rect.height);
                 }
             };
-            exports_17("NPC", NPC);
+            exports_18("NPC", NPC);
         }
     };
 });
-System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_18, context_18) {
+System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_19, context_19) {
     "use strict";
-    var settings_2, collisions_3, Entity_3, Player;
-    var __moduleName = context_18 && context_18.id;
+    var MovingRectangle_2, settings_2, collisions_3, Entity_3, Player;
+    var __moduleName = context_19 && context_19.id;
     return {
         setters: [
+            function (MovingRectangle_2_1) {
+                MovingRectangle_2 = MovingRectangle_2_1;
+            },
             function (settings_2_1) {
                 settings_2 = settings_2_1;
             },
@@ -728,15 +769,14 @@ System.register("entities/Player", ["settings", "entities/collisions", "entities
         execute: function () {
             Player = class Player extends Entity_3.Entity {
                 constructor() {
-                    super(...arguments);
+                    super();
                     this.collisionType = collisions_3.collisions.types.moving;
-                    this.x = 500;
-                    this.y = 500;
+                    this.rect = new MovingRectangle_2.MovingRectangle(500, 500, 24, 24);
                 }
                 draw() {
                     const X = this.world.canvas.X;
                     X.fillStyle = "#f00";
-                    X.fillRect(this.x, this.y, this.width, this.height);
+                    X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
                 tick() {
                     let dirX = 0;
@@ -753,18 +793,19 @@ System.register("entities/Player", ["settings", "entities/collisions", "entities
                     if (this.world.keyboard.isDown(settings_2.settings.keybindings.moveUp)) {
                         dirY--;
                     }
-                    this.x += dirX * 10;
-                    this.y += dirY * 10;
+                    this.rect.setLasts();
+                    this.rect.x += dirX * 10;
+                    this.rect.y += dirY * 10;
                 }
             };
-            exports_18("Player", Player);
+            exports_19("Player", Player);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_19, context_19) {
+System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_20, context_20) {
     "use strict";
     var dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
-    var __moduleName = context_19 && context_19.id;
+    var __moduleName = context_20 && context_20.id;
     return {
         setters: [
             function (dialogFetcher_1_1) {
@@ -802,14 +843,14 @@ System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDia
                     throw new Error("Not implemented");
                 }
             };
-            exports_19("NPCWithDialog", NPCWithDialog);
+            exports_20("NPCWithDialog", NPCWithDialog);
         }
     };
 });
-System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_20, context_20) {
+System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_21, context_21) {
     "use strict";
     var CanvasElm_3, World_1, collisions_4, NPCWithDialog_1, Player_2, TileMap_1, world;
-    var __moduleName = context_20 && context_20.id;
+    var __moduleName = context_21 && context_21.id;
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);

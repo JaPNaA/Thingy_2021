@@ -1,7 +1,8 @@
 import { CollisionReactionMap } from "../engine/collision/CollisionReactionMap";
 import { Hitbox } from "../engine/collision/Hitbox";
 import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding";
-import { Rectangle } from "../engine/Rectangle";
+import { MovingRectangle } from "../engine/util/MovingRectangle";
+import { Rectangle } from "../engine/util/Rectangle";
 import { Entity } from "./Entity";
 import TileMap from "./TileMap";
 
@@ -41,10 +42,19 @@ export function registerCollisions(collisionReactionMap: CollisionReactionMap) {
 
 function handleMovingStaticCollision(moving: Rectangle, block: Rectangle) {
     // modified from https://stackoverflow.com/a/29861691
-    const dx = (moving.x + moving.width / 2)
-        - (block.x + block.width / 2);
-    const dy = (moving.y + moving.height / 2)
-        - (block.y + block.height / 2);
+    let dx, dy;
+    if (moving instanceof MovingRectangle) {
+        dx = (moving.lastX + moving.width / 2)
+            - (block.x + block.width / 2);
+        dy = (moving.lastY + moving.height / 2)
+            - (block.y + block.height / 2);
+    } else {
+        dx = (moving.x + moving.width / 2)
+            - (block.x + block.width / 2);
+        dy = (moving.y + moving.height / 2)
+            - (block.y + block.height / 2);
+    }
+
     const avgWidth = (moving.width + block.width) / 2;
     const avgHeight = (moving.height + block.height) / 2;
     const crossWidth = avgWidth * dy;

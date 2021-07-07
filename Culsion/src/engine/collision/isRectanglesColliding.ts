@@ -1,4 +1,4 @@
-import { Rectangle } from "../Rectangle";
+import { Rectangle } from "../util/Rectangle";
 
 export function isRectanglesColliding(rect1: Rectangle, rect2: Rectangle) {
     return rect1.x < rect2.x + rect2.width &&

@@ -1,17 +1,20 @@
+import { MovingRectangle } from "../engine/util/MovingRectangle";
 import { settings } from "../settings";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
 
 export class Player extends Entity {
     public collisionType = collisions.types.moving;
+    public rect = new MovingRectangle(500, 500, 24, 24);
 
-    public x = 500;
-    public y = 500;
+    constructor() {
+        super();
+    }
 
     draw() {
         const X = this.world.canvas.X;
         X.fillStyle = "#f00";
-        X.fillRect(this.x, this.y, this.width, this.height);
+        X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
     }
 
     tick() {
@@ -31,7 +34,9 @@ export class Player extends Entity {
             dirY--;
         }
 
-        this.x += dirX * 10;
-        this.y += dirY * 10;
+        this.rect.setLasts();
+
+        this.rect.x += dirX * 10;
+        this.rect.y += dirY * 10;
     }
 }
