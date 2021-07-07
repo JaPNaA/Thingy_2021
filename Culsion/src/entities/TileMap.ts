@@ -6,7 +6,7 @@ import { Entity } from "./Entity";
 export class TileMap extends Entity {
     public collisionType = collisions.types.map;
 
-    private map?: string[];
+    private map?: boolean[][];
 
     private readonly tileSize = 32;
 
@@ -14,7 +14,7 @@ export class TileMap extends Entity {
         super();
 
         resourceFetcher.fetch("assets/map.txt").then(str => {
-            this.map = str.split("\n");
+            this.map = str.split("\n").map(line => line.split("").map(char => char !== " "));
             this.rect.height = this.map.length * this.tileSize;
             this.rect.width = this.map[0].length * this.tileSize;
         });
@@ -29,11 +29,21 @@ export class TileMap extends Entity {
 
         for (let y = 0; y < this.map.length; y++) {
             for (let x = 0; x < this.map[y].length; x++) {
-                if (this.map[y][x] !== " ") {
+                if (this.map[y][x]) {
                     X.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
                 }
             }
         }
+    }
+
+    public setBlock(x: number, y: number, block: boolean) {
+        if (!this.map) { return; }
+
+        const xIndex = Math.floor(x / this.tileSize);
+        const yIndex = Math.floor(y / this.tileSize);
+
+        if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
+        this.map[yIndex][xIndex] = block;
     }
 
     public getCollisionTiles(x: number, y: number): Rectangle[] | undefined {
@@ -127,7 +137,7 @@ export class TileMap extends Entity {
 
     private isBlock(xIndex: number, yIndex: number) {
         if (!this.map) { return false; }
-        return this.map[yIndex] && this.map[yIndex][xIndex] && this.map[yIndex][xIndex] !== ' ';
+        return this.map[yIndex] && this.map[yIndex][xIndex];
     }
 
     private rectFromIndexes(xIndex: number, yIndex: number): Rectangle {
