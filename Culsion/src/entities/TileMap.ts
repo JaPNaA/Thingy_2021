@@ -3,12 +3,12 @@ import { resourceFetcher } from "../resources/resourceFetcher";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
 
-export default class TileMap extends Entity {
+export class TileMap extends Entity {
     public collisionType = collisions.types.map;
 
     private map?: string[];
 
-    private readonly tileSize = 64;
+    private readonly tileSize = 32;
 
     constructor() {
         super();

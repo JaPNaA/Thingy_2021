@@ -1,7 +1,7 @@
 import { Canvas } from "./Canvas";
 import { CanvasElm } from "./CanvasElm";
 import { CollisionSystem } from "./collision/CollisionSystem";
-import Keyboard from "./Keyboard";
+import { Keyboard } from "./Keyboard";
 
 export class World {
     public canvas = new Canvas();

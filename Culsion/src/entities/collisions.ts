@@ -4,7 +4,7 @@ import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding
 import { MovingRectangle } from "../engine/util/MovingRectangle";
 import { Rectangle } from "../engine/util/Rectangle";
 import { Entity } from "./Entity";
-import TileMap from "./TileMap";
+import { TileMap } from "./TileMap";
 
 export const collisions = {
     types: {

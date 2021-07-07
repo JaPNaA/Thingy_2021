@@ -1,7 +1,7 @@
 
 type KeyboardEventHandler = (event: KeyboardEvent) => void;
 
-export default class Keyboard {
+export class Keyboard {
     private keys: { [x: string]: boolean } = {};
     private handlers: { [x: string]: KeyboardEventHandler[] } = {};
 

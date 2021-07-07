@@ -247,7 +247,7 @@ System.register("engine/Keyboard", [], function (exports_7, context_7) {
                     }
                 }
             };
-            exports_7("default", Keyboard);
+            exports_7("Keyboard", Keyboard);
         }
     };
 });
@@ -271,7 +271,7 @@ System.register("engine/World", ["engine/Canvas", "engine/collision/CollisionSys
             World = class World {
                 constructor() {
                     this.canvas = new Canvas_1.Canvas();
-                    this.keyboard = new Keyboard_1.default();
+                    this.keyboard = new Keyboard_1.Keyboard();
                     this.collisionSystem = new CollisionSystem_1.CollisionSystem();
                     this.elms = [];
                     this.canvas.resizeToScreen();
@@ -444,7 +444,7 @@ System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourc
                 constructor() {
                     super();
                     this.collisionType = collisions_2.collisions.types.map;
-                    this.tileSize = 64;
+                    this.tileSize = 32;
                     resourceFetcher_1.resourceFetcher.fetch("assets/map.txt").then(str => {
                         this.map = str.split("\n");
                         this.rect.height = this.map.length * this.tileSize;
@@ -555,7 +555,7 @@ System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourc
                     return new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
                 }
             };
-            exports_13("default", TileMap);
+            exports_13("TileMap", TileMap);
         }
     };
 });
@@ -915,11 +915,70 @@ System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisio
             world.addElm(new Player_2.Player());
             world.addElm(new NPCWithDialog_1.NPCWithDialog(70, 600));
             world.addElm(new NPCWithDialog_1.NPCWithDialog(94, 624));
-            world.addElm(new TileMap_1.default());
+            world.addElm(new TileMap_1.TileMap());
             world.appendTo(document.body);
             world.keyboard.startListen();
             collisions_4.registerCollisions(world.collisionSystem.reactions);
             requanf();
+        }
+    };
+});
+System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_22, context_22) {
+    "use strict";
+    var CanvasElm_4, ParentCanvasElm;
+    var __moduleName = context_22 && context_22.id;
+    return {
+        setters: [
+            function (CanvasElm_4_1) {
+                CanvasElm_4 = CanvasElm_4_1;
+            }
+        ],
+        execute: function () {
+            ParentCanvasElm = class ParentCanvasElm extends CanvasElm_4.CanvasElm {
+                constructor() {
+                    super(...arguments);
+                    this.children = [];
+                }
+                draw() {
+                    for (const child of this.children) {
+                        child.draw();
+                    }
+                }
+                tick() {
+                    for (const child of this.children) {
+                        child.tick();
+                    }
+                }
+                setWorld(world) {
+                    super.setWorld(world);
+                    for (const child of this.children) {
+                        child.setWorld(world);
+                    }
+                }
+                dispose() {
+                    for (const child of this.children) {
+                        child.dispose();
+                    }
+                }
+            };
+            exports_22("ParentCanvasElm", ParentCanvasElm);
+        }
+    };
+});
+System.register("mapEditor/MapEditor", ["engine/ParentCanvasElm"], function (exports_23, context_23) {
+    "use strict";
+    var ParentCanvasElm_1, MapEditor;
+    var __moduleName = context_23 && context_23.id;
+    return {
+        setters: [
+            function (ParentCanvasElm_1_1) {
+                ParentCanvasElm_1 = ParentCanvasElm_1_1;
+            }
+        ],
+        execute: function () {
+            MapEditor = class MapEditor extends ParentCanvasElm_1.ParentCanvasElm {
+            };
+            exports_23("MapEditor", MapEditor);
         }
     };
 });
