@@ -3,6 +3,7 @@ import { World } from "./engine/World";
 import { registerCollisions } from "./entities/collisions";
 import { NPCWithDialog } from "./entities/NPCWithDialog";
 import { Player } from "./entities/Player";
+import TileMap from "./entities/TileMap";
 
 const world = new World();
 world.addElm(new class TestElm extends CanvasElm {
@@ -13,7 +14,8 @@ world.addElm(new class TestElm extends CanvasElm {
     }
 });
 world.addElm(new Player());
-world.addElm(new NPCWithDialog(50, 200));
+world.addElm(new NPCWithDialog(70, 200));
+world.addElm(new TileMap());
 
 world.appendTo(document.body);
 world.keyboard.startListen();

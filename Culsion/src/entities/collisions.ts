@@ -5,7 +5,8 @@ import { Entity } from "./Entity";
 export const collisions = {
     types: {
         static: Symbol(),
-        moving: Symbol()
+        moving: Symbol(),
+        map: Symbol()
     }
 };
 
