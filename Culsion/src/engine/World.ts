@@ -1,3 +1,4 @@
+import { Camera } from "./Camera";
 import { Canvas } from "./Canvas";
 import { CanvasElm } from "./CanvasElm";
 import { CollisionSystem } from "./collision/CollisionSystem";
@@ -6,6 +7,7 @@ import { Mouse } from "./Mouse";
 
 export class World {
     public canvas = new Canvas();
+    public camera = new Camera(this);
     public keyboard = new Keyboard();
     public mouse = new Mouse();
     public collisionSystem = new CollisionSystem();
@@ -40,18 +42,27 @@ export class World {
     }
 
     public draw() {
-        this.canvas.X.fillStyle = "#000000";
-        this.canvas.X.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        const X = this.canvas.X;
+
+        X.fillStyle = "#000000";
+        X.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         for (const elm of this.elms) {
             elm.tick();
         }
 
         this.collisionSystem._checkCollisions();
+        this.camera._update();
+
+        X.save();
+
+        this.camera._applyTransform(X);
 
         for (const elm of this.elms) {
             elm.draw();
         }
+
+        X.restore();
     }
 
     public appendTo(parent: HTMLElement) {
