@@ -1,9 +1,9 @@
 export const settings = {
     keybindings: {
-        moveUp: ["KeyW"],
-        moveDown: ["KeyS"],
-        moveLeft: ["KeyA"],
-        moveRight: ["KeyD"],
+        moveUp: ["KeyW", "ArrowUp"],
+        moveDown: ["KeyS", "ArrowDown"],
+        moveLeft: ["KeyA", "ArrowLeft"],
+        moveRight: ["KeyD", "ArrowRight"],
         advanceDialog: ["Enter", "NumpadEnter", "Space"]
     }
 };
