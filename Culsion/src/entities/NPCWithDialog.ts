@@ -1,3 +1,4 @@
+import { dialogFetcher } from "../resources/dialogFetcher";
 import { NPCDialog } from "../ui/NPCDialog";
 import { NPC } from "./NPC";
 
@@ -8,7 +9,9 @@ export class NPCWithDialog extends NPC {
         if (this.dialogOpen) { return; }
         this.dialogOpen = true;
 
-        this.world.addElm(new NPCDialog(["こら！", "ケンカ売ってのか！？"]));
+        dialogFetcher.fetch("testDialog").then(dialog => {
+            this.world.addElm(new NPCDialog(dialog));
+        });
     }
 
     public dispose() {

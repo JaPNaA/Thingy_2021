@@ -396,29 +396,93 @@ System.register("entities/collisions", [], function (exports_10, context_10) {
         }
     };
 });
-System.register("settings", [], function (exports_11, context_11) {
+System.register("resources/resourceFetcher", [], function (exports_11, context_11) {
     "use strict";
-    var settings;
+    var ResourceFetcher, resourceFetcher;
     var __moduleName = context_11 && context_11.id;
     return {
         setters: [],
         execute: function () {
-            exports_11("settings", settings = {
+            ResourceFetcher = class ResourceFetcher {
+                constructor() {
+                    this.cache = new Map();
+                }
+                async fetch(url) {
+                    const cached = this.cache.get(url);
+                    if (cached) {
+                        return cached;
+                    }
+                    else {
+                        const response = await fetch(url);
+                        const result = await response.text();
+                        this.cache.set(url, result);
+                        return result;
+                    }
+                }
+            };
+            exports_11("resourceFetcher", resourceFetcher = new ResourceFetcher());
+        }
+    };
+});
+System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_12, context_12) {
+    "use strict";
+    var resourceFetcher_1, DialogFetcher, dialogFetcher;
+    var __moduleName = context_12 && context_12.id;
+    return {
+        setters: [
+            function (resourceFetcher_1_1) {
+                resourceFetcher_1 = resourceFetcher_1_1;
+            }
+        ],
+        execute: function () {
+            DialogFetcher = class DialogFetcher {
+                async fetch(url) {
+                    const str = await resourceFetcher_1.resourceFetcher.fetch("assets/" + url + ".txt");
+                    const lines = str.split("\n");
+                    const arr = [];
+                    let currArrElm = [];
+                    for (const line of lines) {
+                        if (line === "") {
+                            arr.push(currArrElm.join("\n"));
+                            currArrElm.length = 0;
+                        }
+                        else {
+                            currArrElm.push(line);
+                        }
+                    }
+                    if (currArrElm.length) {
+                        arr.push(currArrElm.join("\n"));
+                    }
+                    return arr;
+                }
+            };
+            exports_12("dialogFetcher", dialogFetcher = new DialogFetcher());
+        }
+    };
+});
+System.register("settings", [], function (exports_13, context_13) {
+    "use strict";
+    var settings;
+    var __moduleName = context_13 && context_13.id;
+    return {
+        setters: [],
+        execute: function () {
+            exports_13("settings", settings = {
                 keybindings: {
-                    moveUp: ["KeyW"],
-                    moveDown: ["KeyS"],
-                    moveLeft: ["KeyA"],
-                    moveRight: ["KeyD"],
+                    moveUp: ["KeyW", "ArrowUp"],
+                    moveDown: ["KeyS", "ArrowDown"],
+                    moveLeft: ["KeyA", "ArrowLeft"],
+                    moveRight: ["KeyD", "ArrowRight"],
                     advanceDialog: ["Enter", "NumpadEnter", "Space"]
                 }
             });
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_12, context_12) {
+System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_14, context_14) {
     "use strict";
     var CanvasElm_2, settings_1, NPCDialog;
-    var __moduleName = context_12 && context_12.id;
+    var __moduleName = context_14 && context_14.id;
     return {
         setters: [
             function (CanvasElm_2_1) {
@@ -447,7 +511,7 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     X.fillStyle = "#aaa";
                     X.font = "24px Arial";
                     X.textBaseline = "top";
-                    X.fillText(this.dialog[this.index], 16, 308);
+                    X.fillText(this.dialog[this.index] || "[...]", 16, 308);
                 }
                 advanceDialogHandler() {
                     this.index++;
@@ -460,14 +524,14 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     super.dispose();
                 }
             };
-            exports_12("NPCDialog", NPCDialog);
+            exports_14("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_13, context_13) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_15, context_15) {
     "use strict";
     var Entity_1, NPC;
-    var __moduleName = context_13 && context_13.id;
+    var __moduleName = context_15 && context_15.id;
     return {
         setters: [
             function (Entity_1_1) {
@@ -487,16 +551,19 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_13, conte
                     X.fillRect(this.x, this.y, this.width, this.height);
                 }
             };
-            exports_13("NPC", NPC);
+            exports_15("NPC", NPC);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["ui/NPCDialog", "entities/NPC"], function (exports_14, context_14) {
+System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC"], function (exports_16, context_16) {
     "use strict";
-    var NPCDialog_1, NPC_1, NPCWithDialog;
-    var __moduleName = context_14 && context_14.id;
+    var dialogFetcher_1, NPCDialog_1, NPC_1, NPCWithDialog;
+    var __moduleName = context_16 && context_16.id;
     return {
         setters: [
+            function (dialogFetcher_1_1) {
+                dialogFetcher_1 = dialogFetcher_1_1;
+            },
             function (NPCDialog_1_1) {
                 NPCDialog_1 = NPCDialog_1_1;
             },
@@ -515,20 +582,22 @@ System.register("entities/NPCWithDialog", ["ui/NPCDialog", "entities/NPC"], func
                         return;
                     }
                     this.dialogOpen = true;
-                    this.world.addElm(new NPCDialog_1.NPCDialog(["こら！", "ケンカ売ってのか！？"]));
+                    dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
+                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog));
+                    });
                 }
                 dispose() {
                     throw new Error("Not implemented");
                 }
             };
-            exports_14("NPCWithDialog", NPCWithDialog);
+            exports_16("NPCWithDialog", NPCWithDialog);
         }
     };
 });
-System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_15, context_15) {
+System.register("entities/Player", ["settings", "entities/collisions", "entities/Entity"], function (exports_17, context_17) {
     "use strict";
     var settings_2, collisions_2, Entity_2, Player;
-    var __moduleName = context_15 && context_15.id;
+    var __moduleName = context_17 && context_17.id;
     return {
         setters: [
             function (settings_2_1) {
@@ -572,14 +641,14 @@ System.register("entities/Player", ["settings", "entities/collisions", "entities
                     console.log("ow!");
                 }
             };
-            exports_15("Player", Player);
+            exports_17("Player", Player);
         }
     };
 });
-System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player"], function (exports_16, context_16) {
+System.register("index", ["engine/CanvasElm", "engine/World", "entities/collisions", "entities/NPCWithDialog", "entities/Player"], function (exports_18, context_18) {
     "use strict";
     var CanvasElm_3, World_1, collisions_3, NPCWithDialog_1, Player_1, world;
-    var __moduleName = context_16 && context_16.id;
+    var __moduleName = context_18 && context_18.id;
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);

@@ -25,7 +25,7 @@ export class NPCDialog extends CanvasElm {
         X.fillStyle = "#aaa";
         X.font = "24px Arial";
         X.textBaseline = "top";
-        X.fillText(this.dialog[this.index], 16, 308);
+        X.fillText(this.dialog[this.index] || "[...]", 16, 308);
     }
 
     private advanceDialogHandler() {
