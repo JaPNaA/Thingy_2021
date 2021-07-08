@@ -6,6 +6,7 @@ import { Entity } from "./Entity";
 export class Player extends Entity {
     public collisionType = collisions.types.moving;
     public rect = new MovingRectangle(500, 500, 24, 24);
+    public speed = 10;
 
     constructor() {
         super();
@@ -36,7 +37,12 @@ export class Player extends Entity {
 
         this.rect.setLasts();
 
-        this.rect.x += dirX * 10;
-        this.rect.y += dirY * 10;
+        if (dirX && dirY) {
+            dirX *= Math.SQRT1_2;
+            dirY *= Math.SQRT1_2;
+        }
+
+        this.rect.x += dirX * this.speed;
+        this.rect.y += dirY * this.speed;
     }
 }
