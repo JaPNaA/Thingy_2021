@@ -5,8 +5,7 @@ import { Entity } from "./Entity";
 
 export class Player extends Entity {
     public collisionType = collisions.types.moving;
-    public rect = new MovingRectangle(500, 500, 24, 24);
-    public speed = 10;
+    public speed = 1000;
 
     constructor() {
         super();
@@ -42,7 +41,7 @@ export class Player extends Entity {
             dirY *= Math.SQRT1_2;
         }
 
-        this.rect.x += dirX * this.speed;
-        this.rect.y += dirY * this.speed;
+        this.rect.x += dirX * this.speed * this.world.timeElapsed;
+        this.rect.y += dirY * this.speed * this.world.timeElapsed;
     }
 }

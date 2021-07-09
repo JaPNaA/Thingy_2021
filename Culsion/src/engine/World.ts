@@ -12,7 +12,11 @@ export class World {
     public mouse = new Mouse();
     public collisionSystem = new CollisionSystem();
 
+    public timeElapsed = 0;
+
     private elms: CanvasElm[] = [];
+
+    private lastTime = performance.now();
 
     constructor() {
         this.canvas.resizeToScreen();
@@ -44,8 +48,9 @@ export class World {
     public draw() {
         const X = this.canvas.X;
 
-        X.fillStyle = "#000000";
-        X.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        const now = performance.now();
+        this.timeElapsed = (now - this.lastTime) / 1000;
+        this.lastTime = now;
 
         for (const elm of this.elms) {
             elm.tick();
@@ -53,6 +58,9 @@ export class World {
 
         this.collisionSystem._checkCollisions();
         this.camera._update();
+
+        X.fillStyle = "#000000";
+        X.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         X.save();
 
