@@ -523,10 +523,43 @@ System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox
         }
     };
 });
-System.register("resources/resourceFetcher", [], function (exports_14, context_14) {
+System.register("engine/PrerenderCanvas", [], function (exports_14, context_14) {
+    "use strict";
+    var PrerenderCanvas;
+    var __moduleName = context_14 && context_14.id;
+    return {
+        setters: [],
+        execute: function () {
+            PrerenderCanvas = class PrerenderCanvas {
+                constructor(width, height) {
+                    this.canvas = document.createElement("canvas");
+                    this.X = this.canvas.getContext("2d");
+                    this.resize(width, height);
+                }
+                drawToContext(X, x, y) {
+                    X.drawImage(this.canvas, x, y, this.width, this.height);
+                }
+                resize(width, height) {
+                    const dpr = window.devicePixelRatio || 1;
+                    this.width = width;
+                    this.height = height;
+                    this.canvas.width = dpr * width;
+                    this.canvas.height = dpr * height;
+                    this.X.resetTransform();
+                    this.X.scale(dpr, dpr);
+                }
+                clear() {
+                    this.X.clearRect(0, 0, this.width, this.height);
+                }
+            };
+            exports_14("PrerenderCanvas", PrerenderCanvas);
+        }
+    };
+});
+System.register("resources/resourceFetcher", [], function (exports_15, context_15) {
     "use strict";
     var ResourceFetcher, resourceFetcher;
-    var __moduleName = context_14 && context_14.id;
+    var __moduleName = context_15 && context_15.id;
     return {
         setters: [],
         execute: function () {
@@ -547,16 +580,19 @@ System.register("resources/resourceFetcher", [], function (exports_14, context_1
                     }
                 }
             };
-            exports_14("resourceFetcher", resourceFetcher = new ResourceFetcher());
+            exports_15("resourceFetcher", resourceFetcher = new ResourceFetcher());
         }
     };
 });
-System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourceFetcher", "entities/collisions", "entities/Entity"], function (exports_15, context_15) {
+System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rectangle", "resources/resourceFetcher", "entities/collisions", "entities/Entity"], function (exports_16, context_16) {
     "use strict";
-    var Rectangle_3, resourceFetcher_1, collisions_2, Entity_1, TileMap;
-    var __moduleName = context_15 && context_15.id;
+    var PrerenderCanvas_1, Rectangle_3, resourceFetcher_1, collisions_2, Entity_1, TileMap;
+    var __moduleName = context_16 && context_16.id;
     return {
         setters: [
+            function (PrerenderCanvas_1_1) {
+                PrerenderCanvas_1 = PrerenderCanvas_1_1;
+            },
             function (Rectangle_3_1) {
                 Rectangle_3 = Rectangle_3_1;
             },
@@ -580,13 +616,27 @@ System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourc
                         this.map = str.split("\n").map(line => line.split("").map(char => char !== " "));
                         this.rect.height = this.map.length * this.tileSize;
                         this.rect.width = this.map[0].length * this.tileSize;
+                        this.updatePrerender();
                     });
                 }
                 draw() {
+                    if (!this.prerender) {
+                        return;
+                    }
+                    this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y);
+                }
+                updatePrerender() {
                     if (!this.map) {
                         return;
                     }
-                    const X = this.world.canvas.X;
+                    if (this.prerender) {
+                        this.prerender.resize(this.rect.width, this.rect.height);
+                        this.prerender.clear();
+                    }
+                    else {
+                        this.prerender = new PrerenderCanvas_1.PrerenderCanvas(this.rect.width, this.rect.height);
+                    }
+                    const X = this.prerender.X;
                     X.fillStyle = "#aaa8";
                     for (let y = 0; y < this.map.length; y++) {
                         for (let x = 0; x < this.map[y].length; x++) {
@@ -697,14 +747,14 @@ System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourc
                     return new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
                 }
             };
-            exports_15("TileMap", TileMap);
+            exports_16("TileMap", TileMap);
         }
     };
 });
-System.register("entities/collisions", ["engine/collision/isRectanglesColliding", "engine/util/MovingRectangle"], function (exports_16, context_16) {
+System.register("entities/collisions", ["engine/collision/isRectanglesColliding", "engine/util/MovingRectangle"], function (exports_17, context_17) {
     "use strict";
     var isRectanglesColliding_2, MovingRectangle_1, collisions;
-    var __moduleName = context_16 && context_16.id;
+    var __moduleName = context_17 && context_17.id;
     function registerCollisions(collisionReactionMap) {
         collisionReactionMap.setCollisionReaction(collisions.types.moving, collisions.types.static, function (moving, block) {
             handleMovingStaticCollision(moving.rectangle, block.rectangle);
@@ -721,7 +771,7 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
             }
         });
     }
-    exports_16("registerCollisions", registerCollisions);
+    exports_17("registerCollisions", registerCollisions);
     function handleMovingStaticCollision(moving, block) {
         // modified from https://stackoverflow.com/a/29861691
         let dx, dy;
@@ -772,7 +822,7 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
             }
         ],
         execute: function () {
-            exports_16("collisions", collisions = {
+            exports_17("collisions", collisions = {
                 types: {
                     static: Symbol(),
                     moving: Symbol(),
@@ -782,10 +832,10 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
         }
     };
 });
-System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_17, context_17) {
+System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_18, context_18) {
     "use strict";
     var CanvasElm_2, ParentCanvasElm;
-    var __moduleName = context_17 && context_17.id;
+    var __moduleName = context_18 && context_18.id;
     return {
         setters: [
             function (CanvasElm_2_1) {
@@ -826,14 +876,14 @@ System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (export
                     }
                 }
             };
-            exports_17("ParentCanvasElm", ParentCanvasElm);
+            exports_18("ParentCanvasElm", ParentCanvasElm);
         }
     };
 });
-System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_18, context_18) {
+System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_19, context_19) {
     "use strict";
     var resourceFetcher_2, DialogFetcher, dialogFetcher;
-    var __moduleName = context_18 && context_18.id;
+    var __moduleName = context_19 && context_19.id;
     return {
         setters: [
             function (resourceFetcher_2_1) {
@@ -862,18 +912,18 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
                     return arr;
                 }
             };
-            exports_18("dialogFetcher", dialogFetcher = new DialogFetcher());
+            exports_19("dialogFetcher", dialogFetcher = new DialogFetcher());
         }
     };
 });
-System.register("settings", [], function (exports_19, context_19) {
+System.register("settings", [], function (exports_20, context_20) {
     "use strict";
     var settings;
-    var __moduleName = context_19 && context_19.id;
+    var __moduleName = context_20 && context_20.id;
     return {
         setters: [],
         execute: function () {
-            exports_19("settings", settings = {
+            exports_20("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW", "ArrowUp"],
                     moveDown: ["KeyS", "ArrowDown"],
@@ -885,10 +935,10 @@ System.register("settings", [], function (exports_19, context_19) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_20, context_20) {
+System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_21, context_21) {
     "use strict";
     var CanvasElm_3, settings_1, NPCDialog;
-    var __moduleName = context_20 && context_20.id;
+    var __moduleName = context_21 && context_21.id;
     return {
         setters: [
             function (CanvasElm_3_1) {
@@ -934,14 +984,14 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     super.dispose();
                 }
             };
-            exports_20("NPCDialog", NPCDialog);
+            exports_21("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_21, context_21) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_22, context_22) {
     "use strict";
     var Entity_2, NPC;
-    var __moduleName = context_21 && context_21.id;
+    var __moduleName = context_22 && context_22.id;
     return {
         setters: [
             function (Entity_2_1) {
@@ -961,14 +1011,14 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_21, conte
                     X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
             };
-            exports_21("NPC", NPC);
+            exports_22("NPC", NPC);
         }
     };
 });
-System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_22, context_22) {
+System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_23, context_23) {
     "use strict";
     var MovingRectangle_2, settings_2, collisions_3, Entity_3, Player;
-    var __moduleName = context_22 && context_22.id;
+    var __moduleName = context_23 && context_23.id;
     return {
         setters: [
             function (MovingRectangle_2_1) {
@@ -1021,14 +1071,14 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
                     this.rect.y += dirY * this.speed * this.world.timeElapsed;
                 }
             };
-            exports_22("Player", Player);
+            exports_23("Player", Player);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_23, context_23) {
+System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_24, context_24) {
     "use strict";
     var Rectangle_4, dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
-    var __moduleName = context_23 && context_23.id;
+    var __moduleName = context_24 && context_24.id;
     return {
         setters: [
             function (Rectangle_4_1) {
@@ -1069,14 +1119,14 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
                     throw new Error("Not implemented");
                 }
             };
-            exports_23("NPCWithDialog", NPCWithDialog);
+            exports_24("NPCWithDialog", NPCWithDialog);
         }
     };
 });
-System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_24, context_24) {
+System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_25, context_25) {
     "use strict";
     var ParentCanvasElm_1, NPCWithDialog_1, Player_2, TileMap_1, GameView;
-    var __moduleName = context_24 && context_24.id;
+    var __moduleName = context_25 && context_25.id;
     return {
         setters: [
             function (ParentCanvasElm_1_1) {
@@ -1106,14 +1156,14 @@ System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDia
                     world.camera.follow(this.player.rect);
                 }
             };
-            exports_24("GameView", GameView);
+            exports_25("GameView", GameView);
         }
     };
 });
-System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities/TileMap"], function (exports_25, context_25) {
+System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities/TileMap"], function (exports_26, context_26) {
     "use strict";
     var ParentCanvasElm_2, TileMap_2, MapEditor;
-    var __moduleName = context_25 && context_25.id;
+    var __moduleName = context_26 && context_26.id;
     return {
         setters: [
             function (ParentCanvasElm_2_1) {
@@ -1152,14 +1202,14 @@ System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities
                     return map.map(row => row.map(block => block ? "x" : " ").join("")).join("\n");
                 }
             };
-            exports_25("MapEditor", MapEditor);
+            exports_26("MapEditor", MapEditor);
         }
     };
 });
-System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_26, context_26) {
+System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_27, context_27) {
     "use strict";
     var World_1, collisions_4, GameView_1, MapEditor_1, world;
-    var __moduleName = context_26 && context_26.id;
+    var __moduleName = context_27 && context_27.id;
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);

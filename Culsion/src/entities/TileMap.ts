@@ -1,3 +1,4 @@
+import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { Rectangle } from "../engine/util/Rectangle";
 import { resourceFetcher } from "../resources/resourceFetcher";
 import { collisions } from "./collisions";
@@ -7,6 +8,7 @@ export class TileMap extends Entity {
     public collisionType = collisions.types.map;
 
     private map?: boolean[][];
+    private prerender?: PrerenderCanvas;
 
     private readonly tileSize = 32;
 
@@ -17,13 +19,25 @@ export class TileMap extends Entity {
             this.map = str.split("\n").map(line => line.split("").map(char => char !== " "));
             this.rect.height = this.map.length * this.tileSize;
             this.rect.width = this.map[0].length * this.tileSize;
+            this.updatePrerender();
         });
     }
 
     public draw(): void {
-        if (!this.map) { return; }
+        if (!this.prerender) { return; }
+        this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y);
+    }
 
-        const X = this.world.canvas.X;
+    public updatePrerender() {
+        if (!this.map) { return; }
+        if (this.prerender) {
+            this.prerender.resize(this.rect.width, this.rect.height);
+            this.prerender.clear();
+        } else {
+            this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
+        }
+
+        const X = this.prerender.X;
 
         X.fillStyle = "#aaa8";
 
