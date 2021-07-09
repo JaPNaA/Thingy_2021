@@ -393,7 +393,9 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
                     this.keyboard = new Keyboard_1.Keyboard();
                     this.mouse = new Mouse_1.Mouse();
                     this.collisionSystem = new CollisionSystem_1.CollisionSystem();
+                    this.timeElapsed = 0;
                     this.elms = [];
+                    this.lastTime = performance.now();
                     this.canvas.resizeToScreen();
                 }
                 startListen() {
@@ -418,13 +420,16 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
                 }
                 draw() {
                     const X = this.canvas.X;
-                    X.fillStyle = "#000000";
-                    X.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    const now = performance.now();
+                    this.timeElapsed = (now - this.lastTime) / 1000;
+                    this.lastTime = now;
                     for (const elm of this.elms) {
                         elm.tick();
                     }
                     this.collisionSystem._checkCollisions();
                     this.camera._update();
+                    X.fillStyle = "#000000";
+                    X.fillRect(0, 0, this.canvas.width, this.canvas.height);
                     X.save();
                     this.camera._applyTransform(X);
                     for (const elm of this.elms) {
@@ -557,7 +562,7 @@ System.register("entities/TileMap", ["engine/util/Rectangle", "resources/resourc
                     super();
                     this.collisionType = collisions_2.collisions.types.map;
                     this.tileSize = 32;
-                    resourceFetcher_1.resourceFetcher.fetch("assets/map.txt").then(str => {
+                    resourceFetcher_1.resourceFetcher.fetch("assets/maze.txt").then(str => {
                         this.map = str.split("\n").map(line => line.split("").map(char => char !== " "));
                         this.rect.height = this.map.length * this.tileSize;
                         this.rect.width = this.map[0].length * this.tileSize;
@@ -881,9 +886,10 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
         ],
         execute: function () {
             NPCDialog = class NPCDialog extends CanvasElm_3.CanvasElm {
-                constructor(dialog) {
+                constructor(dialog, rect) {
                     super();
                     this.dialog = dialog;
+                    this.rect = rect;
                     this.index = 0;
                     this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
                 }
@@ -894,13 +900,13 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                 draw() {
                     const X = this.world.canvas.X;
                     X.fillStyle = "#4448";
-                    X.fillRect(8, 300, 500, 200);
+                    X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                     X.fillStyle = "#aaa";
                     X.font = "24px Arial";
                     X.textBaseline = "top";
                     const lines = this.dialog[this.index].split("\n");
                     for (let y = 0; y < lines.length; y++) {
-                        X.fillText(lines[y] || "[...]", 16, 308 + y * 36);
+                        X.fillText(lines[y] || "[...]", this.rect.x + 8, this.rect.y + 8 + y * 36);
                     }
                 }
                 advanceDialogHandler() {
@@ -969,7 +975,8 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
                 constructor() {
                     super();
                     this.collisionType = collisions_3.collisions.types.moving;
-                    this.rect = new MovingRectangle_2.MovingRectangle(500, 500, 24, 24);
+                    this.rect = new MovingRectangle_2.MovingRectangle(32, 32, 24, 24);
+                    this.speed = 1000;
                 }
                 draw() {
                     const X = this.world.canvas.X;
@@ -992,20 +999,27 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
                         dirY--;
                     }
                     this.rect.setLasts();
-                    this.rect.x += dirX * 10;
-                    this.rect.y += dirY * 10;
+                    if (dirX && dirY) {
+                        dirX *= Math.SQRT1_2;
+                        dirY *= Math.SQRT1_2;
+                    }
+                    this.rect.x += dirX * this.speed * this.world.timeElapsed;
+                    this.rect.y += dirY * this.speed * this.world.timeElapsed;
                 }
             };
             exports_22("Player", Player);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_23, context_23) {
+System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_23, context_23) {
     "use strict";
-    var dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
+    var Rectangle_4, dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
     var __moduleName = context_23 && context_23.id;
     return {
         setters: [
+            function (Rectangle_4_1) {
+                Rectangle_4 = Rectangle_4_1;
+            },
             function (dialogFetcher_1_1) {
                 dialogFetcher_1 = dialogFetcher_1_1;
             },
@@ -1034,7 +1048,7 @@ System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDia
                     }
                     this.dialogOpen = true;
                     dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
-                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog));
+                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog, new Rectangle_4.Rectangle(this.rect.x, this.rect.y, 500, 300)));
                     });
                 }
                 dispose() {
@@ -1045,15 +1059,12 @@ System.register("entities/NPCWithDialog", ["resources/dialogFetcher", "ui/NPCDia
         }
     };
 });
-System.register("view/GameView", ["engine/CanvasElm", "engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_24, context_24) {
+System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_24, context_24) {
     "use strict";
-    var CanvasElm_4, ParentCanvasElm_1, NPCWithDialog_1, Player_2, TileMap_1, GameView;
+    var ParentCanvasElm_1, NPCWithDialog_1, Player_2, TileMap_1, GameView;
     var __moduleName = context_24 && context_24.id;
     return {
         setters: [
-            function (CanvasElm_4_1) {
-                CanvasElm_4 = CanvasElm_4_1;
-            },
             function (ParentCanvasElm_1_1) {
                 ParentCanvasElm_1 = ParentCanvasElm_1_1;
             },
@@ -1072,16 +1083,8 @@ System.register("view/GameView", ["engine/CanvasElm", "engine/ParentCanvasElm", 
                 constructor() {
                     super();
                     this.player = new Player_2.Player();
-                    this.addChild(new class TestElm extends CanvasElm_4.CanvasElm {
-                        draw() {
-                            const X = this.world.canvas.X;
-                            X.fillStyle = "#fff";
-                            X.fillRect(performance.now() / 100, performance.now() / 100, 50, 50);
-                        }
-                    });
                     this.addChild(this.player);
-                    this.addChild(new NPCWithDialog_1.NPCWithDialog(70, 600));
-                    this.addChild(new NPCWithDialog_1.NPCWithDialog(94, 624));
+                    this.addChild(new NPCWithDialog_1.NPCWithDialog(2500, 2500));
                     this.addChild(new TileMap_1.TileMap());
                 }
                 setWorld(world) {

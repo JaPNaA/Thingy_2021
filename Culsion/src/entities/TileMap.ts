@@ -13,7 +13,7 @@ export class TileMap extends Entity {
     constructor() {
         super();
 
-        resourceFetcher.fetch("assets/map.txt").then(str => {
+        resourceFetcher.fetch("assets/maze.txt").then(str => {
             this.map = str.split("\n").map(line => line.split("").map(char => char !== " "));
             this.rect.height = this.map.length * this.tileSize;
             this.rect.width = this.map[0].length * this.tileSize;

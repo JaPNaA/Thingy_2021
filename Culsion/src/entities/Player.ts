@@ -5,6 +5,7 @@ import { Entity } from "./Entity";
 
 export class Player extends Entity {
     public collisionType = collisions.types.moving;
+    public rect = new MovingRectangle(32, 32, 24, 24);
     public speed = 1000;
 
     constructor() {
