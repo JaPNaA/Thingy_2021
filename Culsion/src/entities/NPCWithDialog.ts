@@ -1,3 +1,4 @@
+import { Rectangle } from "../engine/util/Rectangle";
 import { dialogFetcher } from "../resources/dialogFetcher";
 import { NPCDialog } from "../ui/NPCDialog";
 import { NPC } from "./NPC";
@@ -12,7 +13,7 @@ export class NPCWithDialog extends NPC {
         this.dialogOpen = true;
 
         dialogFetcher.fetch("testDialog").then(dialog => {
-            this.world.addElm(new NPCDialog(dialog));
+            this.world.addElm(new NPCDialog(dialog, new Rectangle(this.rect.x, this.rect.y, 500, 300)));
         });
     }
 

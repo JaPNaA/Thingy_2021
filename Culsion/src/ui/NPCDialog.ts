@@ -1,11 +1,12 @@
 import { CanvasElm } from "../engine/CanvasElm";
+import { Rectangle } from "../engine/util/Rectangle";
 import { World } from "../engine/World";
 import { settings } from "../settings";
 
 export class NPCDialog extends CanvasElm {
     private index = 0;
 
-    constructor(private dialog: string[]) {
+    constructor(private dialog: string[], private rect: Rectangle) {
         super();
 
         this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
@@ -20,14 +21,14 @@ export class NPCDialog extends CanvasElm {
     public draw() {
         const X = this.world.canvas.X;
         X.fillStyle = "#4448";
-        X.fillRect(8, 300, 500, 200);
+        X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 
         X.fillStyle = "#aaa";
         X.font = "24px Arial";
         X.textBaseline = "top";
         const lines = this.dialog[this.index].split("\n");
         for (let y = 0; y < lines.length; y++) {
-            X.fillText(lines[y] || "[...]", 16, 308 + y * 36);
+            X.fillText(lines[y] || "[...]", this.rect.x + 8, this.rect.y + 8 + y * 36);
         }
     }
 
