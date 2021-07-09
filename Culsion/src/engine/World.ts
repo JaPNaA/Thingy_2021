@@ -25,11 +25,13 @@ export class World {
     public startListen() {
         this.keyboard._startListen();
         this.mouse._startListen();
+        this.canvas._startAutoResize();
     }
 
     public stopListen() {
         this.keyboard._stopListen();
         this.mouse._stopListen();
+        this.canvas._stopAutoResize();
     }
 
     public addElm(elm: CanvasElm) {

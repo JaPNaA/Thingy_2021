@@ -7,6 +7,7 @@ export class Canvas {
 
     constructor() {
         if (!this.X) { alert("Browser not supported"); throw new Error("Browser not supported: cannot get canvas context"); }
+        this.resizeHandler = this.resizeHandler.bind(this);
     }
 
     public resizeToScreen() {
@@ -20,7 +21,19 @@ export class Canvas {
         this.X.scale(dpr, dpr);
     }
 
+    public _startAutoResize() {
+        addEventListener("resize", this.resizeHandler);
+    }
+
+    public _stopAutoResize() {
+        removeEventListener("resize", this.resizeHandler);
+    }
+
     public appendTo(parent: HTMLElement) {
         parent.appendChild(this.canvas);
+    }
+
+    private resizeHandler() {
+        this.resizeToScreen();
     }
 }

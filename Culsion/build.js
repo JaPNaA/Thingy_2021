@@ -15,6 +15,7 @@ System.register("engine/Canvas", [], function (exports_1, context_1) {
                         alert("Browser not supported");
                         throw new Error("Browser not supported: cannot get canvas context");
                     }
+                    this.resizeHandler = this.resizeHandler.bind(this);
                 }
                 resizeToScreen() {
                     const dpr = window.devicePixelRatio || 1;
@@ -24,8 +25,17 @@ System.register("engine/Canvas", [], function (exports_1, context_1) {
                     this.canvas.height = dpr * this.height;
                     this.X.scale(dpr, dpr);
                 }
+                _startAutoResize() {
+                    addEventListener("resize", this.resizeHandler);
+                }
+                _stopAutoResize() {
+                    removeEventListener("resize", this.resizeHandler);
+                }
                 appendTo(parent) {
                     parent.appendChild(this.canvas);
+                }
+                resizeHandler() {
+                    this.resizeToScreen();
                 }
             };
             exports_1("Canvas", Canvas);
@@ -403,10 +413,12 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
                 startListen() {
                     this.keyboard._startListen();
                     this.mouse._startListen();
+                    this.canvas._startAutoResize();
                 }
                 stopListen() {
                     this.keyboard._stopListen();
                     this.mouse._stopListen();
+                    this.canvas._stopAutoResize();
                 }
                 addElm(elm) {
                     elm.setWorld(this);
