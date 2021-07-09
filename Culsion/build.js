@@ -18,8 +18,10 @@ System.register("engine/Canvas", [], function (exports_1, context_1) {
                 }
                 resizeToScreen() {
                     const dpr = window.devicePixelRatio || 1;
-                    this.canvas.width = this.width = dpr * innerWidth;
-                    this.canvas.height = this.height = dpr * innerHeight;
+                    this.width = innerWidth;
+                    this.height = innerHeight;
+                    this.canvas.width = dpr * this.width;
+                    this.canvas.height = dpr * this.height;
                     this.X.scale(dpr, dpr);
                 }
                 appendTo(parent) {
