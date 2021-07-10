@@ -4,15 +4,18 @@ import { TileMap } from "../../entities/TileMap";
 
 export class MapEditor extends ParentCanvasElm {
     private tileMap = new TileMap();
+    private ghostPlayer = new GhostPlayer();
 
     constructor() {
         super();
         this.addChild(this.tileMap);
+        this.addChild(this.ghostPlayer);
         console.log(this);
     }
 
     public setWorld(world: World) {
         super.setWorld(world);
+        this.world.camera.follow(this.ghostPlayer.rect);
     }
 
     public tick() {

@@ -10,7 +10,8 @@ export const collisions = {
     types: {
         static: Symbol(),
         moving: Symbol(),
-        map: Symbol()
+        map: Symbol(),
+        none: Symbol()
     }
 };
 
