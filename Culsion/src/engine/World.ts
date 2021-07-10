@@ -17,6 +17,7 @@ export class World {
     private elms: CanvasElm[] = [];
 
     private lastTime = performance.now();
+    private maxTickTimeElapse = 0.020;
 
     constructor() {
         this.canvas.resizeToScreen();
@@ -51,14 +52,17 @@ export class World {
         const X = this.canvas.X;
 
         const now = performance.now();
-        this.timeElapsed = (now - this.lastTime) / 1000;
+        let timeElapsed = (now - this.lastTime) / 1000;
         this.lastTime = now;
 
-        for (const elm of this.elms) {
-            elm.tick();
+        for (; timeElapsed > this.maxTickTimeElapse; timeElapsed -= this.maxTickTimeElapse) {
+            this.timeElapsed = this.maxTickTimeElapse;
+            this.tick();
         }
 
-        this.collisionSystem._checkCollisions();
+        this.timeElapsed = timeElapsed;
+        this.tick();
+
         this.camera._update();
 
         X.fillStyle = "#000000";
@@ -73,6 +77,14 @@ export class World {
         }
 
         X.restore();
+    }
+
+    private tick() {
+        for (const elm of this.elms) {
+            elm.tick();
+        }
+
+        this.collisionSystem._checkCollisions();
     }
 
     public appendTo(parent: HTMLElement) {

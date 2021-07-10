@@ -408,6 +408,7 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
                     this.timeElapsed = 0;
                     this.elms = [];
                     this.lastTime = performance.now();
+                    this.maxTickTimeElapse = 0.020;
                     this.canvas.resizeToScreen();
                 }
                 startListen() {
@@ -435,12 +436,14 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
                 draw() {
                     const X = this.canvas.X;
                     const now = performance.now();
-                    this.timeElapsed = (now - this.lastTime) / 1000;
+                    let timeElapsed = (now - this.lastTime) / 1000;
                     this.lastTime = now;
-                    for (const elm of this.elms) {
-                        elm.tick();
+                    for (; timeElapsed > this.maxTickTimeElapse; timeElapsed -= this.maxTickTimeElapse) {
+                        this.timeElapsed = this.maxTickTimeElapse;
+                        this.tick();
                     }
-                    this.collisionSystem._checkCollisions();
+                    this.timeElapsed = timeElapsed;
+                    this.tick();
                     this.camera._update();
                     X.fillStyle = "#000000";
                     X.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -450,6 +453,12 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
                         elm.draw();
                     }
                     X.restore();
+                }
+                tick() {
+                    for (const elm of this.elms) {
+                        elm.tick();
+                    }
+                    this.collisionSystem._checkCollisions();
                 }
                 appendTo(parent) {
                     this.canvas.appendTo(parent);
@@ -656,6 +665,7 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                         return;
                     }
                     this.map[yIndex][xIndex] = block;
+                    this.updatePrerender();
                 }
                 getCollisionTiles(x, y) {
                     if (!this.map) {
