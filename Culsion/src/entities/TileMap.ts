@@ -58,6 +58,7 @@ export class TileMap extends Entity {
 
         if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
         this.map[yIndex][xIndex] = block;
+        this.updatePrerender();
     }
 
     public getCollisionTiles(x: number, y: number): Rectangle[] | undefined {
