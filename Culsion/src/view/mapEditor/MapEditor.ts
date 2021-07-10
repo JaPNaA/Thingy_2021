@@ -1,6 +1,8 @@
 import { ParentCanvasElm } from "../../engine/ParentCanvasElm";
 import { World } from "../../engine/World";
+import { GhostPlayer } from "../../entities/GhostPlayer";
 import { TileMap } from "../../entities/TileMap";
+import { settings } from "../../settings";
 
 export class MapEditor extends ParentCanvasElm {
     private tileMap = new TileMap();
@@ -21,10 +23,19 @@ export class MapEditor extends ParentCanvasElm {
     public tick() {
         super.tick();
 
+        const x = this.world.camera.clientXToWorld(this.world.mouse.x);
+        const y = this.world.camera.clientYToWorld(this.world.mouse.y);
+
         if (this.world.mouse.leftDown) {
-            this.tileMap.setBlock(this.world.mouse.x, this.world.mouse.y, true);
+            this.tileMap.setBlock(x, y, true);
         } else if (this.world.mouse.rightDown) {
-            this.tileMap.setBlock(this.world.mouse.x, this.world.mouse.y, false);
+            this.tileMap.setBlock(x, y, false);
+        }
+
+        if (this.world.keyboard.isDown(settings.keybindings.zoomOut)) {
+            this.world.camera.scale /= 1.02;
+        } else if (this.world.keyboard.isDown(settings.keybindings.zoomIn)) {
+            this.world.camera.scale *= 1.02;
         }
     }
 

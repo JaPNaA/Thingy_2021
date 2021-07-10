@@ -18,6 +18,14 @@ export class Camera {
         this.following = rect;
     }
 
+    public clientXToWorld(x: number) {
+        return this.x + x / this.scale;
+    }
+
+    public clientYToWorld(y: number) {
+        return this.y + y / this.scale;
+    }
+
     public _applyTransform(context: CanvasRenderingContext2D) {
         context.scale(this.scale, this.scale);
         context.translate(-this.x, -this.y);
@@ -25,7 +33,7 @@ export class Camera {
 
     public _update() {
         if (!this.following) { return; }
-        this.x = this.following.x + this.following.width / 2 - this.canvas.width / 2;
-        this.y = this.following.y + this.following.height / 2 - this.canvas.height / 2;
+        this.x = this.following.x + this.following.width / 2 - this.canvas.width / 2 / this.scale;
+        this.y = this.following.y + this.following.height / 2 - this.canvas.height / 2 / this.scale;
     }
 }

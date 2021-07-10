@@ -78,6 +78,12 @@ System.register("engine/Camera", [], function (exports_3, context_3) {
                 follow(rect) {
                     this.following = rect;
                 }
+                clientXToWorld(x) {
+                    return this.x + x / this.scale;
+                }
+                clientYToWorld(y) {
+                    return this.y + y / this.scale;
+                }
                 _applyTransform(context) {
                     context.scale(this.scale, this.scale);
                     context.translate(-this.x, -this.y);
@@ -86,8 +92,8 @@ System.register("engine/Camera", [], function (exports_3, context_3) {
                     if (!this.following) {
                         return;
                     }
-                    this.x = this.following.x + this.following.width / 2 - this.canvas.width / 2;
-                    this.y = this.following.y + this.following.height / 2 - this.canvas.height / 2;
+                    this.x = this.following.x + this.following.width / 2 - this.canvas.width / 2 / this.scale;
+                    this.y = this.following.y + this.following.height / 2 - this.canvas.height / 2 / this.scale;
                 }
             };
             exports_3("Camera", Camera);
@@ -836,7 +842,8 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
                 types: {
                     static: Symbol(),
                     moving: Symbol(),
-                    map: Symbol()
+                    map: Symbol(),
+                    none: Symbol()
                 }
             });
         }
@@ -939,7 +946,9 @@ System.register("settings", [], function (exports_20, context_20) {
                     moveDown: ["KeyS", "ArrowDown"],
                     moveLeft: ["KeyA", "ArrowLeft"],
                     moveRight: ["KeyD", "ArrowRight"],
-                    advanceDialog: ["Enter", "NumpadEnter", "Space"]
+                    advanceDialog: ["Enter", "NumpadEnter", "Space"],
+                    zoomOut: ["Minus", "NumpadSubtract"],
+                    zoomIn: ["Equal", "NumpadAdd"]
                 }
             });
         }
@@ -1170,17 +1179,47 @@ System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDia
         }
     };
 });
-System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities/TileMap"], function (exports_26, context_26) {
+System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player"], function (exports_26, context_26) {
     "use strict";
-    var ParentCanvasElm_2, TileMap_2, MapEditor;
+    var collisions_4, Player_3, GhostPlayer;
     var __moduleName = context_26 && context_26.id;
+    return {
+        setters: [
+            function (collisions_4_1) {
+                collisions_4 = collisions_4_1;
+            },
+            function (Player_3_1) {
+                Player_3 = Player_3_1;
+            }
+        ],
+        execute: function () {
+            GhostPlayer = class GhostPlayer extends Player_3.Player {
+                constructor() {
+                    super(...arguments);
+                    this.collisionType = collisions_4.collisions.types.none;
+                }
+            };
+            exports_26("GhostPlayer", GhostPlayer);
+        }
+    };
+});
+System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities/GhostPlayer", "entities/TileMap", "settings"], function (exports_27, context_27) {
+    "use strict";
+    var ParentCanvasElm_2, GhostPlayer_1, TileMap_2, settings_3, MapEditor;
+    var __moduleName = context_27 && context_27.id;
     return {
         setters: [
             function (ParentCanvasElm_2_1) {
                 ParentCanvasElm_2 = ParentCanvasElm_2_1;
             },
+            function (GhostPlayer_1_1) {
+                GhostPlayer_1 = GhostPlayer_1_1;
+            },
             function (TileMap_2_1) {
                 TileMap_2 = TileMap_2_1;
+            },
+            function (settings_3_1) {
+                settings_3 = settings_3_1;
             }
         ],
         execute: function () {
@@ -1188,19 +1227,30 @@ System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities
                 constructor() {
                     super();
                     this.tileMap = new TileMap_2.TileMap();
+                    this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
                     this.addChild(this.tileMap);
+                    this.addChild(this.ghostPlayer);
                     console.log(this);
                 }
                 setWorld(world) {
                     super.setWorld(world);
+                    this.world.camera.follow(this.ghostPlayer.rect);
                 }
                 tick() {
                     super.tick();
+                    const x = this.world.camera.clientXToWorld(this.world.mouse.x);
+                    const y = this.world.camera.clientYToWorld(this.world.mouse.y);
                     if (this.world.mouse.leftDown) {
-                        this.tileMap.setBlock(this.world.mouse.x, this.world.mouse.y, true);
+                        this.tileMap.setBlock(x, y, true);
                     }
                     else if (this.world.mouse.rightDown) {
-                        this.tileMap.setBlock(this.world.mouse.x, this.world.mouse.y, false);
+                        this.tileMap.setBlock(x, y, false);
+                    }
+                    if (this.world.keyboard.isDown(settings_3.settings.keybindings.zoomOut)) {
+                        this.world.camera.scale /= 1.02;
+                    }
+                    else if (this.world.keyboard.isDown(settings_3.settings.keybindings.zoomIn)) {
+                        this.world.camera.scale *= 1.02;
                     }
                 }
                 exportMap() {
@@ -1212,14 +1262,14 @@ System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities
                     return map.map(row => row.map(block => block ? "x" : " ").join("")).join("\n");
                 }
             };
-            exports_26("MapEditor", MapEditor);
+            exports_27("MapEditor", MapEditor);
         }
     };
 });
-System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_27, context_27) {
+System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_28, context_28) {
     "use strict";
-    var World_1, collisions_4, GameView_1, MapEditor_1, world;
-    var __moduleName = context_27 && context_27.id;
+    var World_1, collisions_5, GameView_1, MapEditor_1, world;
+    var __moduleName = context_28 && context_28.id;
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);
@@ -1229,8 +1279,8 @@ System.register("index", ["engine/World", "entities/collisions", "view/GameView"
             function (World_1_1) {
                 World_1 = World_1_1;
             },
-            function (collisions_4_1) {
-                collisions_4 = collisions_4_1;
+            function (collisions_5_1) {
+                collisions_5 = collisions_5_1;
             },
             function (GameView_1_1) {
                 GameView_1 = GameView_1_1;
@@ -1241,7 +1291,7 @@ System.register("index", ["engine/World", "entities/collisions", "view/GameView"
         ],
         execute: function () {
             world = new World_1.World();
-            collisions_4.registerCollisions(world.collisionSystem.reactions);
+            collisions_5.registerCollisions(world.collisionSystem.reactions);
             world.appendTo(document.body);
             world.startListen();
             if (location.hash == "#mapEditor") {
