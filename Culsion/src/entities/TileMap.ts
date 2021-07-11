@@ -1,6 +1,7 @@
 import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { Rectangle } from "../engine/util/Rectangle";
 import { resourceFetcher } from "../resources/resourceFetcher";
+import { TileMapFile } from "../resources/TileMapFile";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
 
@@ -15,10 +16,23 @@ export class TileMap extends Entity {
     constructor() {
         super();
 
-        resourceFetcher.fetch("assets/maze.txt").then(str => {
-            this.map = str.split("\n").map(line => line.split("").map(char => char !== " "));
-            this.rect.height = this.map.length * this.tileSize;
-            this.rect.width = this.map[0].length * this.tileSize;
+        resourceFetcher.fetchRaw("assets/maze.tmap").then(buffer => {
+            const file = TileMapFile.fromBuffer(buffer);
+
+            this.rect.height = file.height * this.tileSize;
+            this.rect.width = file.width * this.tileSize;
+
+            this.map = [];
+            for (let y = 0; y < file.height; y++) {
+                const row = [];
+
+                for (let x = 0; x < file.width; x++) {
+                    row[x] = file.mapData[y * file.width + x] ? true : false;
+                }
+
+                this.map[y] = row;
+            }
+
             this.updatePrerender();
         });
     }
@@ -59,6 +73,21 @@ export class TileMap extends Entity {
         if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
         this.map[yIndex][xIndex] = block;
         this.updatePrerender();
+    }
+
+    public exportTileMapFile(): TileMapFile {
+        if (!this.map) { throw new Error("Map not loaded"); }
+        const width = this.map[0].length;
+        const height = this.map.length;
+        const file = TileMapFile.create(width, height);
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                file.mapData[y * width + x] = this.map[y][x] ? 1 : 0;
+            }
+        }
+
+        return file;
     }
 
     public getCollisionTiles(x: number, y: number): Rectangle[] | undefined {

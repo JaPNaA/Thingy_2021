@@ -582,7 +582,7 @@ System.register("resources/resourceFetcher", [], function (exports_15, context_1
                 constructor() {
                     this.cache = new Map();
                 }
-                async fetch(url) {
+                async fetchText(url) {
                     const cached = this.cache.get(url);
                     if (cached) {
                         return cached;
@@ -594,15 +594,110 @@ System.register("resources/resourceFetcher", [], function (exports_15, context_1
                         return result;
                     }
                 }
+                async fetchRaw(url) {
+                    const cached = this.cache.get(url);
+                    if (cached) {
+                        return cached;
+                    }
+                    else {
+                        const response = await fetch(url);
+                        const result = await (await response.blob()).arrayBuffer();
+                        this.cache.set(url, result);
+                        return result;
+                    }
+                }
             };
             exports_15("resourceFetcher", resourceFetcher = new ResourceFetcher());
         }
     };
 });
-System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rectangle", "resources/resourceFetcher", "entities/collisions", "entities/Entity"], function (exports_16, context_16) {
+/**
+ * Map file structure:
+ *
+ * 1 byte - version number (1)
+ * 4 bytes - width
+ * 4 bytes - height
+ * width * height bytes - map data
+ * rest of file - JSON data:
+ *   {
+ *     blockTypes: [blockType, blockType, blockType, ...],
+ *     entities: [ ... ]
+ *   }
+ */
+System.register("resources/TileMapFile", [], function (exports_16, context_16) {
     "use strict";
-    var PrerenderCanvas_1, Rectangle_3, resourceFetcher_1, collisions_2, Entity_1, TileMap;
+    var TileMapFile, DataViewWalker;
     var __moduleName = context_16 && context_16.id;
+    return {
+        setters: [],
+        execute: function () {
+            TileMapFile = class TileMapFile {
+                static fromBuffer(buffer) {
+                    const mapFile = new TileMapFile();
+                    const dataWalker = new DataViewWalker(buffer);
+                    mapFile.version = dataWalker.nextUint8();
+                    mapFile.width = dataWalker.nextUint32();
+                    mapFile.height = dataWalker.nextUint32();
+                    mapFile.mapData = dataWalker.nextUint8Array(mapFile.width * mapFile.height);
+                    const textDecoder = new TextDecoder();
+                    mapFile.jsonData = JSON.parse(textDecoder.decode(dataWalker.nextUint8Array()));
+                    return mapFile;
+                }
+                static create(width, height) {
+                    const mapFile = new TileMapFile();
+                    mapFile.version = 1;
+                    mapFile.width = width;
+                    mapFile.height = height;
+                    mapFile.mapData = new Uint8Array(width * height);
+                    mapFile.jsonData = {};
+                    return mapFile;
+                }
+                encode() {
+                    const version = new Uint8Array(1);
+                    version[0] = this.version;
+                    const widthHeight = new Uint32Array(2);
+                    widthHeight[0] = this.width;
+                    widthHeight[1] = this.height;
+                    const jsonDataStr = JSON.stringify(this.jsonData);
+                    return new Blob([version, widthHeight, this.mapData, jsonDataStr]);
+                }
+            };
+            exports_16("TileMapFile", TileMapFile);
+            DataViewWalker = class DataViewWalker {
+                constructor(buffer) {
+                    this.currOffset = 0;
+                    this.dataWalker = new DataView(buffer);
+                }
+                nextUint8() {
+                    const val = this.dataWalker.getUint8(this.currOffset);
+                    this.currOffset += 1;
+                    return val;
+                }
+                nextUint8Array(length) {
+                    if (length) {
+                        const arr = new Uint8Array(this.dataWalker.buffer, this.currOffset, length);
+                        this.currOffset += length;
+                        return arr;
+                    }
+                    else {
+                        const arr = new Uint8Array(this.dataWalker.buffer, this.currOffset);
+                        this.currOffset = this.dataWalker.byteLength;
+                        return arr;
+                    }
+                }
+                nextUint32() {
+                    const val = this.dataWalker.getUint32(this.currOffset, true);
+                    this.currOffset += 4;
+                    return val;
+                }
+            };
+        }
+    };
+});
+System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rectangle", "resources/resourceFetcher", "resources/TileMapFile", "entities/collisions", "entities/Entity"], function (exports_17, context_17) {
+    "use strict";
+    var PrerenderCanvas_1, Rectangle_3, resourceFetcher_1, TileMapFile_1, collisions_2, Entity_1, TileMap;
+    var __moduleName = context_17 && context_17.id;
     return {
         setters: [
             function (PrerenderCanvas_1_1) {
@@ -613,6 +708,9 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
             },
             function (resourceFetcher_1_1) {
                 resourceFetcher_1 = resourceFetcher_1_1;
+            },
+            function (TileMapFile_1_1) {
+                TileMapFile_1 = TileMapFile_1_1;
             },
             function (collisions_2_1) {
                 collisions_2 = collisions_2_1;
@@ -627,10 +725,18 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     super();
                     this.collisionType = collisions_2.collisions.types.map;
                     this.tileSize = 32;
-                    resourceFetcher_1.resourceFetcher.fetch("assets/maze.txt").then(str => {
-                        this.map = str.split("\n").map(line => line.split("").map(char => char !== " "));
-                        this.rect.height = this.map.length * this.tileSize;
-                        this.rect.width = this.map[0].length * this.tileSize;
+                    resourceFetcher_1.resourceFetcher.fetchRaw("assets/maze.tmap").then(buffer => {
+                        const file = TileMapFile_1.TileMapFile.fromBuffer(buffer);
+                        this.rect.height = file.height * this.tileSize;
+                        this.rect.width = file.width * this.tileSize;
+                        this.map = [];
+                        for (let y = 0; y < file.height; y++) {
+                            const row = [];
+                            for (let x = 0; x < file.width; x++) {
+                                row[x] = file.mapData[y * file.width + x] ? true : false;
+                            }
+                            this.map[y] = row;
+                        }
                         this.updatePrerender();
                     });
                 }
@@ -672,6 +778,20 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     }
                     this.map[yIndex][xIndex] = block;
                     this.updatePrerender();
+                }
+                exportTileMapFile() {
+                    if (!this.map) {
+                        throw new Error("Map not loaded");
+                    }
+                    const width = this.map[0].length;
+                    const height = this.map.length;
+                    const file = TileMapFile_1.TileMapFile.create(width, height);
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            file.mapData[y * width + x] = this.map[y][x] ? 1 : 0;
+                        }
+                    }
+                    return file;
                 }
                 getCollisionTiles(x, y) {
                     if (!this.map) {
@@ -763,14 +883,14 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     return new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
                 }
             };
-            exports_16("TileMap", TileMap);
+            exports_17("TileMap", TileMap);
         }
     };
 });
-System.register("entities/collisions", ["engine/collision/isRectanglesColliding", "engine/util/MovingRectangle"], function (exports_17, context_17) {
+System.register("entities/collisions", ["engine/collision/isRectanglesColliding", "engine/util/MovingRectangle"], function (exports_18, context_18) {
     "use strict";
     var isRectanglesColliding_2, MovingRectangle_1, collisions;
-    var __moduleName = context_17 && context_17.id;
+    var __moduleName = context_18 && context_18.id;
     function registerCollisions(collisionReactionMap) {
         collisionReactionMap.setCollisionReaction(collisions.types.moving, collisions.types.static, function (moving, block) {
             handleMovingStaticCollision(moving.rectangle, block.rectangle);
@@ -787,7 +907,7 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
             }
         });
     }
-    exports_17("registerCollisions", registerCollisions);
+    exports_18("registerCollisions", registerCollisions);
     function handleMovingStaticCollision(moving, block) {
         // modified from https://stackoverflow.com/a/29861691
         let dx, dy;
@@ -838,7 +958,7 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
             }
         ],
         execute: function () {
-            exports_17("collisions", collisions = {
+            exports_18("collisions", collisions = {
                 types: {
                     static: Symbol(),
                     moving: Symbol(),
@@ -849,10 +969,10 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
         }
     };
 });
-System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_18, context_18) {
+System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_19, context_19) {
     "use strict";
     var CanvasElm_2, ParentCanvasElm;
-    var __moduleName = context_18 && context_18.id;
+    var __moduleName = context_19 && context_19.id;
     return {
         setters: [
             function (CanvasElm_2_1) {
@@ -893,14 +1013,14 @@ System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (export
                     }
                 }
             };
-            exports_18("ParentCanvasElm", ParentCanvasElm);
+            exports_19("ParentCanvasElm", ParentCanvasElm);
         }
     };
 });
-System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_19, context_19) {
+System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_20, context_20) {
     "use strict";
     var resourceFetcher_2, DialogFetcher, dialogFetcher;
-    var __moduleName = context_19 && context_19.id;
+    var __moduleName = context_20 && context_20.id;
     return {
         setters: [
             function (resourceFetcher_2_1) {
@@ -910,7 +1030,7 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
         execute: function () {
             DialogFetcher = class DialogFetcher {
                 async fetch(url) {
-                    const str = await resourceFetcher_2.resourceFetcher.fetch("assets/" + url + ".txt");
+                    const str = await resourceFetcher_2.resourceFetcher.fetchText("assets/" + url + ".txt");
                     const lines = str.split("\n");
                     const arr = [];
                     let currArrElm = [];
@@ -929,18 +1049,18 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
                     return arr;
                 }
             };
-            exports_19("dialogFetcher", dialogFetcher = new DialogFetcher());
+            exports_20("dialogFetcher", dialogFetcher = new DialogFetcher());
         }
     };
 });
-System.register("settings", [], function (exports_20, context_20) {
+System.register("settings", [], function (exports_21, context_21) {
     "use strict";
     var settings;
-    var __moduleName = context_20 && context_20.id;
+    var __moduleName = context_21 && context_21.id;
     return {
         setters: [],
         execute: function () {
-            exports_20("settings", settings = {
+            exports_21("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW", "ArrowUp"],
                     moveDown: ["KeyS", "ArrowDown"],
@@ -954,10 +1074,10 @@ System.register("settings", [], function (exports_20, context_20) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_21, context_21) {
+System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (exports_22, context_22) {
     "use strict";
     var CanvasElm_3, settings_1, NPCDialog;
-    var __moduleName = context_21 && context_21.id;
+    var __moduleName = context_22 && context_22.id;
     return {
         setters: [
             function (CanvasElm_3_1) {
@@ -1003,14 +1123,14 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     super.dispose();
                 }
             };
-            exports_21("NPCDialog", NPCDialog);
+            exports_22("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_22, context_22) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_23, context_23) {
     "use strict";
     var Entity_2, NPC;
-    var __moduleName = context_22 && context_22.id;
+    var __moduleName = context_23 && context_23.id;
     return {
         setters: [
             function (Entity_2_1) {
@@ -1030,14 +1150,14 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_22, conte
                     X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
             };
-            exports_22("NPC", NPC);
+            exports_23("NPC", NPC);
         }
     };
 });
-System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_23, context_23) {
+System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_24, context_24) {
     "use strict";
     var MovingRectangle_2, settings_2, collisions_3, Entity_3, Player;
-    var __moduleName = context_23 && context_23.id;
+    var __moduleName = context_24 && context_24.id;
     return {
         setters: [
             function (MovingRectangle_2_1) {
@@ -1090,14 +1210,14 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
                     this.rect.y += dirY * this.speed * this.world.timeElapsed;
                 }
             };
-            exports_23("Player", Player);
+            exports_24("Player", Player);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_24, context_24) {
+System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_25, context_25) {
     "use strict";
     var Rectangle_4, dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
-    var __moduleName = context_24 && context_24.id;
+    var __moduleName = context_25 && context_25.id;
     return {
         setters: [
             function (Rectangle_4_1) {
@@ -1138,14 +1258,14 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
                     throw new Error("Not implemented");
                 }
             };
-            exports_24("NPCWithDialog", NPCWithDialog);
+            exports_25("NPCWithDialog", NPCWithDialog);
         }
     };
 });
-System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_25, context_25) {
+System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap"], function (exports_26, context_26) {
     "use strict";
     var ParentCanvasElm_1, NPCWithDialog_1, Player_2, TileMap_1, GameView;
-    var __moduleName = context_25 && context_25.id;
+    var __moduleName = context_26 && context_26.id;
     return {
         setters: [
             function (ParentCanvasElm_1_1) {
@@ -1175,14 +1295,14 @@ System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDia
                     world.camera.follow(this.player.rect);
                 }
             };
-            exports_25("GameView", GameView);
+            exports_26("GameView", GameView);
         }
     };
 });
-System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player"], function (exports_26, context_26) {
+System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player"], function (exports_27, context_27) {
     "use strict";
     var collisions_4, Player_3, GhostPlayer;
-    var __moduleName = context_26 && context_26.id;
+    var __moduleName = context_27 && context_27.id;
     return {
         setters: [
             function (collisions_4_1) {
@@ -1199,14 +1319,14 @@ System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player
                     this.collisionType = collisions_4.collisions.types.none;
                 }
             };
-            exports_26("GhostPlayer", GhostPlayer);
+            exports_27("GhostPlayer", GhostPlayer);
         }
     };
 });
-System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities/GhostPlayer", "entities/TileMap", "settings"], function (exports_27, context_27) {
+System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities/GhostPlayer", "entities/TileMap", "settings"], function (exports_28, context_28) {
     "use strict";
     var ParentCanvasElm_2, GhostPlayer_1, TileMap_2, settings_3, MapEditor;
-    var __moduleName = context_27 && context_27.id;
+    var __moduleName = context_28 && context_28.id;
     return {
         setters: [
             function (ParentCanvasElm_2_1) {
@@ -1254,22 +1374,27 @@ System.register("view/mapEditor/MapEditor", ["engine/ParentCanvasElm", "entities
                     }
                 }
                 exportMap() {
-                    // @ts-expect-error -- temporary
-                    const map = this.tileMap.map;
-                    if (!map) {
-                        return;
-                    }
-                    return map.map(row => row.map(block => block ? "x" : " ").join("")).join("\n");
+                    const file = this.tileMap.exportTileMapFile();
+                    const blob = file.encode();
+                    this.downloadBlob(blob);
+                }
+                downloadBlob(blob) {
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(blob);
+                    a.download = "MapEditorExport.tmap";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                 }
             };
-            exports_27("MapEditor", MapEditor);
+            exports_28("MapEditor", MapEditor);
         }
     };
 });
-System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_28, context_28) {
+System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_29, context_29) {
     "use strict";
     var World_1, collisions_5, GameView_1, MapEditor_1, world;
-    var __moduleName = context_28 && context_28.id;
+    var __moduleName = context_29 && context_29.id;
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);

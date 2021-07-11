@@ -2,7 +2,7 @@ import { resourceFetcher } from "./resourceFetcher";
 
 class DialogFetcher {
     public async fetch(url: string) {
-        const str = await resourceFetcher.fetch("assets/" + url + ".txt");
+        const str = await resourceFetcher.fetchText("assets/" + url + ".txt");
         const lines = str.split("\n");
         const arr: string[] = [];
 

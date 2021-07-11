@@ -40,10 +40,17 @@ export class MapEditor extends ParentCanvasElm {
     }
 
     public exportMap() {
-        // @ts-expect-error -- temporary
-        const map = this.tileMap.map;
-        if (!map) { return; }
+        const file = this.tileMap.exportTileMapFile();
+        const blob = file.encode();
+        this.downloadBlob(blob);
+    }
 
-        return map.map(row => row.map(block => block ? "x" : " ").join("")).join("\n");
+    private downloadBlob(blob: Blob) {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "MapEditorExport.tmap";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 }

@@ -1,4 +1,3 @@
-import { CanvasElm } from "../engine/CanvasElm";
 import { ParentCanvasElm } from "../engine/ParentCanvasElm";
 import { World } from "../engine/World";
 import { NPCWithDialog } from "../entities/NPCWithDialog";
