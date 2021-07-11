@@ -2,11 +2,13 @@ import { Camera } from "./Camera";
 import { Canvas } from "./Canvas";
 import { CanvasElm } from "./CanvasElm";
 import { CollisionSystem } from "./collision/CollisionSystem";
+import { HTMLOverlay } from "./HTMLOverlay";
 import { Keyboard } from "./Keyboard";
 import { Mouse } from "./Mouse";
 
 export class World {
     public canvas = new Canvas();
+    public htmlOverlay = new HTMLOverlay();
     public camera = new Camera(this);
     public keyboard = new Keyboard();
     public mouse = new Mouse();
@@ -89,5 +91,6 @@ export class World {
 
     public appendTo(parent: HTMLElement) {
         this.canvas.appendTo(parent);
+        this.htmlOverlay.appendTo(parent);
     }
 }
