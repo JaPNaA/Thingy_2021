@@ -1,3 +1,4 @@
+import { Component, InputElm } from "../../engine/elements";
 import { ParentCanvasElm } from "../../engine/ParentCanvasElm";
 import { World } from "../../engine/World";
 import { GhostPlayer } from "../../entities/GhostPlayer";
@@ -9,6 +10,8 @@ import { settings } from "../../settings";
 export class MapEditor extends ParentCanvasElm {
     private tileMap?: TileMap;
     private ghostPlayer = new GhostPlayer();
+
+    private overlay = new MapEditorOverlay();
 
     constructor() {
         super();
@@ -29,10 +32,12 @@ export class MapEditor extends ParentCanvasElm {
         super.setWorld(world);
         this.world.camera.follow(this.ghostPlayer.rect);
         this.world.keyboard.addKeydownHandler(settings.keybindings.select, this.exportMapKeyHandler);
+        this.world.htmlOverlay.elm.append(this.overlay);
     }
 
     public dispose() {
         this.world.keyboard.removeKeydownHandler(settings.keybindings.select, this.exportMapKeyHandler);
+        this.overlay.elm.remove();
     }
 
     public tick() {
@@ -43,7 +48,7 @@ export class MapEditor extends ParentCanvasElm {
         const y = this.world.camera.clientYToWorld(this.world.mouse.y);
 
         if (this.world.mouse.leftDown) {
-            this.tileMap.setBlock(x, y, 1);
+            this.tileMap.setBlock(x, y, parseInt(this.overlay.leftMouseTileInput.getValue() as string));
         } else if (this.world.mouse.rightDown) {
             this.tileMap.setBlock(x, y, 0);
         }
@@ -69,5 +74,17 @@ export class MapEditor extends ParentCanvasElm {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+    }
+}
+
+class MapEditorOverlay extends Component {
+    public leftMouseTileInput: InputElm;
+
+    constructor() {
+        super("MapEditorOverlay");
+
+        this.elm.append(
+            this.leftMouseTileInput = new InputElm().setType("number").class("leftMouseTile").setValue(1)
+        );
     }
 }
