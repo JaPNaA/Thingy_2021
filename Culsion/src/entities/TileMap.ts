@@ -75,9 +75,11 @@ export class TileMap extends Entity {
 
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                file.mapData[y * width + x] = this.map[y][x] ? 1 : 0;
+                file.mapData[y * width + x] = this.map[y][x];
             }
         }
+
+        file.jsonData = this.file.jsonData;
 
         return file;
     }
