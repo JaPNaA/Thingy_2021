@@ -19,6 +19,8 @@ export class MapEditor extends ParentCanvasElm {
                 this.addChild(this.tileMap);
             })
 
+        this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
+
         this.addChild(this.ghostPlayer);
         console.log(this);
     }
@@ -26,6 +28,11 @@ export class MapEditor extends ParentCanvasElm {
     public setWorld(world: World) {
         super.setWorld(world);
         this.world.camera.follow(this.ghostPlayer.rect);
+        this.world.keyboard.addKeydownHandler(settings.keybindings.select, this.exportMapKeyHandler);
+    }
+
+    public dispose() {
+        this.world.keyboard.removeKeydownHandler(settings.keybindings.select, this.exportMapKeyHandler);
     }
 
     public tick() {
@@ -36,9 +43,9 @@ export class MapEditor extends ParentCanvasElm {
         const y = this.world.camera.clientYToWorld(this.world.mouse.y);
 
         if (this.world.mouse.leftDown) {
-            this.tileMap.setBlock(x, y, true);
+            this.tileMap.setBlock(x, y, 1);
         } else if (this.world.mouse.rightDown) {
-            this.tileMap.setBlock(x, y, false);
+            this.tileMap.setBlock(x, y, 0);
         }
 
         if (this.world.keyboard.isDown(settings.keybindings.zoomOut)) {
@@ -48,7 +55,7 @@ export class MapEditor extends ParentCanvasElm {
         }
     }
 
-    public exportMap() {
+    public exportMapKeyHandler() {
         if (!this.tileMap) { return; }
         const file = this.tileMap.exportTileMapFile();
         const blob = file.encode();

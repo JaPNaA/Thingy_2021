@@ -1,6 +1,5 @@
 import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { Rectangle } from "../engine/util/Rectangle";
-import { resourceFetcher } from "../resources/resourceFetcher";
 import { TileMapFile } from "../resources/TileMapFile";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
@@ -8,7 +7,9 @@ import { Entity } from "./Entity";
 export class TileMap extends Entity {
     public collisionType = collisions.types.map;
 
-    private map: boolean[][];
+    private map: number[][];
+    private blockTypes: BlockType[];
+
     private file: TileMapFile;
     private prerender: PrerenderCanvas;
 
@@ -26,11 +27,13 @@ export class TileMap extends Entity {
             const row = [];
 
             for (let x = 0; x < tileMapFile.width; x++) {
-                row[x] = tileMapFile.mapData[y * tileMapFile.width + x] ? true : false;
+                row[x] = tileMapFile.mapData[y * tileMapFile.width + x];
             }
 
             this.map[y] = row;
         }
+
+        this.blockTypes = tileMapFile.jsonData.blockTypes || [];
 
         this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
         this.updatePrerender();
@@ -50,14 +53,13 @@ export class TileMap extends Entity {
 
         for (let y = 0; y < this.file.height; y++) {
             for (let x = 0; x < this.file.width; x++) {
-                if (this.map[y][x]) {
-                    X.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
-                }
+                X.fillStyle = this.blockTypes[this.map[y][x]].color;
+                X.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
             }
         }
     }
 
-    public setBlock(x: number, y: number, block: boolean) {
+    public setBlock(x: number, y: number, block: number) {
         const xIndex = Math.floor(x / this.tileSize);
         const yIndex = Math.floor(y / this.tileSize);
 
@@ -168,10 +170,17 @@ export class TileMap extends Entity {
     }
 
     private isBlock(xIndex: number, yIndex: number) {
-        return this.map[yIndex] && this.map[yIndex][xIndex];
+        return xIndex < this.file.width && xIndex >= 0 &&
+            yIndex < this.file.height && yIndex >= 0 &&
+            this.blockTypes[this.map[yIndex][xIndex]].solid;
     }
 
     private rectFromIndexes(xIndex: number, yIndex: number): Rectangle {
         return new Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
     }
+}
+
+export interface BlockType {
+    color: string;
+    solid: boolean;
 }
