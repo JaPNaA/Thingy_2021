@@ -2,15 +2,23 @@ import { ParentCanvasElm } from "../../engine/ParentCanvasElm";
 import { World } from "../../engine/World";
 import { GhostPlayer } from "../../entities/GhostPlayer";
 import { TileMap } from "../../entities/TileMap";
+import { resourceFetcher } from "../../resources/resourceFetcher";
+import { TileMapFile } from "../../resources/TileMapFile";
 import { settings } from "../../settings";
 
 export class MapEditor extends ParentCanvasElm {
-    private tileMap = new TileMap();
+    private tileMap?: TileMap;
     private ghostPlayer = new GhostPlayer();
 
     constructor() {
         super();
-        this.addChild(this.tileMap);
+
+        resourceFetcher.fetchRaw("assets/maze.tmap")
+            .then(tileMapFile => {
+                this.tileMap = new TileMap(TileMapFile.fromBuffer(tileMapFile));
+                this.addChild(this.tileMap);
+            })
+
         this.addChild(this.ghostPlayer);
         console.log(this);
     }
@@ -22,6 +30,7 @@ export class MapEditor extends ParentCanvasElm {
 
     public tick() {
         super.tick();
+        if (!this.tileMap) { return; }
 
         const x = this.world.camera.clientXToWorld(this.world.mouse.x);
         const y = this.world.camera.clientYToWorld(this.world.mouse.y);
@@ -40,6 +49,7 @@ export class MapEditor extends ParentCanvasElm {
     }
 
     public exportMap() {
+        if (!this.tileMap) { return; }
         const file = this.tileMap.exportTileMapFile();
         const blob = file.encode();
         this.downloadBlob(blob);

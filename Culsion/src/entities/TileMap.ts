@@ -8,55 +8,48 @@ import { Entity } from "./Entity";
 export class TileMap extends Entity {
     public collisionType = collisions.types.map;
 
-    private map?: boolean[][];
-    private prerender?: PrerenderCanvas;
+    private map: boolean[][];
+    private file: TileMapFile;
+    private prerender: PrerenderCanvas;
 
     private readonly tileSize = 32;
 
-    constructor() {
+    constructor(tileMapFile: TileMapFile) {
         super();
 
-        resourceFetcher.fetchRaw("assets/maze.tmap").then(buffer => {
-            const file = TileMapFile.fromBuffer(buffer);
+        this.file = tileMapFile;
+        this.rect.height = tileMapFile.height * this.tileSize;
+        this.rect.width = tileMapFile.width * this.tileSize;
 
-            this.rect.height = file.height * this.tileSize;
-            this.rect.width = file.width * this.tileSize;
+        this.map = [];
+        for (let y = 0; y < tileMapFile.height; y++) {
+            const row = [];
 
-            this.map = [];
-            for (let y = 0; y < file.height; y++) {
-                const row = [];
-
-                for (let x = 0; x < file.width; x++) {
-                    row[x] = file.mapData[y * file.width + x] ? true : false;
-                }
-
-                this.map[y] = row;
+            for (let x = 0; x < tileMapFile.width; x++) {
+                row[x] = tileMapFile.mapData[y * tileMapFile.width + x] ? true : false;
             }
 
-            this.updatePrerender();
-        });
+            this.map[y] = row;
+        }
+
+        this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
+        this.updatePrerender();
     }
 
     public draw(): void {
-        if (!this.prerender) { return; }
         this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y);
     }
 
     public updatePrerender() {
-        if (!this.map) { return; }
-        if (this.prerender) {
-            this.prerender.resize(this.rect.width, this.rect.height);
-            this.prerender.clear();
-        } else {
-            this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
-        }
+        this.prerender.resize(this.rect.width, this.rect.height);
+        this.prerender.clear();
 
         const X = this.prerender.X;
 
         X.fillStyle = "#aaa8";
 
-        for (let y = 0; y < this.map.length; y++) {
-            for (let x = 0; x < this.map[y].length; x++) {
+        for (let y = 0; y < this.file.height; y++) {
+            for (let x = 0; x < this.file.width; x++) {
                 if (this.map[y][x]) {
                     X.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
                 }
@@ -65,8 +58,6 @@ export class TileMap extends Entity {
     }
 
     public setBlock(x: number, y: number, block: boolean) {
-        if (!this.map) { return; }
-
         const xIndex = Math.floor(x / this.tileSize);
         const yIndex = Math.floor(y / this.tileSize);
 
@@ -76,7 +67,6 @@ export class TileMap extends Entity {
     }
 
     public exportTileMapFile(): TileMapFile {
-        if (!this.map) { throw new Error("Map not loaded"); }
         const width = this.map[0].length;
         const height = this.map.length;
         const file = TileMapFile.create(width, height);
@@ -90,9 +80,7 @@ export class TileMap extends Entity {
         return file;
     }
 
-    public getCollisionTiles(x: number, y: number): Rectangle[] | undefined {
-        if (!this.map) { return; }
-
+    public getCollisionTiles(x: number, y: number): Rectangle[] {
         const xIndex = Math.floor(x / this.tileSize);
         const yIndex = Math.floor(y / this.tileSize);
 
@@ -180,7 +168,6 @@ export class TileMap extends Entity {
     }
 
     private isBlock(xIndex: number, yIndex: number) {
-        if (!this.map) { return false; }
         return this.map[yIndex] && this.map[yIndex][xIndex];
     }
 
