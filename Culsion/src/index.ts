@@ -22,3 +22,5 @@ function requanf() {
 }
 
 requanf();
+
+history.scrollRestoration = "manual";
