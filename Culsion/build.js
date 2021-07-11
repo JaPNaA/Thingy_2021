@@ -1039,7 +1039,7 @@ System.register("settings", [], function (exports_21, context_21) {
                     moveDown: ["KeyS", "ArrowDown"],
                     moveLeft: ["KeyA", "ArrowLeft"],
                     moveRight: ["KeyD", "ArrowRight"],
-                    advanceDialog: ["Enter", "NumpadEnter", "Space"],
+                    select: ["Enter", "NumpadEnter", "Space", "Z"],
                     zoomOut: ["Minus", "NumpadSubtract"],
                     zoomIn: ["Equal", "NumpadAdd"]
                 }
@@ -1071,7 +1071,7 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                 }
                 setWorld(world) {
                     super.setWorld(world);
-                    world.keyboard.addKeydownHandler(settings_1.settings.keybindings.advanceDialog, this.advanceDialogHandler);
+                    world.keyboard.addKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
                 }
                 draw() {
                     const X = this.world.canvas.X;
@@ -1092,7 +1092,7 @@ System.register("ui/NPCDialog", ["engine/CanvasElm", "settings"], function (expo
                     }
                 }
                 dispose() {
-                    this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.advanceDialog, this.advanceDialogHandler);
+                    this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
                     super.dispose();
                 }
             };

@@ -15,7 +15,7 @@ export class NPCDialog extends CanvasElm {
     public setWorld(world: World) {
         super.setWorld(world);
 
-        world.keyboard.addKeydownHandler(settings.keybindings.advanceDialog, this.advanceDialogHandler);
+        world.keyboard.addKeydownHandler(settings.keybindings.select, this.advanceDialogHandler);
     }
 
     public draw() {
@@ -40,7 +40,7 @@ export class NPCDialog extends CanvasElm {
     }
 
     public dispose() {
-        this.world.keyboard.removeKeydownHandler(settings.keybindings.advanceDialog, this.advanceDialogHandler);
+        this.world.keyboard.removeKeydownHandler(settings.keybindings.select, this.advanceDialogHandler);
         super.dispose();
     }
 }
