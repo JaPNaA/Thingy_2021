@@ -119,6 +119,7 @@ export class TileMap extends Entity {
                 xIndex * this.tileTextureSize, yIndex * this.tileTextureSize,
             );
         } else {
+            X.clearRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
             X.fillStyle = this.blockTypes[blockTypeIndex].color;
             X.fillRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
         }
