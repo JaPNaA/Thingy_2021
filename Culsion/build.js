@@ -418,6 +418,7 @@ System.register("engine/HTMLOverlay", ["engine/elements"], function (exports_10,
             HTMLOverlay = class HTMLOverlay extends elements_1.Component {
                 constructor() {
                     super("HTMLOverlay");
+                    this.elm.on("mousedown", e => e.stopPropagation());
                 }
             };
             exports_10("HTMLOverlay", HTMLOverlay);
