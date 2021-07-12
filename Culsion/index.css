@@ -18,3 +18,20 @@ canvas {
     width: 0;
     height: 0;
 }
+
+.MapEditorOverlay {
+    user-select: none;
+}
+
+.MapEditorOverlay .blockType {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+    border: 1px solid #575757;
+    cursor: pointer;
+}
+
+.MapEditorOverlay .blockType.selected {
+    border-color: #1b58ff;
+}

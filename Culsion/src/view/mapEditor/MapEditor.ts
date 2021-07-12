@@ -1,8 +1,8 @@
-import { Component, InputElm } from "../../engine/elements";
+import { Component, Elm } from "../../engine/elements";
 import { ParentCanvasElm } from "../../engine/ParentCanvasElm";
 import { World } from "../../engine/World";
 import { GhostPlayer } from "../../entities/GhostPlayer";
-import { TileMap } from "../../entities/TileMap";
+import { BlockType, TileMap } from "../../entities/TileMap";
 import { resourceFetcher } from "../../resources/resourceFetcher";
 import { TileMapFile } from "../../resources/TileMapFile";
 import { settings } from "../../settings";
@@ -20,7 +20,8 @@ export class MapEditor extends ParentCanvasElm {
             .then(tileMapFile => {
                 this.tileMap = new TileMap(TileMapFile.fromBuffer(tileMapFile));
                 this.addChild(this.tileMap);
-            })
+                this.overlay.setBlockTypes(this.tileMap.getBlockTypes());
+            });
 
         this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
 
@@ -48,7 +49,7 @@ export class MapEditor extends ParentCanvasElm {
         const y = this.world.camera.clientYToWorld(this.world.mouse.y);
 
         if (this.world.mouse.leftDown) {
-            this.tileMap.setBlock(x, y, parseInt(this.overlay.leftMouseTileInput.getValue() as string));
+            this.tileMap.setBlock(x, y, this.overlay.selectedBlock);
         } else if (this.world.mouse.rightDown) {
             this.tileMap.setBlock(x, y, 0);
         }
@@ -78,13 +79,46 @@ export class MapEditor extends ParentCanvasElm {
 }
 
 class MapEditorOverlay extends Component {
-    public leftMouseTileInput: InputElm;
+    public selectedBlock = 1;
+
+    private blockTypeElms: Elm<any>[] = [];
 
     constructor() {
         super("MapEditorOverlay");
+    }
 
-        this.elm.append(
-            this.leftMouseTileInput = new InputElm().setType("number").class("leftMouseTile").setValue(1)
-        );
+    public setBlockTypes(blockTypes: readonly BlockType[]) {
+        const blockTypesElm = new Elm();
+
+        for (let i = 0; i < blockTypes.length; i++) {
+            const blockType = blockTypes[i];
+
+            let elm: Elm<any>;
+
+            if (blockType.texture) {
+                elm = new Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
+            } else {
+                elm = new Elm("div");
+            }
+
+            elm.class("blockType").attribute("style", "background-color: " + blockType.color);
+
+            elm.on("click", () => {
+                this.selectBlock(i);
+            });
+
+            blockTypesElm.append(elm);
+            this.blockTypeElms[i] = elm;
+        }
+
+        this.selectBlock(this.selectedBlock);
+
+        this.elm.append(blockTypesElm);
+    }
+
+    private selectBlock(index: number) {
+        this.blockTypeElms[this.selectedBlock].removeClass("selected");
+        this.selectedBlock = index;
+        this.blockTypeElms[index].class("selected");
     }
 }

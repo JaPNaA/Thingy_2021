@@ -994,6 +994,9 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     this.map[yIndex][xIndex] = block;
                     this.updatePrerenderTile(xIndex, yIndex);
                 }
+                getBlockTypes() {
+                    return this.blockTypes;
+                }
                 exportTileMapFile() {
                     const width = this.map[0].length;
                     const height = this.map.length;
@@ -1593,6 +1596,7 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                         .then(tileMapFile => {
                         this.tileMap = new TileMap_2.TileMap(TileMapFile_3.TileMapFile.fromBuffer(tileMapFile));
                         this.addChild(this.tileMap);
+                        this.overlay.setBlockTypes(this.tileMap.getBlockTypes());
                     });
                     this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
                     this.addChild(this.ghostPlayer);
@@ -1616,7 +1620,7 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                     const x = this.world.camera.clientXToWorld(this.world.mouse.x);
                     const y = this.world.camera.clientYToWorld(this.world.mouse.y);
                     if (this.world.mouse.leftDown) {
-                        this.tileMap.setBlock(x, y, parseInt(this.overlay.leftMouseTileInput.getValue()));
+                        this.tileMap.setBlock(x, y, this.overlay.selectedBlock);
                     }
                     else if (this.world.mouse.rightDown) {
                         this.tileMap.setBlock(x, y, 0);
@@ -1649,7 +1653,34 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
             MapEditorOverlay = class MapEditorOverlay extends elements_2.Component {
                 constructor() {
                     super("MapEditorOverlay");
-                    this.elm.append(this.leftMouseTileInput = new elements_2.InputElm().setType("number").class("leftMouseTile").setValue(1));
+                    this.selectedBlock = 1;
+                    this.blockTypeElms = [];
+                }
+                setBlockTypes(blockTypes) {
+                    const blockTypesElm = new elements_2.Elm();
+                    for (let i = 0; i < blockTypes.length; i++) {
+                        const blockType = blockTypes[i];
+                        let elm;
+                        if (blockType.texture) {
+                            elm = new elements_2.Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
+                        }
+                        else {
+                            elm = new elements_2.Elm("div");
+                        }
+                        elm.class("blockType").attribute("style", "background-color: " + blockType.color);
+                        elm.on("click", () => {
+                            this.selectBlock(i);
+                        });
+                        blockTypesElm.append(elm);
+                        this.blockTypeElms[i] = elm;
+                    }
+                    this.selectBlock(this.selectedBlock);
+                    this.elm.append(blockTypesElm);
+                }
+                selectBlock(index) {
+                    this.blockTypeElms[this.selectedBlock].removeClass("selected");
+                    this.selectedBlock = index;
+                    this.blockTypeElms[index].class("selected");
                 }
             };
         }

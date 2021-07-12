@@ -95,6 +95,10 @@ export class TileMap extends Entity {
         this.updatePrerenderTile(xIndex, yIndex);
     }
 
+    public getBlockTypes(): readonly BlockType[] {
+        return this.blockTypes;
+    }
+
     public exportTileMapFile(): TileMapFile {
         const width = this.map[0].length;
         const height = this.map.length;
