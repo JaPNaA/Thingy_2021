@@ -1,12 +1,14 @@
 import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { Rectangle } from "../engine/util/Rectangle";
+import { World } from "../engine/World";
 import { resourceFetcher } from "../resources/resourceFetcher";
-import { BlockType, TileMapFile } from "../resources/TileMapFile";
+import { BlockType, TileMapFile, TileMapJoint } from "../resources/TileMapFile";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
 
 export class TileMap extends Entity {
     public collisionType = collisions.types.map;
+    public readonly tileSize = 48;
 
     private map: number[][];
     private blockTypes: BlockType[];
@@ -15,7 +17,6 @@ export class TileMap extends Entity {
     private file: TileMapFile;
     private prerender: PrerenderCanvas;
 
-    private readonly tileSize = 48;
     private readonly tileTextureSize = 12;
 
     constructor(tileMapFile: TileMapFile) {
@@ -40,6 +41,39 @@ export class TileMap extends Entity {
         this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
 
         this.loadTextures().then(() => this.updatePrerender());
+    }
+
+    public setWorld(world: World) {
+        super.setWorld(world);
+
+        if (this.file.jsonData.joints) {
+            for (const joint1 of this.file.jsonData.joints) {
+                //* temporary -- toMap should always be defined
+                if (!joint1.toMap) { return; }
+
+                resourceFetcher.fetchRaw("assets/" + joint1.toMap + ".tmap")
+                    .then(buffer => {
+                        const tileMap = new TileMap(TileMapFile.fromBuffer(buffer));
+                        const joint2 = tileMap.getJointById(joint1.toId);
+                        if (!joint2) { throw new Error("Failed to join joints -- could not find target joint."); }
+
+                        const dx = (joint1.x - joint2.x) * this.tileSize;
+                        const dy = (joint1.y - joint2.y) * this.tileSize;
+
+                        tileMap.rect.x += dx;
+                        tileMap.rect.y += dy;
+
+                        this.world.addElm(tileMap, 0);
+                    });
+            }
+        }
+    }
+
+    protected getJointById(id: number): TileMapJoint | undefined {
+        if (!this.file.jsonData.joints) { return; }
+        for (const joint of this.file.jsonData.joints) {
+            if (joint.id === id) { return joint; }
+        }
     }
 
     public draw(): void {
@@ -70,25 +104,25 @@ export class TileMap extends Entity {
         }
     }
 
-    public updatePrerenderTile(x: number, y: number) {
+    public updatePrerenderTile(xIndex: number, yIndex: number) {
         const X = this.prerender.X;
         X.imageSmoothingEnabled = false;
 
-        const blockTypeIndex = this.map[y][x];
+        const blockTypeIndex = this.map[yIndex][xIndex];
         if (this.textures[blockTypeIndex]) {
             X.drawImage(
                 this.textures[blockTypeIndex]!,
-                x * this.tileTextureSize, y * this.tileTextureSize,
+                xIndex * this.tileTextureSize, yIndex * this.tileTextureSize,
             );
         } else {
             X.fillStyle = this.blockTypes[blockTypeIndex].color;
-            X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
+            X.fillRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
         }
     }
 
     public setBlock(x: number, y: number, block: number) {
-        const xIndex = Math.floor(x / this.tileSize);
-        const yIndex = Math.floor(y / this.tileSize);
+        const xIndex = Math.floor((x - this.rect.x) / this.tileSize);
+        const yIndex = Math.floor((y - this.rect.y) / this.tileSize);
 
         if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
         this.map[yIndex][xIndex] = block;
@@ -116,8 +150,8 @@ export class TileMap extends Entity {
     }
 
     public getCollisionTiles(x: number, y: number): Rectangle[] {
-        const xIndex = Math.floor(x / this.tileSize);
-        const yIndex = Math.floor(y / this.tileSize);
+        const xIndex = Math.floor((x - this.rect.x) / this.tileSize);
+        const yIndex = Math.floor((y - this.rect.y) / this.tileSize);
 
         const rects = [];
 
@@ -209,7 +243,7 @@ export class TileMap extends Entity {
     }
 
     private rectFromIndexes(xIndex: number, yIndex: number): Rectangle {
-        return new Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+        return new Rectangle(xIndex * this.tileSize + this.rect.x, yIndex * this.tileSize + this.rect.y, this.tileSize, this.tileSize);
     }
 
     private async loadTextures() {

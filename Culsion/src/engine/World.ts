@@ -37,9 +37,14 @@ export class World {
         this.canvas._stopAutoResize();
     }
 
-    public addElm(elm: CanvasElm) {
+    public addElm(elm: CanvasElm, index?: number) {
         elm.setWorld(this);
-        this.elms.push(elm);
+        //* temporary -- introduce zIndex
+        if (index !== undefined) {
+            this.elms.splice(index, 0, elm);
+        } else {
+            this.elms.push(elm);
+        }
     }
 
     public removeElm(elm: CanvasElm) {
