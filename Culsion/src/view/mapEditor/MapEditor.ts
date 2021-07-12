@@ -2,9 +2,9 @@ import { Component, Elm } from "../../engine/elements";
 import { ParentCanvasElm } from "../../engine/ParentCanvasElm";
 import { World } from "../../engine/World";
 import { GhostPlayer } from "../../entities/GhostPlayer";
-import { BlockType, TileMap } from "../../entities/TileMap";
+import { TileMap } from "../../entities/TileMap";
 import { resourceFetcher } from "../../resources/resourceFetcher";
-import { TileMapFile } from "../../resources/TileMapFile";
+import { BlockType, TileMapFile } from "../../resources/TileMapFile";
 import { settings } from "../../settings";
 
 export class MapEditor extends ParentCanvasElm {

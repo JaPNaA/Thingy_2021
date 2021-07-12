@@ -1,7 +1,7 @@
 import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { Rectangle } from "../engine/util/Rectangle";
 import { resourceFetcher } from "../resources/resourceFetcher";
-import { TileMapFile } from "../resources/TileMapFile";
+import { BlockType, TileMapFile } from "../resources/TileMapFile";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
 
@@ -229,10 +229,4 @@ export class TileMap extends Entity {
 
         await Promise.all(proms);
     }
-}
-
-export interface BlockType {
-    color: string;
-    texture?: string;
-    solid: boolean;
 }

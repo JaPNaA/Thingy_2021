@@ -8,6 +8,7 @@
  * rest of file - JSON data:
  *   {
  *     blockTypes: [blockType, blockType, blockType, ...],
+ *     joints: [joint, joint, ...]
  *     entities: [ ... ]
  *   }
  */
@@ -18,7 +19,10 @@ export class TileMapFile {
     public height!: number;
 
     public mapData!: Uint8Array;
-    public jsonData!: any;
+    public jsonData!: {
+        blockTypes?: BlockType[],
+        joints?: TileMapJoint[]
+    };
 
     public static fromBuffer(buffer: ArrayBuffer): TileMapFile {
         const mapFile = new TileMapFile();
@@ -96,4 +100,18 @@ class DataViewWalker {
         this.currOffset += 4;
         return val;
     }
+}
+
+export interface BlockType {
+    color: string;
+    texture?: string;
+    solid: boolean;
+}
+
+export interface TileMapJoint {
+    x: number,
+    y: number,
+    id: number,
+    toId: number,
+    toFile: string
 }
