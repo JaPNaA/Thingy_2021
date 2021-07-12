@@ -944,6 +944,8 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     this.textures = [];
                     this.tileTextureSize = 12;
                     this.file = tileMapFile;
+                    this.width = tileMapFile.width;
+                    this.height = tileMapFile.height;
                     this.rect.height = tileMapFile.height * this.tileSize;
                     this.rect.width = tileMapFile.width * this.tileSize;
                     this.map = [];
@@ -997,12 +999,12 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
                 updatePrerender() {
-                    this.prerender.resize(this.file.width * this.tileTextureSize, this.file.height * this.tileTextureSize);
+                    this.prerender.resize(this.width * this.tileTextureSize, this.height * this.tileTextureSize);
                     this.prerender.clear();
                     const X = this.prerender.X;
                     X.imageSmoothingEnabled = false;
-                    for (let y = 0; y < this.file.height; y++) {
-                        for (let x = 0; x < this.file.width; x++) {
+                    for (let y = 0; y < this.height; y++) {
+                        for (let x = 0; x < this.width; x++) {
                             const blockTypeIndex = this.map[y][x];
                             if (this.textures[blockTypeIndex]) {
                                 X.drawImage(this.textures[blockTypeIndex], x * this.tileTextureSize, y * this.tileTextureSize);
@@ -1037,6 +1039,33 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                 }
                 getBlockTypes() {
                     return this.blockTypes;
+                }
+                getWidth() {
+                    return this.width;
+                }
+                getHeight() {
+                    return this.height;
+                }
+                resize(newWidth, newHeight) {
+                    for (let y = 0; y < this.height; y++) {
+                        for (let x = this.width; x < newWidth; x++) {
+                            this.map[y][x] = 0;
+                        }
+                        this.map[y].length = newWidth;
+                    }
+                    for (let y = this.height; y < newHeight; y++) {
+                        const newRow = [];
+                        for (let x = 0; x < newWidth; x++) {
+                            newRow[x] = 0;
+                        }
+                        this.map[y] = newRow;
+                    }
+                    this.map.length = newHeight;
+                    this.width = newWidth;
+                    this.height = newHeight;
+                    this.rect.width = this.width * this.tileSize;
+                    this.rect.height = this.height * this.tileSize;
+                    this.updatePrerender();
                 }
                 exportTileMapFile() {
                     const width = this.map[0].length;
@@ -1128,8 +1157,8 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     return rects;
                 }
                 isBlock(xIndex, yIndex) {
-                    return xIndex < this.file.width && xIndex >= 0 &&
-                        yIndex < this.file.height && yIndex >= 0 &&
+                    return xIndex < this.width && xIndex >= 0 &&
+                        yIndex < this.height && yIndex >= 0 &&
                         this.blockTypes[this.map[yIndex][xIndex]].solid;
                 }
                 rectFromIndexes(xIndex, yIndex) {
@@ -1637,7 +1666,7 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                         .then(tileMapFile => {
                         this.tileMap = new TileMap_2.TileMap(TileMapFile_3.TileMapFile.fromBuffer(tileMapFile));
                         this.addChild(this.tileMap);
-                        this.overlay.setBlockTypes(this.tileMap.getBlockTypes());
+                        this.overlay.setTileMap(this.tileMap);
                     });
                     this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
                     this.addChild(this.ghostPlayer);
@@ -1710,9 +1739,18 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                     super("MapEditorOverlay");
                     this.selectedBlock = 1;
                     this.blockTypeElms = [];
+                    this.blockTypesElm = new elements_2.Elm().class("blockTypes")
+                        .appendTo(this.elm);
+                    this.canvasSizeElm = new elements_2.Elm().class("canvasSize")
+                        .on("click", () => this.openChangeMapSizeDialog())
+                        .appendTo(this.elm);
+                }
+                setTileMap(tileMap) {
+                    this.tileMap = tileMap;
+                    this.setBlockTypes(tileMap.getBlockTypes());
+                    this.setCanvasSize(tileMap.getWidth(), tileMap.getHeight());
                 }
                 setBlockTypes(blockTypes) {
-                    const blockTypesElm = new elements_2.Elm();
                     for (let i = 0; i < blockTypes.length; i++) {
                         const blockType = blockTypes[i];
                         let elm;
@@ -1726,16 +1764,34 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                         elm.on("click", () => {
                             this.selectBlock(i);
                         });
-                        blockTypesElm.append(elm);
+                        this.blockTypesElm.append(elm);
                         this.blockTypeElms[i] = elm;
                     }
                     this.selectBlock(this.selectedBlock);
-                    this.elm.append(blockTypesElm);
                 }
                 selectBlock(index) {
                     this.blockTypeElms[this.selectedBlock].removeClass("selected");
                     this.selectedBlock = index;
                     this.blockTypeElms[index].class("selected");
+                }
+                setCanvasSize(width, height) {
+                    this.canvasSizeElm.replaceContents(width + "x" + height);
+                }
+                openChangeMapSizeDialog() {
+                    if (!this.tileMap) {
+                        return;
+                    }
+                    //* temporary
+                    const newWidth = parseInt(prompt("New width"));
+                    if (isNaN(newWidth)) {
+                        return;
+                    }
+                    const newHeight = parseInt(prompt("New height"));
+                    if (isNaN(newHeight)) {
+                        return;
+                    }
+                    this.tileMap.resize(newWidth, newHeight);
+                    this.setCanvasSize(newWidth, newHeight);
                 }
             };
         }

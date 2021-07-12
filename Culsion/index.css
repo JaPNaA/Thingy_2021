@@ -21,6 +21,9 @@ canvas {
 
 .MapEditorOverlay {
     user-select: none;
+    background-color: #70707071;
+    width: 128px;
+    padding: 8px;
 }
 
 .MapEditorOverlay .blockType {
@@ -34,4 +37,11 @@ canvas {
 
 .MapEditorOverlay .blockType.selected {
     border-color: #1b58ff;
+}
+
+.MapEditorOverlay .canvasSize {
+    background-color: #0000002a;
+    padding: 4px;
+    border-radius: 2px;
+    cursor: pointer;
 }

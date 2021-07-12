@@ -13,6 +13,8 @@ export class TileMap extends Entity {
     private map: number[][];
     private blockTypes: BlockType[];
     private textures: (HTMLImageElement | null)[] = [];
+    private width: number;
+    private height: number;
 
     private file: TileMapFile;
     private prerender: PrerenderCanvas;
@@ -23,6 +25,8 @@ export class TileMap extends Entity {
         super();
 
         this.file = tileMapFile;
+        this.width = tileMapFile.width;
+        this.height = tileMapFile.height;
         this.rect.height = tileMapFile.height * this.tileSize;
         this.rect.width = tileMapFile.width * this.tileSize;
 
@@ -82,14 +86,14 @@ export class TileMap extends Entity {
     }
 
     public updatePrerender() {
-        this.prerender.resize(this.file.width * this.tileTextureSize, this.file.height * this.tileTextureSize);
+        this.prerender.resize(this.width * this.tileTextureSize, this.height * this.tileTextureSize);
         this.prerender.clear();
 
         const X = this.prerender.X;
         X.imageSmoothingEnabled = false;
 
-        for (let y = 0; y < this.file.height; y++) {
-            for (let x = 0; x < this.file.width; x++) {
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
                 const blockTypeIndex = this.map[y][x];
                 if (this.textures[blockTypeIndex]) {
                     X.drawImage(
@@ -131,6 +135,37 @@ export class TileMap extends Entity {
 
     public getBlockTypes(): readonly BlockType[] {
         return this.blockTypes;
+    }
+
+    public getWidth(): number {
+        return this.width;
+    }
+
+    public getHeight(): number {
+        return this.height;
+    }
+
+    public resize(newWidth: number, newHeight: number) {
+        for (let y = 0; y < this.height; y++) {
+            for (let x = this.width; x < newWidth; x++) {
+                this.map[y][x] = 0;
+            }
+            this.map[y].length = newWidth;
+        }
+        for (let y = this.height; y < newHeight; y++) {
+            const newRow = [];
+            for (let x = 0; x < newWidth; x++) {
+                newRow[x] = 0;
+            }
+            this.map[y] = newRow;
+        }
+        this.map.length = newHeight;
+
+        this.width = newWidth;
+        this.height = newHeight;
+        this.rect.width = this.width * this.tileSize;
+        this.rect.height = this.height * this.tileSize;
+        this.updatePrerender();
     }
 
     public exportTileMapFile(): TileMapFile {
@@ -237,8 +272,8 @@ export class TileMap extends Entity {
     }
 
     private isBlock(xIndex: number, yIndex: number) {
-        return xIndex < this.file.width && xIndex >= 0 &&
-            yIndex < this.file.height && yIndex >= 0 &&
+        return xIndex < this.width && xIndex >= 0 &&
+            yIndex < this.height && yIndex >= 0 &&
             this.blockTypes[this.map[yIndex][xIndex]].solid;
     }
 

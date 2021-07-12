@@ -20,7 +20,7 @@ export class MapEditor extends ParentCanvasElm {
             .then(tileMapFile => {
                 this.tileMap = new TileMap(TileMapFile.fromBuffer(tileMapFile));
                 this.addChild(this.tileMap);
-                this.overlay.setBlockTypes(this.tileMap.getBlockTypes());
+                this.overlay.setTileMap(this.tileMap);
             });
 
         this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
@@ -101,13 +101,26 @@ class MapEditorOverlay extends Component {
 
     private blockTypeElms: Elm<any>[] = [];
 
+    private blockTypesElm = new Elm().class("blockTypes")
+        .appendTo(this.elm);
+    private canvasSizeElm = new Elm().class("canvasSize")
+        .on("click", () => this.openChangeMapSizeDialog())
+        .appendTo(this.elm);
+
+    private tileMap?: TileMap;
+
     constructor() {
         super("MapEditorOverlay");
     }
 
-    public setBlockTypes(blockTypes: readonly BlockType[]) {
-        const blockTypesElm = new Elm();
+    public setTileMap(tileMap: TileMap) {
+        this.tileMap = tileMap;
 
+        this.setBlockTypes(tileMap.getBlockTypes());
+        this.setCanvasSize(tileMap.getWidth(), tileMap.getHeight());
+    }
+
+    private setBlockTypes(blockTypes: readonly BlockType[]) {
         for (let i = 0; i < blockTypes.length; i++) {
             const blockType = blockTypes[i];
 
@@ -125,18 +138,33 @@ class MapEditorOverlay extends Component {
                 this.selectBlock(i);
             });
 
-            blockTypesElm.append(elm);
+            this.blockTypesElm.append(elm);
             this.blockTypeElms[i] = elm;
         }
 
         this.selectBlock(this.selectedBlock);
-
-        this.elm.append(blockTypesElm);
     }
 
     private selectBlock(index: number) {
         this.blockTypeElms[this.selectedBlock].removeClass("selected");
         this.selectedBlock = index;
         this.blockTypeElms[index].class("selected");
+    }
+
+    private setCanvasSize(width: number, height: number) {
+        this.canvasSizeElm.replaceContents(width + "x" + height);
+    }
+
+    private openChangeMapSizeDialog() {
+        if (!this.tileMap) { return; }
+
+        //* temporary
+        const newWidth = parseInt(prompt("New width")!);
+        if (isNaN(newWidth)) { return; }
+        const newHeight = parseInt(prompt("New height")!);
+        if (isNaN(newHeight)) { return; }
+
+        this.tileMap.resize(newWidth, newHeight);
+        this.setCanvasSize(newWidth, newHeight);
     }
 }
