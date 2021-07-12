@@ -16,7 +16,7 @@ export class MapEditor extends ParentCanvasElm {
     constructor() {
         super();
 
-        resourceFetcher.fetchRaw("assets/mazeEnd.tmap")
+        resourceFetcher.fetchRaw("assets/" + prompt("Open map name") + ".tmap")
             .then(tileMapFile => {
                 this.tileMap = new TileMap(TileMapFile.fromBuffer(tileMapFile));
                 this.addChild(this.tileMap);
