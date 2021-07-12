@@ -16,7 +16,7 @@ export class MapEditor extends ParentCanvasElm {
     constructor() {
         super();
 
-        resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
+        resourceFetcher.fetchRaw("assets/mazeEnd.tmap")
             .then(tileMapFile => {
                 this.tileMap = new TileMap(TileMapFile.fromBuffer(tileMapFile));
                 this.addChild(this.tileMap);
@@ -59,6 +59,24 @@ export class MapEditor extends ParentCanvasElm {
         } else if (this.world.keyboard.isDown(settings.keybindings.zoomIn)) {
             this.world.camera.scale *= 1.02;
         }
+    }
+
+    public draw() {
+        super.draw();
+
+        if (!this.tileMap) { return; }
+        const x = this.world.camera.clientXToWorld(this.world.mouse.x);
+        const y = this.world.camera.clientYToWorld(this.world.mouse.y);
+        const xIndex = Math.floor(x / this.tileMap.tileSize);
+        const yIndex = Math.floor(y / this.tileMap.tileSize);
+
+        this.world.canvas.X.fillStyle = "#ff0000";
+        this.world.canvas.X.font = "12px Arial";
+        this.world.canvas.X.textBaseline = "top";
+        this.world.canvas.X.fillText(
+            "(" + xIndex + ", " + yIndex + ")",
+            xIndex * this.tileMap.tileSize, yIndex * this.tileMap.tileSize
+        );
     }
 
     public exportMapKeyHandler() {

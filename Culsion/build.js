@@ -615,9 +615,15 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
                     this.mouse._stopListen();
                     this.canvas._stopAutoResize();
                 }
-                addElm(elm) {
+                addElm(elm, index) {
                     elm.setWorld(this);
-                    this.elms.push(elm);
+                    //* temporary -- introduce zIndex
+                    if (index !== undefined) {
+                        this.elms.splice(index, 0, elm);
+                    }
+                    else {
+                        this.elms.push(elm);
+                    }
                 }
                 removeElm(elm) {
                     elm.dispose();
@@ -830,6 +836,7 @@ System.register("resources/resourceFetcher", [], function (exports_17, context_1
  * rest of file - JSON data:
  *   {
  *     blockTypes: [blockType, blockType, blockType, ...],
+ *     joints: [joint, joint, ...]
  *     entities: [ ... ]
  *   }
  */
@@ -933,8 +940,8 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                 constructor(tileMapFile) {
                     super();
                     this.collisionType = collisions_2.collisions.types.map;
-                    this.textures = [];
                     this.tileSize = 48;
+                    this.textures = [];
                     this.tileTextureSize = 12;
                     this.file = tileMapFile;
                     this.rect.height = tileMapFile.height * this.tileSize;
@@ -950,6 +957,40 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     this.blockTypes = tileMapFile.jsonData.blockTypes || [];
                     this.prerender = new PrerenderCanvas_1.PrerenderCanvas(this.rect.width, this.rect.height);
                     this.loadTextures().then(() => this.updatePrerender());
+                }
+                setWorld(world) {
+                    super.setWorld(world);
+                    if (this.file.jsonData.joints) {
+                        for (const joint1 of this.file.jsonData.joints) {
+                            //* temporary -- toMap should always be defined
+                            if (!joint1.toMap) {
+                                return;
+                            }
+                            resourceFetcher_1.resourceFetcher.fetchRaw("assets/" + joint1.toMap + ".tmap")
+                                .then(buffer => {
+                                const tileMap = new TileMap(TileMapFile_1.TileMapFile.fromBuffer(buffer));
+                                const joint2 = tileMap.getJointById(joint1.toId);
+                                if (!joint2) {
+                                    throw new Error("Failed to join joints -- could not find target joint.");
+                                }
+                                const dx = (joint1.x - joint2.x) * this.tileSize;
+                                const dy = (joint1.y - joint2.y) * this.tileSize;
+                                tileMap.rect.x += dx;
+                                tileMap.rect.y += dy;
+                                this.world.addElm(tileMap, 0);
+                            });
+                        }
+                    }
+                }
+                getJointById(id) {
+                    if (!this.file.jsonData.joints) {
+                        return;
+                    }
+                    for (const joint of this.file.jsonData.joints) {
+                        if (joint.id === id) {
+                            return joint;
+                        }
+                    }
                 }
                 draw() {
                     this.world.canvas.X.imageSmoothingEnabled = false;
@@ -973,21 +1014,21 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                         }
                     }
                 }
-                updatePrerenderTile(x, y) {
+                updatePrerenderTile(xIndex, yIndex) {
                     const X = this.prerender.X;
                     X.imageSmoothingEnabled = false;
-                    const blockTypeIndex = this.map[y][x];
+                    const blockTypeIndex = this.map[yIndex][xIndex];
                     if (this.textures[blockTypeIndex]) {
-                        X.drawImage(this.textures[blockTypeIndex], x * this.tileTextureSize, y * this.tileTextureSize);
+                        X.drawImage(this.textures[blockTypeIndex], xIndex * this.tileTextureSize, yIndex * this.tileTextureSize);
                     }
                     else {
                         X.fillStyle = this.blockTypes[blockTypeIndex].color;
-                        X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
+                        X.fillRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
                     }
                 }
                 setBlock(x, y, block) {
-                    const xIndex = Math.floor(x / this.tileSize);
-                    const yIndex = Math.floor(y / this.tileSize);
+                    const xIndex = Math.floor((x - this.rect.x) / this.tileSize);
+                    const yIndex = Math.floor((y - this.rect.y) / this.tileSize);
                     if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) {
                         return;
                     }
@@ -1010,8 +1051,8 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     return file;
                 }
                 getCollisionTiles(x, y) {
-                    const xIndex = Math.floor(x / this.tileSize);
-                    const yIndex = Math.floor(y / this.tileSize);
+                    const xIndex = Math.floor((x - this.rect.x) / this.tileSize);
+                    const yIndex = Math.floor((y - this.rect.y) / this.tileSize);
                     const rects = [];
                     let capturedTopLeft = false;
                     let capturedTopRight = false;
@@ -1092,7 +1133,7 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                         this.blockTypes[this.map[yIndex][xIndex]].solid;
                 }
                 rectFromIndexes(xIndex, yIndex) {
-                    return new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
+                    return new Rectangle_3.Rectangle(xIndex * this.tileSize + this.rect.x, yIndex * this.tileSize + this.rect.y, this.tileSize, this.tileSize);
                 }
                 async loadTextures() {
                     const proms = [];
@@ -1592,7 +1633,7 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                     super();
                     this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
                     this.overlay = new MapEditorOverlay();
-                    resourceFetcher_4.resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
+                    resourceFetcher_4.resourceFetcher.fetchRaw("assets/mazeEnd.tmap")
                         .then(tileMapFile => {
                         this.tileMap = new TileMap_2.TileMap(TileMapFile_3.TileMapFile.fromBuffer(tileMapFile));
                         this.addChild(this.tileMap);
@@ -1631,6 +1672,20 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                     else if (this.world.keyboard.isDown(settings_3.settings.keybindings.zoomIn)) {
                         this.world.camera.scale *= 1.02;
                     }
+                }
+                draw() {
+                    super.draw();
+                    if (!this.tileMap) {
+                        return;
+                    }
+                    const x = this.world.camera.clientXToWorld(this.world.mouse.x);
+                    const y = this.world.camera.clientYToWorld(this.world.mouse.y);
+                    const xIndex = Math.floor(x / this.tileMap.tileSize);
+                    const yIndex = Math.floor(y / this.tileMap.tileSize);
+                    this.world.canvas.X.fillStyle = "#ff0000";
+                    this.world.canvas.X.font = "12px Arial";
+                    this.world.canvas.X.textBaseline = "top";
+                    this.world.canvas.X.fillText("(" + xIndex + ", " + yIndex + ")", xIndex * this.tileMap.tileSize, yIndex * this.tileMap.tileSize);
                 }
                 exportMapKeyHandler() {
                     if (!this.tileMap) {
