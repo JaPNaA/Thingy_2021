@@ -49,35 +49,6 @@ export class TileMap extends Entity {
 
     public setWorld(world: World) {
         super.setWorld(world);
-
-        if (this.file.jsonData.joints) {
-            for (const joint1 of this.file.jsonData.joints) {
-                //* temporary -- toMap should always be defined
-                if (!joint1.toMap) { return; }
-
-                resourceFetcher.fetchRaw("assets/" + joint1.toMap + ".tmap")
-                    .then(buffer => {
-                        const tileMap = new TileMap(TileMapFile.fromBuffer(buffer));
-                        const joint2 = tileMap.getJointById(joint1.toId);
-                        if (!joint2) { throw new Error("Failed to join joints -- could not find target joint."); }
-
-                        const dx = (joint1.x - joint2.x) * this.tileSize;
-                        const dy = (joint1.y - joint2.y) * this.tileSize;
-
-                        tileMap.rect.x += dx;
-                        tileMap.rect.y += dy;
-
-                        this.world.addElm(tileMap, 0);
-                    });
-            }
-        }
-    }
-
-    protected getJointById(id: number): TileMapJoint | undefined {
-        if (!this.file.jsonData.joints) { return; }
-        for (const joint of this.file.jsonData.joints) {
-            if (joint.id === id) { return joint; }
-        }
     }
 
     public draw(): void {
@@ -132,6 +103,17 @@ export class TileMap extends Entity {
         if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
         this.map[yIndex][xIndex] = block;
         this.updatePrerenderTile(xIndex, yIndex);
+    }
+
+    public _getJoints(): readonly TileMapJoint[] {
+        return this.file.jsonData.joints || [];
+    }
+
+    public _getJointById(id: number): TileMapJoint | undefined {
+        if (!this.file.jsonData.joints) { return; }
+        for (const joint of this.file.jsonData.joints) {
+            if (joint.id === id) { return joint; }
+        }
     }
 
     public getBlockTypes(): readonly BlockType[] {
