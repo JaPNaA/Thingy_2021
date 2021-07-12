@@ -17,7 +17,7 @@ export class GameView extends ParentCanvasElm {
         resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
             .then(file => {
                 this.addChild(
-                    new ParentTileMap(TileMapFile.fromBuffer(file), this.player.rect)
+                    new ParentTileMap(TileMapFile.fromBuffer(file), this.world.camera.rect)
                 );
                 this.addChild(this.player);
             });

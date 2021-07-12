@@ -46,7 +46,7 @@ export class ParentTileMap extends ParentCanvasElm {
         for (const jointRecord of this.unjoinableJoints) {
             if (
                 isRectanglesColliding(jointRecord.location, this.view) ||
-                isRectanglesColliding(jointRecord.map.rect, new Rectangle(this.view.x - 20, this.view.y - 20, this.view.width + 40, this.view.height + 40))
+                isRectanglesColliding(jointRecord.map.rect, this.view)
             ) { continue; }
             this.removeMap(jointRecord.map);
         }

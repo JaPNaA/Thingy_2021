@@ -3,8 +3,7 @@ import { Rectangle } from "./util/Rectangle";
 import { World } from "./World";
 
 export class Camera {
-    public x: number = 0;
-    public y: number = 0;
+    public rect = new Rectangle(0, 0, 1, 1);
     public scale: number = 1;
 
     private canvas: Canvas;
@@ -19,21 +18,24 @@ export class Camera {
     }
 
     public clientXToWorld(x: number) {
-        return this.x + x / this.scale;
+        return this.rect.x + x / this.scale;
     }
 
     public clientYToWorld(y: number) {
-        return this.y + y / this.scale;
+        return this.rect.y + y / this.scale;
     }
 
     public _applyTransform(context: CanvasRenderingContext2D) {
         context.scale(this.scale, this.scale);
-        context.translate(-this.x, -this.y);
+        context.translate(-this.rect.x, -this.rect.y);
     }
 
     public _update() {
+        this.rect.width = this.canvas.width;
+        this.rect.height = this.canvas.height;
+
         if (!this.following) { return; }
-        this.x = this.following.x + this.following.width / 2 - this.canvas.width / 2 / this.scale;
-        this.y = this.following.y + this.following.height / 2 - this.canvas.height / 2 / this.scale;
+        this.rect.x = this.following.x + this.following.width / 2 - this.rect.width / 2 / this.scale;
+        this.rect.y = this.following.y + this.following.height / 2 - this.rect.height / 2 / this.scale;
     }
 }

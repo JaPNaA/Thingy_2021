@@ -61,17 +61,20 @@ System.register("engine/util/Rectangle", [], function (exports_2, context_2) {
         }
     };
 });
-System.register("engine/Camera", [], function (exports_3, context_3) {
+System.register("engine/Camera", ["engine/util/Rectangle"], function (exports_3, context_3) {
     "use strict";
-    var Camera;
+    var Rectangle_1, Camera;
     var __moduleName = context_3 && context_3.id;
     return {
-        setters: [],
+        setters: [
+            function (Rectangle_1_1) {
+                Rectangle_1 = Rectangle_1_1;
+            }
+        ],
         execute: function () {
             Camera = class Camera {
                 constructor(world) {
-                    this.x = 0;
-                    this.y = 0;
+                    this.rect = new Rectangle_1.Rectangle(0, 0, 1, 1);
                     this.scale = 1;
                     this.canvas = world.canvas;
                 }
@@ -79,21 +82,23 @@ System.register("engine/Camera", [], function (exports_3, context_3) {
                     this.following = rect;
                 }
                 clientXToWorld(x) {
-                    return this.x + x / this.scale;
+                    return this.rect.x + x / this.scale;
                 }
                 clientYToWorld(y) {
-                    return this.y + y / this.scale;
+                    return this.rect.y + y / this.scale;
                 }
                 _applyTransform(context) {
                     context.scale(this.scale, this.scale);
-                    context.translate(-this.x, -this.y);
+                    context.translate(-this.rect.x, -this.rect.y);
                 }
                 _update() {
+                    this.rect.width = this.canvas.width;
+                    this.rect.height = this.canvas.height;
                     if (!this.following) {
                         return;
                     }
-                    this.x = this.following.x + this.following.width / 2 - this.canvas.width / 2 / this.scale;
-                    this.y = this.following.y + this.following.height / 2 - this.canvas.height / 2 / this.scale;
+                    this.rect.x = this.following.x + this.following.width / 2 - this.rect.width / 2 / this.scale;
+                    this.rect.y = this.following.y + this.following.height / 2 - this.rect.height / 2 / this.scale;
                 }
             };
             exports_3("Camera", Camera);
@@ -694,16 +699,16 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/colli
 });
 System.register("engine/util/MovingRectangle", ["engine/util/Rectangle"], function (exports_15, context_15) {
     "use strict";
-    var Rectangle_1, MovingRectangle;
+    var Rectangle_2, MovingRectangle;
     var __moduleName = context_15 && context_15.id;
     return {
         setters: [
-            function (Rectangle_1_1) {
-                Rectangle_1 = Rectangle_1_1;
+            function (Rectangle_2_1) {
+                Rectangle_2 = Rectangle_2_1;
             }
         ],
         execute: function () {
-            MovingRectangle = class MovingRectangle extends Rectangle_1.Rectangle {
+            MovingRectangle = class MovingRectangle extends Rectangle_2.Rectangle {
                 constructor(x, y, width, height) {
                     super(x, y, width, height);
                     this.lastX = x;
@@ -720,7 +725,7 @@ System.register("engine/util/MovingRectangle", ["engine/util/Rectangle"], functi
 });
 System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox", "engine/util/Rectangle", "entities/collisions"], function (exports_16, context_16) {
     "use strict";
-    var CanvasElm_1, Hitbox_1, Rectangle_2, collisions_1, Entity;
+    var CanvasElm_1, Hitbox_1, Rectangle_3, collisions_1, Entity;
     var __moduleName = context_16 && context_16.id;
     return {
         setters: [
@@ -730,8 +735,8 @@ System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox
             function (Hitbox_1_1) {
                 Hitbox_1 = Hitbox_1_1;
             },
-            function (Rectangle_2_1) {
-                Rectangle_2 = Rectangle_2_1;
+            function (Rectangle_3_1) {
+                Rectangle_3 = Rectangle_3_1;
             },
             function (collisions_1_1) {
                 collisions_1 = collisions_1_1;
@@ -741,7 +746,7 @@ System.register("entities/Entity", ["engine/CanvasElm", "engine/collision/Hitbox
             Entity = class Entity extends CanvasElm_1.CanvasElm {
                 constructor() {
                     super(...arguments);
-                    this.rect = new Rectangle_2.Rectangle(0, 0, 24, 24);
+                    this.rect = new Rectangle_3.Rectangle(0, 0, 24, 24);
                     this.collisionType = collisions_1.collisions.types.static;
                 }
                 setWorld(world) {
@@ -936,15 +941,15 @@ System.register("resources/TileMapFile", [], function (exports_19, context_19) {
 });
 System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rectangle", "resources/resourceFetcher", "resources/TileMapFile", "entities/collisions", "entities/Entity"], function (exports_20, context_20) {
     "use strict";
-    var PrerenderCanvas_1, Rectangle_3, resourceFetcher_1, TileMapFile_1, collisions_2, Entity_1, TileMap;
+    var PrerenderCanvas_1, Rectangle_4, resourceFetcher_1, TileMapFile_1, collisions_2, Entity_1, TileMap;
     var __moduleName = context_20 && context_20.id;
     return {
         setters: [
             function (PrerenderCanvas_1_1) {
                 PrerenderCanvas_1 = PrerenderCanvas_1_1;
             },
-            function (Rectangle_3_1) {
-                Rectangle_3 = Rectangle_3_1;
+            function (Rectangle_4_1) {
+                Rectangle_4 = Rectangle_4_1;
             },
             function (resourceFetcher_1_1) {
                 resourceFetcher_1 = resourceFetcher_1_1;
@@ -1169,7 +1174,7 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                         this.blockTypes[this.map[yIndex][xIndex]].solid;
                 }
                 rectFromIndexes(xIndex, yIndex) {
-                    return new Rectangle_3.Rectangle(xIndex * this.tileSize + this.rect.x, yIndex * this.tileSize + this.rect.y, this.tileSize, this.tileSize);
+                    return new Rectangle_4.Rectangle(xIndex * this.tileSize + this.rect.x, yIndex * this.tileSize + this.rect.y, this.tileSize, this.tileSize);
                 }
                 async loadTextures() {
                     const proms = [];
@@ -1526,12 +1531,12 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
 });
 System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_28, context_28) {
     "use strict";
-    var Rectangle_4, dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
+    var Rectangle_5, dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
     var __moduleName = context_28 && context_28.id;
     return {
         setters: [
-            function (Rectangle_4_1) {
-                Rectangle_4 = Rectangle_4_1;
+            function (Rectangle_5_1) {
+                Rectangle_5 = Rectangle_5_1;
             },
             function (dialogFetcher_1_1) {
                 dialogFetcher_1 = dialogFetcher_1_1;
@@ -1561,7 +1566,7 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
                     }
                     this.dialogOpen = true;
                     dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
-                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog, new Rectangle_4.Rectangle(this.rect.x, this.rect.y, 500, 300)));
+                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog, new Rectangle_5.Rectangle(this.rect.x, this.rect.y, 500, 300)));
                     });
                 }
                 dispose() {
@@ -1574,7 +1579,7 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
 });
 System.register("entities/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/ParentCanvasElm", "engine/util/Rectangle", "engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile", "entities/TileMap"], function (exports_29, context_29) {
     "use strict";
-    var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_5, removeElmFromArray_3, resourceFetcher_3, TileMapFile_2, TileMap_1, ParentTileMap;
+    var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_6, removeElmFromArray_3, resourceFetcher_3, TileMapFile_2, TileMap_1, ParentTileMap;
     var __moduleName = context_29 && context_29.id;
     return {
         setters: [
@@ -1584,8 +1589,8 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
             function (ParentCanvasElm_1_1) {
                 ParentCanvasElm_1 = ParentCanvasElm_1_1;
             },
-            function (Rectangle_5_1) {
-                Rectangle_5 = Rectangle_5_1;
+            function (Rectangle_6_1) {
+                Rectangle_6 = Rectangle_6_1;
             },
             function (removeElmFromArray_3_1) {
                 removeElmFromArray_3 = removeElmFromArray_3_1;
@@ -1636,7 +1641,7 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
                     }
                     for (const jointRecord of this.unjoinableJoints) {
                         if (isRectanglesColliding_3.isRectanglesColliding(jointRecord.location, this.view) ||
-                            isRectanglesColliding_3.isRectanglesColliding(jointRecord.map.rect, new Rectangle_5.Rectangle(this.view.x - 20, this.view.y - 20, this.view.width + 40, this.view.height + 40))) {
+                            isRectanglesColliding_3.isRectanglesColliding(jointRecord.map.rect, this.view)) {
                             continue;
                         }
                         this.removeMap(jointRecord.map);
@@ -1649,7 +1654,7 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
                         const record = {
                             map: tileMap,
                             joint: joint,
-                            location: new Rectangle_5.Rectangle(joint.x * tileMap.tileSize + tileMap.rect.x, joint.y * tileMap.tileSize + tileMap.rect.y, tileMap.tileSize, tileMap.tileSize)
+                            location: new Rectangle_6.Rectangle(joint.x * tileMap.tileSize + tileMap.rect.x, joint.y * tileMap.tileSize + tileMap.rect.y, tileMap.tileSize, tileMap.tileSize)
                         };
                         if (joint === excludeJoint) {
                             this.unjoinableJoints.push(record);
@@ -1728,7 +1733,7 @@ System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDia
                     this.addChild(new NPCWithDialog_1.NPCWithDialog(2500, 2500));
                     resourceFetcher_4.resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
                         .then(file => {
-                        this.addChild(new ParentTileMap_1.ParentTileMap(TileMapFile_3.TileMapFile.fromBuffer(file), this.player.rect));
+                        this.addChild(new ParentTileMap_1.ParentTileMap(TileMapFile_3.TileMapFile.fromBuffer(file), this.world.camera.rect));
                         this.addChild(this.player);
                     });
                 }
