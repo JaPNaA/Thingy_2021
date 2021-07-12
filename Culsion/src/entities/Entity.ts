@@ -8,12 +8,15 @@ export abstract class Entity extends CanvasElm {
     public rect = new Rectangle(0, 0, 24, 24);
     public collisionType: Symbol = collisions.types.static;
 
+    private hitbox!: Hitbox<Entity>;
+
     public setWorld(world: World) {
         super.setWorld(world);
-        world.collisionSystem.addHitbox(new Hitbox(this.rect, this));
+        this.hitbox = new Hitbox(this.rect, this);
+        world.collisionSystem.addHitbox(this.hitbox);
     }
 
     public dispose() {
-        throw new Error("Not implemented");
+        this.world.collisionSystem.removeHitbox(this.hitbox);
     }
 }

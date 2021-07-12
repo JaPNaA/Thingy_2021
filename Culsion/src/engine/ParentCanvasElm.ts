@@ -1,4 +1,5 @@
 import { CanvasElm } from "./CanvasElm";
+import { removeElmFromArray } from "./util/removeElmFromArray";
 import { World } from "./World";
 
 export class ParentCanvasElm extends CanvasElm {
@@ -34,5 +35,10 @@ export class ParentCanvasElm extends CanvasElm {
         if (this.world) {
             child.setWorld(this.world);
         }
+    }
+
+    protected removeChild(child: CanvasElm) {
+        removeElmFromArray(child, this.children);
+        child.dispose();
     }
 }

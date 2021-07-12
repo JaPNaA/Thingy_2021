@@ -1,3 +1,4 @@
+import { removeElmFromArray } from "../util/removeElmFromArray";
 import { CollisionReactionMap } from "./CollisionReactionMap";
 import { Hitbox } from "./Hitbox";
 import { isRectanglesColliding } from "./isRectanglesColliding";
@@ -9,6 +10,10 @@ export class CollisionSystem {
 
     public addHitbox(rectangle: Hitbox<any>) {
         this.hitboxes.push(rectangle);
+    }
+
+    public removeHitbox(rectangle: Hitbox<any>) {
+        removeElmFromArray(rectangle, this.hitboxes);
     }
 
     public _checkCollisions() {

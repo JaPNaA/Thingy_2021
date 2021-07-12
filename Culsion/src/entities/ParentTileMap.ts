@@ -1,6 +1,7 @@
 import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding";
 import { ParentCanvasElm } from "../engine/ParentCanvasElm";
 import { Rectangle } from "../engine/util/Rectangle";
+import { removeElmFromArray } from "../engine/util/removeElmFromArray";
 import { resourceFetcher } from "../resources/resourceFetcher";
 import { TileMapFile, TileMapJoint } from "../resources/TileMapFile";
 import { TileMap } from "./TileMap";
@@ -36,41 +37,86 @@ export class ParentTileMap extends ParentCanvasElm {
                     tileMap.rect.x += dx;
                     tileMap.rect.y += dy;
 
-                    this.addTileMap(tileMap, newJoint);
+                    const record = this.addTileMap(tileMap, newJoint)!;
+                    record.toMap = jointRecord.map;
+                    jointRecord.toMap = record.map;
                 });
+        }
+
+        for (const jointRecord of this.unjoinableJoints) {
+            if (
+                isRectanglesColliding(jointRecord.location, this.view) ||
+                isRectanglesColliding(jointRecord.map.rect, new Rectangle(this.view.x - 20, this.view.y - 20, this.view.width + 40, this.view.height + 40))
+            ) { continue; }
+            this.removeMap(jointRecord.map);
         }
     }
 
-    private addTileMap(tileMap: TileMap, excludeJoint?: TileMapJoint) {
+    private addTileMap(tileMap: TileMap, excludeJoint?: TileMapJoint): JointRecord | undefined {
         const joints = tileMap._getJoints();
+        let excludedJointRecord;
 
         for (const joint of joints) {
-            (joint === excludeJoint ? this.unjoinableJoints : this.joinableJoints)
-                .push({
-                    map: tileMap,
-                    joint: joint,
-                    location: new Rectangle(
-                        joint.x * tileMap.tileSize + tileMap.rect.x,
-                        joint.y * tileMap.tileSize + tileMap.rect.y,
-                        tileMap.tileSize, tileMap.tileSize
-                    )
-                });
+            const record = {
+                map: tileMap,
+                joint: joint,
+                location: new Rectangle(
+                    joint.x * tileMap.tileSize + tileMap.rect.x,
+                    joint.y * tileMap.tileSize + tileMap.rect.y,
+                    tileMap.tileSize, tileMap.tileSize
+                )
+            };
+
+            if (joint === excludeJoint) {
+                this.unjoinableJoints.push(record);
+                excludedJointRecord = record;
+            } else {
+                this.joinableJoints.push(record);
+            }
         }
 
         this.activeMaps.push(tileMap);
         this.addChild(tileMap);
+
+        return excludedJointRecord;
     }
 
     private setJointRecordUnjoinable(joint: JointRecord) {
-        const index = this.joinableJoints.indexOf(joint);
-        if (index < 0) { throw new Error("Tried to mark joint as unjoinable, but was never joinable"); }
-        this.joinableJoints.splice(index, 1);
+        removeElmFromArray(joint, this.joinableJoints);
         this.unjoinableJoints.push(joint);
+    }
+
+    private setJointRecordJoinable(joint: JointRecord) {
+        removeElmFromArray(joint, this.unjoinableJoints);
+        this.joinableJoints.push(joint);
+    }
+
+    private removeMap(map: TileMap) {
+        removeElmFromArray(map, this.activeMaps);
+
+        for (let i = this.joinableJoints.length - 1; i >= 0; i--) {
+            const joint = this.joinableJoints[i];
+            if (joint.map === map) {
+                this.joinableJoints.splice(i, 1);
+            }
+        }
+
+        for (let j = this.unjoinableJoints.length - 1; j >= 0; j--) {
+            const joint = this.unjoinableJoints[j];
+            if (joint.map === map) {
+                this.unjoinableJoints.splice(j, 1);
+            } else if (joint.toMap === map) {
+                this.setJointRecordJoinable(joint);
+            }
+        }
+
+        this.removeChild(map);
     }
 }
 
 interface JointRecord {
     joint: TileMapJoint;
     map: TileMap;
+    toMap?: TileMap;
     location: Rectangle;
 }
