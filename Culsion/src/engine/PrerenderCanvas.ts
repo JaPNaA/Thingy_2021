@@ -9,8 +9,8 @@ export class PrerenderCanvas {
         this.resize(width, height);
     }
 
-    public drawToContext(X: CanvasRenderingContext2D, x: number, y: number) {
-        X.drawImage(this.canvas, x, y, this.width, this.height);
+    public drawToContext(X: CanvasRenderingContext2D, x: number, y: number, width?: number, height?: number) {
+        X.drawImage(this.canvas, x, y, width || this.width, height || this.height);
     }
 
     public resize(width: number, height: number) {

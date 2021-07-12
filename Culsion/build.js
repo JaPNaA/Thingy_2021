@@ -739,8 +739,8 @@ System.register("engine/PrerenderCanvas", [], function (exports_16, context_16) 
                     this.X = this.canvas.getContext("2d");
                     this.resize(width, height);
                 }
-                drawToContext(X, x, y) {
-                    X.drawImage(this.canvas, x, y, this.width, this.height);
+                drawToContext(X, x, y, width, height) {
+                    X.drawImage(this.canvas, x, y, width || this.width, height || this.height);
                 }
                 resize(width, height) {
                     const dpr = window.devicePixelRatio || 1;
@@ -759,6 +759,66 @@ System.register("engine/PrerenderCanvas", [], function (exports_16, context_16) 
         }
     };
 });
+System.register("resources/resourceFetcher", [], function (exports_17, context_17) {
+    "use strict";
+    var ResourceFetcher, resourceFetcher;
+    var __moduleName = context_17 && context_17.id;
+    return {
+        setters: [],
+        execute: function () {
+            ResourceFetcher = class ResourceFetcher {
+                constructor() {
+                    this.cache = new Map();
+                }
+                async fetchText(url) {
+                    const cached = this.cache.get(url);
+                    if (cached) {
+                        return cached;
+                    }
+                    else {
+                        const response = await fetch(url);
+                        const result = await response.text();
+                        this.cache.set(url, result);
+                        return result;
+                    }
+                }
+                async fetchRaw(url) {
+                    const cached = this.cache.get(url);
+                    if (cached) {
+                        return cached;
+                    }
+                    else {
+                        const response = await fetch(url);
+                        const result = await (await response.blob()).arrayBuffer();
+                        this.cache.set(url, result);
+                        return result;
+                    }
+                }
+                async fetchImg(url) {
+                    const cached = this.cache.get(url);
+                    if (cached) {
+                        return cached;
+                    }
+                    else {
+                        const result = await new Promise((res, rej) => {
+                            const img = document.createElement("img");
+                            img.src = url;
+                            img.addEventListener("load", function () {
+                                res(img);
+                            });
+                            img.addEventListener("error", function (err) {
+                                rej(err);
+                            });
+                        });
+                        this.cache.set(url, result);
+                        return result;
+                    }
+                }
+            };
+            exports_17("resourceFetcher", resourceFetcher = new ResourceFetcher());
+        }
+    };
+});
 /**
  * Map file structure:
  *
@@ -772,10 +832,10 @@ System.register("engine/PrerenderCanvas", [], function (exports_16, context_16) 
  *     entities: [ ... ]
  *   }
  */
-System.register("resources/TileMapFile", [], function (exports_17, context_17) {
+System.register("resources/TileMapFile", [], function (exports_18, context_18) {
     "use strict";
     var TileMapFile, DataViewWalker;
-    var __moduleName = context_17 && context_17.id;
+    var __moduleName = context_18 && context_18.id;
     return {
         setters: [],
         execute: function () {
@@ -810,7 +870,7 @@ System.register("resources/TileMapFile", [], function (exports_17, context_17) {
                     return new Blob([version, widthHeight, this.mapData, jsonDataStr]);
                 }
             };
-            exports_17("TileMapFile", TileMapFile);
+            exports_18("TileMapFile", TileMapFile);
             DataViewWalker = class DataViewWalker {
                 constructor(buffer) {
                     this.currOffset = 0;
@@ -842,10 +902,10 @@ System.register("resources/TileMapFile", [], function (exports_17, context_17) {
         }
     };
 });
-System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rectangle", "resources/TileMapFile", "entities/collisions", "entities/Entity"], function (exports_18, context_18) {
+System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rectangle", "resources/resourceFetcher", "resources/TileMapFile", "entities/collisions", "entities/Entity"], function (exports_19, context_19) {
     "use strict";
-    var PrerenderCanvas_1, Rectangle_3, TileMapFile_1, collisions_2, Entity_1, TileMap;
-    var __moduleName = context_18 && context_18.id;
+    var PrerenderCanvas_1, Rectangle_3, resourceFetcher_1, TileMapFile_1, collisions_2, Entity_1, TileMap;
+    var __moduleName = context_19 && context_19.id;
     return {
         setters: [
             function (PrerenderCanvas_1_1) {
@@ -853,6 +913,9 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
             },
             function (Rectangle_3_1) {
                 Rectangle_3 = Rectangle_3_1;
+            },
+            function (resourceFetcher_1_1) {
+                resourceFetcher_1 = resourceFetcher_1_1;
             },
             function (TileMapFile_1_1) {
                 TileMapFile_1 = TileMapFile_1_1;
@@ -869,7 +932,9 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                 constructor(tileMapFile) {
                     super();
                     this.collisionType = collisions_2.collisions.types.map;
-                    this.tileSize = 32;
+                    this.textures = [];
+                    this.tileSize = 48;
+                    this.tileTextureSize = 12;
                     this.file = tileMapFile;
                     this.rect.height = tileMapFile.height * this.tileSize;
                     this.rect.width = tileMapFile.width * this.tileSize;
@@ -883,21 +948,40 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                     }
                     this.blockTypes = tileMapFile.jsonData.blockTypes || [];
                     this.prerender = new PrerenderCanvas_1.PrerenderCanvas(this.rect.width, this.rect.height);
-                    this.updatePrerender();
+                    this.loadTextures().then(() => this.updatePrerender());
                 }
                 draw() {
-                    this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y);
+                    this.world.canvas.X.imageSmoothingEnabled = false;
+                    this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
                 updatePrerender() {
-                    this.prerender.resize(this.rect.width, this.rect.height);
+                    this.prerender.resize(this.file.width * this.tileTextureSize, this.file.height * this.tileTextureSize);
                     this.prerender.clear();
                     const X = this.prerender.X;
-                    X.fillStyle = "#aaa8";
+                    X.imageSmoothingEnabled = false;
                     for (let y = 0; y < this.file.height; y++) {
                         for (let x = 0; x < this.file.width; x++) {
-                            X.fillStyle = this.blockTypes[this.map[y][x]].color;
-                            X.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                            const blockTypeIndex = this.map[y][x];
+                            if (this.textures[blockTypeIndex]) {
+                                X.drawImage(this.textures[blockTypeIndex], x * this.tileTextureSize, y * this.tileTextureSize);
+                            }
+                            else {
+                                X.fillStyle = this.blockTypes[blockTypeIndex].color;
+                                X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
+                            }
                         }
+                    }
+                }
+                updatePrerenderTile(x, y) {
+                    const X = this.prerender.X;
+                    X.imageSmoothingEnabled = false;
+                    const blockTypeIndex = this.map[y][x];
+                    if (this.textures[blockTypeIndex]) {
+                        X.drawImage(this.textures[blockTypeIndex], x * this.tileTextureSize, y * this.tileTextureSize);
+                    }
+                    else {
+                        X.fillStyle = this.blockTypes[blockTypeIndex].color;
+                        X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
                     }
                 }
                 setBlock(x, y, block) {
@@ -907,7 +991,7 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                         return;
                     }
                     this.map[yIndex][xIndex] = block;
-                    this.updatePrerender();
+                    this.updatePrerenderTile(xIndex, yIndex);
                 }
                 exportTileMapFile() {
                     const width = this.map[0].length;
@@ -1006,15 +1090,29 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/Rect
                 rectFromIndexes(xIndex, yIndex) {
                     return new Rectangle_3.Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
                 }
+                async loadTextures() {
+                    const proms = [];
+                    for (let i = 0; i < this.blockTypes.length; i++) {
+                        const blockType = this.blockTypes[i];
+                        if (blockType.texture) {
+                            proms.push(resourceFetcher_1.resourceFetcher.fetchImg("assets/img/tile/" + blockType.texture + ".png")
+                                .then(img => this.textures[i] = img));
+                        }
+                        else {
+                            this.textures[i] = null;
+                        }
+                    }
+                    await Promise.all(proms);
+                }
             };
-            exports_18("TileMap", TileMap);
+            exports_19("TileMap", TileMap);
         }
     };
 });
-System.register("entities/collisions", ["engine/collision/isRectanglesColliding", "engine/util/MovingRectangle"], function (exports_19, context_19) {
+System.register("entities/collisions", ["engine/collision/isRectanglesColliding", "engine/util/MovingRectangle"], function (exports_20, context_20) {
     "use strict";
     var isRectanglesColliding_2, MovingRectangle_1, collisions;
-    var __moduleName = context_19 && context_19.id;
+    var __moduleName = context_20 && context_20.id;
     function registerCollisions(collisionReactionMap) {
         collisionReactionMap.setCollisionReaction(collisions.types.moving, collisions.types.static, function (moving, block) {
             handleMovingStaticCollision(moving.rectangle, block.rectangle);
@@ -1031,7 +1129,7 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
             }
         });
     }
-    exports_19("registerCollisions", registerCollisions);
+    exports_20("registerCollisions", registerCollisions);
     function handleMovingStaticCollision(moving, block) {
         // modified from https://stackoverflow.com/a/29861691
         let dx, dy;
@@ -1082,7 +1180,7 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
             }
         ],
         execute: function () {
-            exports_19("collisions", collisions = {
+            exports_20("collisions", collisions = {
                 types: {
                     static: Symbol(),
                     moving: Symbol(),
@@ -1093,10 +1191,10 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
         }
     };
 });
-System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_20, context_20) {
+System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (exports_21, context_21) {
     "use strict";
     var CanvasElm_2, ParentCanvasElm;
-    var __moduleName = context_20 && context_20.id;
+    var __moduleName = context_21 && context_21.id;
     return {
         setters: [
             function (CanvasElm_2_1) {
@@ -1137,64 +1235,24 @@ System.register("engine/ParentCanvasElm", ["engine/CanvasElm"], function (export
                     }
                 }
             };
-            exports_20("ParentCanvasElm", ParentCanvasElm);
-        }
-    };
-});
-System.register("resources/resourceFetcher", [], function (exports_21, context_21) {
-    "use strict";
-    var ResourceFetcher, resourceFetcher;
-    var __moduleName = context_21 && context_21.id;
-    return {
-        setters: [],
-        execute: function () {
-            ResourceFetcher = class ResourceFetcher {
-                constructor() {
-                    this.cache = new Map();
-                }
-                async fetchText(url) {
-                    const cached = this.cache.get(url);
-                    if (cached) {
-                        return cached;
-                    }
-                    else {
-                        const response = await fetch(url);
-                        const result = await response.text();
-                        this.cache.set(url, result);
-                        return result;
-                    }
-                }
-                async fetchRaw(url) {
-                    const cached = this.cache.get(url);
-                    if (cached) {
-                        return cached;
-                    }
-                    else {
-                        const response = await fetch(url);
-                        const result = await (await response.blob()).arrayBuffer();
-                        this.cache.set(url, result);
-                        return result;
-                    }
-                }
-            };
-            exports_21("resourceFetcher", resourceFetcher = new ResourceFetcher());
+            exports_21("ParentCanvasElm", ParentCanvasElm);
         }
     };
 });
 System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_22, context_22) {
     "use strict";
-    var resourceFetcher_1, DialogFetcher, dialogFetcher;
+    var resourceFetcher_2, DialogFetcher, dialogFetcher;
     var __moduleName = context_22 && context_22.id;
     return {
         setters: [
-            function (resourceFetcher_1_1) {
-                resourceFetcher_1 = resourceFetcher_1_1;
+            function (resourceFetcher_2_1) {
+                resourceFetcher_2 = resourceFetcher_2_1;
             }
         ],
         execute: function () {
             DialogFetcher = class DialogFetcher {
                 async fetch(url) {
-                    const str = await resourceFetcher_1.resourceFetcher.fetchText("assets/" + url + ".txt");
+                    const str = await resourceFetcher_2.resourceFetcher.fetchText("assets/" + url + ".txt");
                     const lines = str.split("\n");
                     const arr = [];
                     let currArrElm = [];
@@ -1428,7 +1486,7 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
 });
 System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDialog", "entities/Player", "entities/TileMap", "resources/resourceFetcher", "resources/TileMapFile"], function (exports_28, context_28) {
     "use strict";
-    var ParentCanvasElm_1, NPCWithDialog_1, Player_2, TileMap_1, resourceFetcher_2, TileMapFile_2, GameView;
+    var ParentCanvasElm_1, NPCWithDialog_1, Player_2, TileMap_1, resourceFetcher_3, TileMapFile_2, GameView;
     var __moduleName = context_28 && context_28.id;
     return {
         setters: [
@@ -1444,8 +1502,8 @@ System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDia
             function (TileMap_1_1) {
                 TileMap_1 = TileMap_1_1;
             },
-            function (resourceFetcher_2_1) {
-                resourceFetcher_2 = resourceFetcher_2_1;
+            function (resourceFetcher_3_1) {
+                resourceFetcher_3 = resourceFetcher_3_1;
             },
             function (TileMapFile_2_1) {
                 TileMapFile_2 = TileMapFile_2_1;
@@ -1457,7 +1515,7 @@ System.register("view/GameView", ["engine/ParentCanvasElm", "entities/NPCWithDia
                     super();
                     this.player = new Player_2.Player();
                     this.addChild(new NPCWithDialog_1.NPCWithDialog(2500, 2500));
-                    resourceFetcher_2.resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
+                    resourceFetcher_3.resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
                         .then(file => {
                         this.addChild(new TileMap_1.TileMap(TileMapFile_2.TileMapFile.fromBuffer(file)));
                         this.addChild(this.player);
@@ -1498,7 +1556,7 @@ System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player
 });
 System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCanvasElm", "entities/GhostPlayer", "entities/TileMap", "resources/resourceFetcher", "resources/TileMapFile", "settings"], function (exports_30, context_30) {
     "use strict";
-    var elements_2, ParentCanvasElm_2, GhostPlayer_1, TileMap_2, resourceFetcher_3, TileMapFile_3, settings_3, MapEditor, MapEditorOverlay;
+    var elements_2, ParentCanvasElm_2, GhostPlayer_1, TileMap_2, resourceFetcher_4, TileMapFile_3, settings_3, MapEditor, MapEditorOverlay;
     var __moduleName = context_30 && context_30.id;
     return {
         setters: [
@@ -1514,8 +1572,8 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
             function (TileMap_2_1) {
                 TileMap_2 = TileMap_2_1;
             },
-            function (resourceFetcher_3_1) {
-                resourceFetcher_3 = resourceFetcher_3_1;
+            function (resourceFetcher_4_1) {
+                resourceFetcher_4 = resourceFetcher_4_1;
             },
             function (TileMapFile_3_1) {
                 TileMapFile_3 = TileMapFile_3_1;
@@ -1530,7 +1588,7 @@ System.register("view/mapEditor/MapEditor", ["engine/elements", "engine/ParentCa
                     super();
                     this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
                     this.overlay = new MapEditorOverlay();
-                    resourceFetcher_3.resourceFetcher.fetchRaw("assets/maze.tmap")
+                    resourceFetcher_4.resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
                         .then(tileMapFile => {
                         this.tileMap = new TileMap_2.TileMap(TileMapFile_3.TileMapFile.fromBuffer(tileMapFile));
                         this.addChild(this.tileMap);

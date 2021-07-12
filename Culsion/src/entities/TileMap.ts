@@ -1,5 +1,6 @@
 import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { Rectangle } from "../engine/util/Rectangle";
+import { resourceFetcher } from "../resources/resourceFetcher";
 import { TileMapFile } from "../resources/TileMapFile";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
@@ -9,11 +10,13 @@ export class TileMap extends Entity {
 
     private map: number[][];
     private blockTypes: BlockType[];
+    private textures: (HTMLImageElement | null)[] = [];
 
     private file: TileMapFile;
     private prerender: PrerenderCanvas;
 
-    private readonly tileSize = 32;
+    private readonly tileSize = 48;
+    private readonly tileTextureSize = 12;
 
     constructor(tileMapFile: TileMapFile) {
         super();
@@ -34,28 +37,52 @@ export class TileMap extends Entity {
         }
 
         this.blockTypes = tileMapFile.jsonData.blockTypes || [];
-
         this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
-        this.updatePrerender();
+
+        this.loadTextures().then(() => this.updatePrerender());
     }
 
     public draw(): void {
-        this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y);
+        this.world.canvas.X.imageSmoothingEnabled = false;
+        this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y, this.rect.width, this.rect.height);
     }
 
     public updatePrerender() {
-        this.prerender.resize(this.rect.width, this.rect.height);
+        this.prerender.resize(this.file.width * this.tileTextureSize, this.file.height * this.tileTextureSize);
         this.prerender.clear();
 
         const X = this.prerender.X;
-
-        X.fillStyle = "#aaa8";
+        X.imageSmoothingEnabled = false;
 
         for (let y = 0; y < this.file.height; y++) {
             for (let x = 0; x < this.file.width; x++) {
-                X.fillStyle = this.blockTypes[this.map[y][x]].color;
-                X.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                const blockTypeIndex = this.map[y][x];
+                if (this.textures[blockTypeIndex]) {
+                    X.drawImage(
+                        this.textures[blockTypeIndex]!,
+                        x * this.tileTextureSize, y * this.tileTextureSize,
+                    );
+                } else {
+                    X.fillStyle = this.blockTypes[blockTypeIndex].color;
+                    X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
+                }
             }
+        }
+    }
+
+    public updatePrerenderTile(x: number, y: number) {
+        const X = this.prerender.X;
+        X.imageSmoothingEnabled = false;
+
+        const blockTypeIndex = this.map[y][x];
+        if (this.textures[blockTypeIndex]) {
+            X.drawImage(
+                this.textures[blockTypeIndex]!,
+                x * this.tileTextureSize, y * this.tileTextureSize,
+            );
+        } else {
+            X.fillStyle = this.blockTypes[blockTypeIndex].color;
+            X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
         }
     }
 
@@ -65,7 +92,7 @@ export class TileMap extends Entity {
 
         if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
         this.map[yIndex][xIndex] = block;
-        this.updatePrerender();
+        this.updatePrerenderTile(xIndex, yIndex);
     }
 
     public exportTileMapFile(): TileMapFile {
@@ -180,9 +207,28 @@ export class TileMap extends Entity {
     private rectFromIndexes(xIndex: number, yIndex: number): Rectangle {
         return new Rectangle(xIndex * this.tileSize, yIndex * this.tileSize, this.tileSize, this.tileSize);
     }
+
+    private async loadTextures() {
+        const proms = [];
+
+        for (let i = 0; i < this.blockTypes.length; i++) {
+            const blockType = this.blockTypes[i];
+            if (blockType.texture) {
+                proms.push(
+                    resourceFetcher.fetchImg("assets/img/tile/" + blockType.texture + ".png")
+                        .then(img => this.textures[i] = img)
+                );
+            } else {
+                this.textures[i] = null;
+            }
+        }
+
+        await Promise.all(proms);
+    }
 }
 
 export interface BlockType {
     color: string;
+    texture?: string;
     solid: boolean;
 }
