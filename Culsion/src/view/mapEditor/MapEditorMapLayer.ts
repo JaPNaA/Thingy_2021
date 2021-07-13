@@ -1,13 +1,12 @@
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { TileMap } from "../../entities/TileMap";
+import { MapEditorOverlay } from "./MapEditorOverlay";
 
 export class MapEditorMapLayer extends ParentCanvasElm {
-    public selectedBlock: number = 1;
-
     private leftDown = false;
     private rightDown = false;
 
-    constructor(private tileMap: TileMap) {
+    constructor(private tileMap: TileMap, private overlay: MapEditorOverlay) {
         super();
         this.addChild(tileMap);
 
@@ -27,7 +26,7 @@ export class MapEditorMapLayer extends ParentCanvasElm {
         const y = this.world.camera.clientYToWorld(this.world.mouse.y);
 
         if (this.leftDown) {
-            this.tileMap.setBlock(x, y, this.selectedBlock);
+            this.tileMap.setBlock(x, y, this.overlay.selectedBlock);
         } else if (this.rightDown) {
             this.tileMap.setBlock(x, y, 0);
         }
