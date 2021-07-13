@@ -1,25 +1,35 @@
 import { CanvasElmWithEventBus } from "../../engine/canvasElm/CanvasElmWithEventBus";
 import { TileMap } from "../../entities/TileMap";
+import { TileMapJoint } from "../../resources/TileMapFile";
 
 export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
+    private joints: JointRecord[] = [];
+
     constructor(private tileMap: TileMap) {
         super();
 
-        this.eventBus.subscribe("mousedown", () => this.mousedownHandler())
+        this.eventBus.subscribe("mousedown", () => this.mousedownHandler());
+
+        for (const joint of this.tileMap._getJoints()) {
+            this.joints.push({
+                joint: joint,
+                x: this.tileMap.tileSize * (joint.x + 0.5),
+                y: this.tileMap.tileSize * (joint.y + 0.5)
+            });
+        }
     }
 
     public mousedownHandler() {
-        for (const joint of this.tileMap._getJoints()) {
+        const jointRadius = this.tileMap.tileSize / 4;
+
+        for (const joint of this.joints) {
             const cursorX = this.world.camera.clientXToWorld(this.world.mouse.x);
             const cursorY = this.world.camera.clientYToWorld(this.world.mouse.y);
-            const jointX = (joint.x + 0.5) * this.tileMap.tileSize;
-            const jointY = (joint.y + 0.5) * this.tileMap.tileSize;
-            const r = this.tileMap.tileSize / 4;
 
-            const dx = cursorX - jointX;
-            const dy = cursorY - jointY;
+            const dx = cursorX - joint.x;
+            const dy = cursorY - joint.y;
 
-            if (dx * dx + dy * dy < r * r) {
+            if (dx * dx + dy * dy < jointRadius * jointRadius) {
                 this.eventBus.stopPropagation();
             }
         }
@@ -28,16 +38,20 @@ export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
     public draw() {
         const X = this.world.canvas.X;
 
-        for (const joint of this.tileMap._getJoints()) {
-            const jointX = (joint.x + 0.5) * this.tileMap.tileSize;
-            const jointY = (joint.y + 0.5) * this.tileMap.tileSize;
-            const r = this.tileMap.tileSize / 4;
+        const jointRadius = this.tileMap.tileSize / 4;
 
+        for (const joint of this.joints) {
             X.fillStyle = "#00ff0088";
 
             X.beginPath();
-            X.arc(jointX, jointY, r, 0, Math.PI * 2);
+            X.arc(joint.x, joint.y, jointRadius, 0, Math.PI * 2);
             X.fill();
         }
     }
+}
+
+interface JointRecord {
+    x: number;
+    y: number;
+    joint: TileMapJoint;
 }
