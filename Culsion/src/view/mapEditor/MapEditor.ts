@@ -5,6 +5,8 @@ import { TileMap } from "../../entities/TileMap";
 import { resourceFetcher } from "../../resources/resourceFetcher";
 import { TileMapFile } from "../../resources/TileMapFile";
 import { settings } from "../../settings";
+import { MapEditorEntityJointLayer } from "./MapEditorEntityJointLayer";
+import { MapEditorMapLayer } from "./MapEditorMapLayer";
 import { MapEditorOverlay } from "./MapEditorOverlay";
 
 export class MapEditor extends ParentCanvasElm {
@@ -19,8 +21,12 @@ export class MapEditor extends ParentCanvasElm {
         resourceFetcher.fetchRaw("assets/" + prompt("Open map name") + ".tmap")
             .then(tileMapFile => {
                 this.tileMap = new TileMap(TileMapFile.fromBuffer(tileMapFile));
-                this.addChild(this.tileMap);
                 this.overlay.setTileMap(this.tileMap);
+
+                const mapLayer = new MapEditorMapLayer(this.tileMap);
+                const entityJointLayer = new MapEditorEntityJointLayer(this.tileMap);
+                this.addChild(mapLayer);
+                this.addChild(entityJointLayer);
             });
 
         this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
@@ -43,16 +49,6 @@ export class MapEditor extends ParentCanvasElm {
 
     public tick() {
         super.tick();
-        if (!this.tileMap) { return; }
-
-        const x = this.world.camera.clientXToWorld(this.world.mouse.x);
-        const y = this.world.camera.clientYToWorld(this.world.mouse.y);
-
-        if (this.world.mouse.leftDown) {
-            this.tileMap.setBlock(x, y, this.overlay.selectedBlock);
-        } else if (this.world.mouse.rightDown) {
-            this.tileMap.setBlock(x, y, 0);
-        }
 
         if (this.world.keyboard.isDown(settings.keybindings.zoomOut)) {
             this.world.camera.scale /= 1.02;
@@ -63,20 +59,6 @@ export class MapEditor extends ParentCanvasElm {
 
     public draw() {
         super.draw();
-
-        if (!this.tileMap) { return; }
-        const x = this.world.camera.clientXToWorld(this.world.mouse.x);
-        const y = this.world.camera.clientYToWorld(this.world.mouse.y);
-        const xIndex = Math.floor(x / this.tileMap.tileSize);
-        const yIndex = Math.floor(y / this.tileMap.tileSize);
-
-        this.world.canvas.X.fillStyle = "#ff0000";
-        this.world.canvas.X.font = "12px Arial";
-        this.world.canvas.X.textBaseline = "top";
-        this.world.canvas.X.fillText(
-            "(" + xIndex + ", " + yIndex + ")",
-            xIndex * this.tileMap.tileSize, yIndex * this.tileMap.tileSize
-        );
     }
 
     public exportMapKeyHandler() {
