@@ -1,11 +1,12 @@
 import { CanvasElmWithEventBus } from "../../engine/canvasElm/CanvasElmWithEventBus";
 import { TileMap } from "../../entities/TileMap";
 import { TileMapJoint } from "../../resources/TileMapFile";
+import { MapEditorOverlay } from "./MapEditorOverlay";
 
 export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
     private joints: JointRecord[] = [];
 
-    constructor(private tileMap: TileMap) {
+    constructor(private tileMap: TileMap, private overlay: MapEditorOverlay) {
         super();
 
         this.eventBus.subscribe("mousedown", () => this.mousedownHandler());
@@ -22,6 +23,8 @@ export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
     public mousedownHandler() {
         const jointRadius = this.tileMap.tileSize / 4;
 
+        this.overlay.unsetJoint();
+
         for (const joint of this.joints) {
             const cursorX = this.world.camera.clientXToWorld(this.world.mouse.x);
             const cursorY = this.world.camera.clientYToWorld(this.world.mouse.y);
@@ -30,6 +33,7 @@ export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
             const dy = cursorY - joint.y;
 
             if (dx * dx + dy * dy < jointRadius * jointRadius) {
+                this.overlay.setJoint(joint.joint);
                 this.eventBus.stopPropagation();
             }
         }

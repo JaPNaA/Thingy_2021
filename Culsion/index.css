@@ -26,6 +26,10 @@ canvas {
     padding: 8px;
 }
 
+.MapEditorOverlay .hidden {
+    display: none;
+}
+
 .MapEditorOverlay .blockType {
     display: inline-block;
     width: 24px;

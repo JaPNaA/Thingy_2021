@@ -1,6 +1,6 @@
 import { Component, Elm } from "../../engine/elements";
 import { TileMap } from "../../entities/TileMap";
-import { BlockType } from "../../resources/TileMapFile";
+import { BlockType, TileMapJoint } from "../../resources/TileMapFile";
 
 export class MapEditorOverlay extends Component {
     public selectedBlock = 1;
@@ -9,8 +9,12 @@ export class MapEditorOverlay extends Component {
 
     private blockTypesElm = new Elm().class("blockTypes")
         .appendTo(this.elm);
+
     private canvasSizeElm = new Elm().class("canvasSize")
         .on("click", () => this.openChangeMapSizeDialog())
+        .appendTo(this.elm);
+
+    private jointEditor = new Elm().class("jointEditor", "hidden")
         .appendTo(this.elm);
 
     private tileMap?: TileMap;
@@ -24,6 +28,21 @@ export class MapEditorOverlay extends Component {
 
         this.setBlockTypes(tileMap.getBlockTypes());
         this.setCanvasSize(tileMap.getWidth(), tileMap.getHeight());
+    }
+
+    public setJoint(joint: TileMapJoint) {
+        this.jointEditor.removeClass("hidden");
+        this.jointEditor.replaceContents(
+            new Elm("h3").append("Joint: "),
+            new Elm().append("pos: (", joint.x, ", ", joint.y, ")"),
+            new Elm().append("id: ", joint.id),
+            new Elm().append("toMap: ", joint.toMap),
+            new Elm().append("toId: ", joint.toId)
+        );
+    }
+
+    public unsetJoint() {
+        this.jointEditor.class("hidden");
     }
 
     private setBlockTypes(blockTypes: readonly BlockType[]) {

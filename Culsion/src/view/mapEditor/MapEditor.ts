@@ -24,7 +24,7 @@ export class MapEditor extends ParentCanvasElm {
                 this.overlay.setTileMap(this.tileMap);
 
                 const mapLayer = new MapEditorMapLayer(this.tileMap, this.overlay);
-                const entityJointLayer = new MapEditorEntityJointLayer(this.tileMap);
+                const entityJointLayer = new MapEditorEntityJointLayer(this.tileMap, this.overlay);
                 this.addChild(mapLayer);
                 this.addChild(entityJointLayer);
             });
