@@ -1,8 +1,9 @@
 import { CanvasElm } from "./CanvasElm";
-import { removeElmFromArray } from "./util/removeElmFromArray";
-import { World } from "./World";
+import { removeElmFromArray } from "../util/removeElmFromArray";
+import { World } from "../World";
+import { CanvasElmWithEventBus } from "./CanvasElmWithEventBus";
 
-export class ParentCanvasElm extends CanvasElm {
+export class ParentCanvasElm extends CanvasElmWithEventBus {
     private children: CanvasElm[] = [];
 
     public draw() {
@@ -34,6 +35,10 @@ export class ParentCanvasElm extends CanvasElm {
         this.children.push(child);
         if (this.world) {
             child.setWorld(this.world);
+        }
+
+        if (child instanceof CanvasElmWithEventBus) {
+            child.eventBus._attach(this.eventBus);
         }
     }
 

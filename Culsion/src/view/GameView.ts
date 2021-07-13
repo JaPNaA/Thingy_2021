@@ -1,4 +1,4 @@
-import { ParentCanvasElm } from "../engine/ParentCanvasElm";
+import { ParentCanvasElm } from "../engine/canvasElm/ParentCanvasElm";
 import { World } from "../engine/World";
 import { NPCWithDialog } from "../entities/NPCWithDialog";
 import { ParentTileMap } from "../entities/ParentTileMap";

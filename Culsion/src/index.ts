@@ -23,4 +23,7 @@ function requanf() {
 
 requanf();
 
+// @ts-ignore -- debug
+window.world = world;
+
 history.scrollRestoration = "manual";

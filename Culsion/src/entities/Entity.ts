@@ -1,4 +1,4 @@
-import { CanvasElm } from "../engine/CanvasElm";
+import { CanvasElm } from "../engine/canvasElm/CanvasElm";
 import { Hitbox } from "../engine/collision/Hitbox";
 import { Rectangle } from "../engine/util/Rectangle";
 import { World } from "../engine/World";

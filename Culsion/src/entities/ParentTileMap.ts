@@ -1,5 +1,5 @@
 import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding";
-import { ParentCanvasElm } from "../engine/ParentCanvasElm";
+import { ParentCanvasElm } from "../engine/canvasElm/ParentCanvasElm";
 import { Rectangle } from "../engine/util/Rectangle";
 import { removeElmFromArray } from "../engine/util/removeElmFromArray";
 import { resourceFetcher } from "../resources/resourceFetcher";

@@ -1,7 +1,9 @@
 import { Camera } from "./Camera";
 import { Canvas } from "./Canvas";
-import { CanvasElm } from "./CanvasElm";
+import { CanvasElm } from "./canvasElm/CanvasElm";
+import { CanvasElmWithEventBus } from "./canvasElm/CanvasElmWithEventBus";
 import { CollisionSystem } from "./collision/CollisionSystem";
+import { EventBus } from "./EventBus";
 import { HTMLOverlay } from "./HTMLOverlay";
 import { Keyboard } from "./Keyboard";
 import { Mouse } from "./Mouse";
@@ -10,8 +12,11 @@ export class World {
     public canvas = new Canvas();
     public htmlOverlay = new HTMLOverlay();
     public camera = new Camera(this);
+
+    public eventBus = new EventBus();
     public keyboard = new Keyboard();
-    public mouse = new Mouse();
+    public mouse = new Mouse(this.eventBus);
+
     public collisionSystem = new CollisionSystem();
 
     public timeElapsed = 0;
@@ -39,6 +44,10 @@ export class World {
 
     public addElm(elm: CanvasElm, index?: number) {
         elm.setWorld(this);
+        if (elm instanceof CanvasElmWithEventBus) {
+            elm.eventBus._attach(this.eventBus);
+        }
+
         //* temporary -- introduce zIndex
         if (index !== undefined) {
             this.elms.splice(index, 0, elm);

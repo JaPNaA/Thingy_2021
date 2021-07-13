@@ -1,4 +1,4 @@
-import { CanvasElm } from "../engine/CanvasElm";
+import { CanvasElm } from "../engine/canvasElm/CanvasElm";
 import { Rectangle } from "../engine/util/Rectangle";
 import { World } from "../engine/World";
 import { settings } from "../settings";

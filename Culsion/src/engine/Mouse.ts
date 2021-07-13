@@ -1,10 +1,12 @@
+import { EventBus } from "./EventBus";
+
 export class Mouse {
     public leftDown = false;
     public rightDown = false;
     public x = 0;
     public y = 0;
 
-    constructor() {
+    constructor(private eventBus: EventBus) {
         this.mouseupHandler = this.mouseupHandler.bind(this);
         this.mousedownHandler = this.mousedownHandler.bind(this);
         this.mousemoveHandler = this.mousemoveHandler.bind(this);
@@ -31,6 +33,7 @@ export class Mouse {
         } else if (event.button === 2) {
             this.rightDown = false;
         }
+        this.eventBus.send("mouseup", event);
     }
 
     private mousedownHandler(event: MouseEvent) {
@@ -39,6 +42,7 @@ export class Mouse {
         } else {
             this.rightDown = true;
         }
+        this.eventBus.send("mousedown", event);
     }
 
     private mousemoveHandler(event: MouseEvent) {
