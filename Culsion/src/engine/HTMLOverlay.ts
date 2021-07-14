@@ -5,5 +5,7 @@ export class HTMLOverlay extends Component {
         super("HTMLOverlay");
 
         this.elm.on("mousedown", e => e.stopPropagation());
+        this.elm.on("keydown", e => e.stopPropagation());
+        this.elm.on("keyup", e => e.stopPropagation());
     }
 }

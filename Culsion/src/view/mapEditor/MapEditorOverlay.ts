@@ -127,13 +127,11 @@ class DialogBoxForm extends Component {
             new Elm().append(
                 new Elm("button").append("Cancel")
                     .on("click", () => {
-                        this.elm.remove();
-                        this.rejPromise("Canceled by user");
+                        this.cancel();
                     }),
                 new Elm("button").append("Submit")
                     .on("click", () => {
-                        this.resPromise(this.getResponse());
-                        this.elm.remove();
+                        this.trySubmit();
                     })
             )
         )
@@ -189,6 +187,14 @@ class DialogBoxForm extends Component {
             input.setValue(options.default);
         }
 
+        input.on("keydown", e => {
+            if (e.code === "Enter") {
+                this.trySubmit();
+            } else if (e.code === "Escape") {
+                this.cancel();
+            }
+        });
+
         this.inputsElm.append(
             new Elm("label").class("field").append(
                 key, ": ", input
@@ -196,6 +202,16 @@ class DialogBoxForm extends Component {
         );
 
         this.inputsMap.set(key, [input, options]);
+    }
+
+    private cancel() {
+        this.elm.remove();
+        this.rejPromise("Canceled by user");
+    }
+
+    private trySubmit() {
+        this.resPromise(this.getResponse());
+        this.elm.remove();
     }
 
     private getResponse(): any {
