@@ -23,7 +23,7 @@ export class TileMapEntity extends Entity {
 
         this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
 
-        this.data.onMinorEdit.addHandler(pos => this.updatePrerenderTile(pos[0], pos[1]));
+        this.data.onTileEdit.addHandler(pos => this.updatePrerenderTile(pos[0], pos[1]));
         this.data.onMajorEdit.addHandler(() => this.updatePrerender());
 
         this.data._loadTextures().then(() => this.updatePrerender());

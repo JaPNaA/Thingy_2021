@@ -11,19 +11,12 @@ export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
 
         this.eventBus.subscribe("mousedown", () => this.mousedownHandler());
 
-        for (const joint of this.tileMap.data.getJoints()) {
-            this.joints.push({
-                joint: joint,
-                x: this.tileMap.tileSize * (joint.x + 0.5),
-                y: this.tileMap.tileSize * (joint.y + 0.5)
-            });
-        }
+        this.updateJointRecords();
+        this.tileMap.data.onJointEdit.addHandler(() => this.updateJointRecords());
     }
 
     public mousedownHandler() {
         const jointRadius = this.tileMap.tileSize / 4;
-
-        this.overlay.unsetJoint();
 
         for (const joint of this.joints) {
             const cursorX = this.world.camera.clientXToWorld(this.world.mouse.x);
@@ -33,7 +26,7 @@ export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
             const dy = cursorY - joint.y;
 
             if (dx * dx + dy * dy < jointRadius * jointRadius) {
-                this.overlay.setJoint(joint.joint);
+                this.overlay.editJoint(joint.joint);
                 this.eventBus.stopPropagation();
             }
         }
@@ -50,6 +43,18 @@ export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
             X.beginPath();
             X.arc(joint.x, joint.y, jointRadius, 0, Math.PI * 2);
             X.fill();
+        }
+    }
+
+    private updateJointRecords() {
+        this.joints.length = 0;
+
+        for (const joint of this.tileMap.data.getJoints()) {
+            this.joints.push({
+                joint: joint,
+                x: this.tileMap.tileSize * (joint.x + 0.5),
+                y: this.tileMap.tileSize * (joint.y + 0.5)
+            });
         }
     }
 }

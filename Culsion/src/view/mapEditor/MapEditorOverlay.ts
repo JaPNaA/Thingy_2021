@@ -14,9 +14,6 @@ export class MapEditorOverlay extends Component {
         .on("click", () => this.openChangeMapSizeDialog())
         .appendTo(this.elm);
 
-    private jointEditor = new Elm().class("jointEditor", "hidden")
-        .appendTo(this.elm);
-
     private tileMap?: TileMap;
 
     constructor() {
@@ -30,28 +27,13 @@ export class MapEditorOverlay extends Component {
         this.setCanvasSize(tileMap.width, tileMap.height);
     }
 
-    public setJoint(joint: TileMapJoint) {
-        // this.jointEditor.removeClass("hidden");
-        // this.jointEditor.replaceContents(
-        //     new Elm("h3").append("Joint: "),
-        //     new Elm().append("pos: (", joint.x, ", ", joint.y, ")"),
-        //     new Elm().append("id: ", joint.id),
-        //     new Elm().append("toMap: ", joint.toMap),
-        //     new Elm().append("toId: ", joint.toId)
-        // );
-
+    public editJoint(joint: TileMapJoint) {
         DialogBoxForm.createFilledForm(this.elm, joint as any)
             .then(updated => {
-                joint.x = updated.x;
-                joint.y = updated.y;
-                joint.id = updated.id;
-                joint.toId = updated.toId;
-                joint.toMap = updated.toMap;
+                if (!this.tileMap) { return; }
+                this.tileMap.removeJoint(joint);
+                this.tileMap.addJoint(updated);
             });
-    }
-
-    public unsetJoint() {
-        this.jointEditor.class("hidden");
     }
 
     private setBlockTypes(blockTypes: readonly BlockType[]) {

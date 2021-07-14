@@ -1,3 +1,4 @@
+import { removeElmFromArray } from "../engine/util/removeElmFromArray";
 import { resourceFetcher } from "../resources/resourceFetcher";
 import { BlockType, TileMapFile, TileMapJoint } from "../resources/TileMapFile";
 
@@ -5,11 +6,13 @@ export class TileMap {
     public width: number;
     public height: number;
 
-    public onMinorEdit = new EventHandler<[number, number]>();
+    public onTileEdit = new EventHandler<[number, number]>();
+    public onJointEdit = new EventHandler();
     public onMajorEdit = new EventHandler();
 
     private map: number[][];
     private blockTypes: BlockType[];
+    private joints: TileMapJoint[];
     private textures: (HTMLImageElement | null)[] = [];
 
     private file: TileMapFile;
@@ -36,6 +39,7 @@ export class TileMap {
         }
 
         this.blockTypes = this.file.jsonData.blockTypes || [];
+        this.joints = this.file.jsonData.joints || [];
     }
 
     public getBlockTexture(xIndex: number, yIndex: number): HTMLImageElement | null {
@@ -55,11 +59,21 @@ export class TileMap {
     public setBlockByIndex(xIndex: number, yIndex: number, block: number): void {
         if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
         this.map[yIndex][xIndex] = block;
-        this.onMinorEdit.dispatch([xIndex, yIndex]);
+        this.onTileEdit.dispatch([xIndex, yIndex]);
     }
 
     public getJoints(): readonly TileMapJoint[] {
         return this.file.jsonData.joints || [];
+    }
+
+    public removeJoint(joint: TileMapJoint) {
+        removeElmFromArray(joint, this.joints);
+        this.onJointEdit.dispatch();
+    }
+
+    public addJoint(joint: TileMapJoint) {
+        this.joints.push(joint);
+        this.onJointEdit.dispatch();
     }
 
     public getJointById(id: number): TileMapJoint | undefined {
@@ -113,7 +127,7 @@ export class TileMap {
 
         file.jsonData = {
             blockTypes: this.blockTypes,
-            joints: this.file.jsonData.joints
+            joints: this.joints
         };
 
         return file;
