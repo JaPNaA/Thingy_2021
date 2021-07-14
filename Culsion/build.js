@@ -105,30 +105,9 @@ System.register("engine/Camera", ["engine/util/Rectangle"], function (exports_3,
         }
     };
 });
-System.register("engine/canvasElm/CanvasElm", [], function (exports_4, context_4) {
+System.register("engine/util/removeElmFromArray", [], function (exports_4, context_4) {
     "use strict";
-    var CanvasElm;
     var __moduleName = context_4 && context_4.id;
-    return {
-        setters: [],
-        execute: function () {
-            CanvasElm = class CanvasElm {
-                tick() { }
-                setWorld(world) {
-                    this.world = world;
-                }
-                dispose() {
-                    // @ts-expect-error
-                    this.world = undefined;
-                }
-            };
-            exports_4("CanvasElm", CanvasElm);
-        }
-    };
-});
-System.register("engine/util/removeElmFromArray", [], function (exports_5, context_5) {
-    "use strict";
-    var __moduleName = context_5 && context_5.id;
     function removeElmFromArray(elm, array) {
         const index = array.indexOf(elm);
         if (index < 0) {
@@ -136,17 +115,17 @@ System.register("engine/util/removeElmFromArray", [], function (exports_5, conte
         }
         array.splice(index, 1);
     }
-    exports_5("removeElmFromArray", removeElmFromArray);
+    exports_4("removeElmFromArray", removeElmFromArray);
     return {
         setters: [],
         execute: function () {
         }
     };
 });
-System.register("engine/EventBus", ["engine/util/removeElmFromArray"], function (exports_6, context_6) {
+System.register("engine/EventBus", ["engine/util/removeElmFromArray"], function (exports_5, context_5) {
     "use strict";
     var removeElmFromArray_1, EventBus;
-    var __moduleName = context_6 && context_6.id;
+    var __moduleName = context_5 && context_5.id;
     return {
         setters: [
             function (removeElmFromArray_1_1) {
@@ -237,14 +216,14 @@ System.register("engine/EventBus", ["engine/util/removeElmFromArray"], function 
                     }
                 }
             };
-            exports_6("EventBus", EventBus);
+            exports_5("EventBus", EventBus);
         }
     };
 });
-System.register("engine/canvasElm/CanvasElmWithEventBus", ["engine/EventBus", "engine/canvasElm/CanvasElm"], function (exports_7, context_7) {
+System.register("engine/canvasElm/CanvasElmWithEventBus", ["engine/EventBus", "engine/canvasElm/CanvasElm"], function (exports_6, context_6) {
     "use strict";
     var EventBus_1, CanvasElm_1, CanvasElmWithEventBus;
-    var __moduleName = context_7 && context_7.id;
+    var __moduleName = context_6 && context_6.id;
     return {
         setters: [
             function (EventBus_1_1) {
@@ -265,14 +244,14 @@ System.register("engine/canvasElm/CanvasElmWithEventBus", ["engine/EventBus", "e
                     this.eventBus._dispose();
                 }
             };
-            exports_7("CanvasElmWithEventBus", CanvasElmWithEventBus);
+            exports_6("CanvasElmWithEventBus", CanvasElmWithEventBus);
         }
     };
 });
-System.register("engine/collision/Hitbox", [], function (exports_8, context_8) {
+System.register("engine/collision/Hitbox", [], function (exports_7, context_7) {
     "use strict";
     var Hitbox;
-    var __moduleName = context_8 && context_8.id;
+    var __moduleName = context_7 && context_7.id;
     return {
         setters: [],
         execute: function () {
@@ -282,14 +261,14 @@ System.register("engine/collision/Hitbox", [], function (exports_8, context_8) {
                     this.elm = elm;
                 }
             };
-            exports_8("Hitbox", Hitbox);
+            exports_7("Hitbox", Hitbox);
         }
     };
 });
-System.register("engine/collision/CollisionReactionMap", [], function (exports_9, context_9) {
+System.register("engine/collision/CollisionReactionMap", [], function (exports_8, context_8) {
     "use strict";
     var CollisionReactionMap;
-    var __moduleName = context_9 && context_9.id;
+    var __moduleName = context_8 && context_8.id;
     return {
         setters: [],
         execute: function () {
@@ -330,30 +309,30 @@ System.register("engine/collision/CollisionReactionMap", [], function (exports_9
                     }
                 }
             };
-            exports_9("CollisionReactionMap", CollisionReactionMap);
+            exports_8("CollisionReactionMap", CollisionReactionMap);
         }
     };
 });
-System.register("engine/collision/isRectanglesColliding", [], function (exports_10, context_10) {
+System.register("engine/collision/isRectanglesColliding", [], function (exports_9, context_9) {
     "use strict";
-    var __moduleName = context_10 && context_10.id;
+    var __moduleName = context_9 && context_9.id;
     function isRectanglesColliding(rect1, rect2) {
         return rect1.x < rect2.x + rect2.width &&
             rect1.x + rect1.width > rect2.x &&
             rect1.y < rect2.y + rect2.height &&
             rect1.y + rect1.height > rect2.y;
     }
-    exports_10("isRectanglesColliding", isRectanglesColliding);
+    exports_9("isRectanglesColliding", isRectanglesColliding);
     return {
         setters: [],
         execute: function () {
         }
     };
 });
-System.register("engine/collision/CollisionSystem", ["engine/util/removeElmFromArray", "engine/collision/CollisionReactionMap", "engine/collision/isRectanglesColliding"], function (exports_11, context_11) {
+System.register("engine/collision/CollisionSystem", ["engine/util/removeElmFromArray", "engine/collision/CollisionReactionMap", "engine/collision/isRectanglesColliding"], function (exports_10, context_10) {
     "use strict";
     var removeElmFromArray_2, CollisionReactionMap_1, isRectanglesColliding_1, CollisionSystem;
-    var __moduleName = context_11 && context_11.id;
+    var __moduleName = context_10 && context_10.id;
     return {
         setters: [
             function (removeElmFromArray_2_1) {
@@ -391,14 +370,14 @@ System.register("engine/collision/CollisionSystem", ["engine/util/removeElmFromA
                     }
                 }
             };
-            exports_11("CollisionSystem", CollisionSystem);
+            exports_10("CollisionSystem", CollisionSystem);
         }
     };
 });
-System.register("engine/elements", [], function (exports_12, context_12) {
+System.register("engine/elements", [], function (exports_11, context_11) {
     "use strict";
     var Elm, InputElm, Component;
-    var __moduleName = context_12 && context_12.id;
+    var __moduleName = context_11 && context_11.id;
     return {
         setters: [],
         execute: function () {
@@ -512,7 +491,7 @@ System.register("engine/elements", [], function (exports_12, context_12) {
                     }
                 }
             };
-            exports_12("Elm", Elm);
+            exports_11("Elm", Elm);
             InputElm = class InputElm extends Elm {
                 constructor() {
                     super("input");
@@ -542,7 +521,7 @@ System.register("engine/elements", [], function (exports_12, context_12) {
                     return this;
                 }
             };
-            exports_12("InputElm", InputElm);
+            exports_11("InputElm", InputElm);
             Component = class Component {
                 constructor(name) {
                     this.name = name;
@@ -554,14 +533,14 @@ System.register("engine/elements", [], function (exports_12, context_12) {
                     return this;
                 }
             };
-            exports_12("Component", Component);
+            exports_11("Component", Component);
         }
     };
 });
-System.register("engine/HTMLOverlay", ["engine/elements"], function (exports_13, context_13) {
+System.register("engine/HTMLOverlay", ["engine/elements"], function (exports_12, context_12) {
     "use strict";
     var elements_1, HTMLOverlay;
-    var __moduleName = context_13 && context_13.id;
+    var __moduleName = context_12 && context_12.id;
     return {
         setters: [
             function (elements_1_1) {
@@ -577,14 +556,14 @@ System.register("engine/HTMLOverlay", ["engine/elements"], function (exports_13,
                     this.elm.on("keyup", e => e.stopPropagation());
                 }
             };
-            exports_13("HTMLOverlay", HTMLOverlay);
+            exports_12("HTMLOverlay", HTMLOverlay);
         }
     };
 });
-System.register("engine/Keyboard", [], function (exports_14, context_14) {
+System.register("engine/Keyboard", [], function (exports_13, context_13) {
     "use strict";
     var Keyboard;
-    var __moduleName = context_14 && context_14.id;
+    var __moduleName = context_13 && context_13.id;
     return {
         setters: [],
         execute: function () {
@@ -659,14 +638,14 @@ System.register("engine/Keyboard", [], function (exports_14, context_14) {
                     }
                 }
             };
-            exports_14("Keyboard", Keyboard);
+            exports_13("Keyboard", Keyboard);
         }
     };
 });
-System.register("engine/Mouse", [], function (exports_15, context_15) {
+System.register("engine/Mouse", [], function (exports_14, context_14) {
     "use strict";
     var Mouse;
-    var __moduleName = context_15 && context_15.id;
+    var __moduleName = context_14 && context_14.id;
     return {
         setters: [],
         execute: function () {
@@ -720,14 +699,14 @@ System.register("engine/Mouse", [], function (exports_15, context_15) {
                     event.preventDefault();
                 }
             };
-            exports_15("Mouse", Mouse);
+            exports_14("Mouse", Mouse);
         }
     };
 });
-System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/canvasElm/CanvasElmWithEventBus", "engine/collision/CollisionSystem", "engine/EventBus", "engine/HTMLOverlay", "engine/Keyboard", "engine/Mouse"], function (exports_16, context_16) {
+System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/canvasElm/CanvasElmWithEventBus", "engine/collision/CollisionSystem", "engine/EventBus", "engine/HTMLOverlay", "engine/Keyboard", "engine/Mouse"], function (exports_15, context_15) {
     "use strict";
     var Camera_1, Canvas_1, CanvasElmWithEventBus_1, CollisionSystem_1, EventBus_2, HTMLOverlay_1, Keyboard_1, Mouse_1, World;
-    var __moduleName = context_16 && context_16.id;
+    var __moduleName = context_15 && context_15.id;
     return {
         setters: [
             function (Camera_1_1) {
@@ -834,7 +813,28 @@ System.register("engine/World", ["engine/Camera", "engine/Canvas", "engine/canva
                     this.htmlOverlay.appendTo(parent);
                 }
             };
-            exports_16("World", World);
+            exports_15("World", World);
+        }
+    };
+});
+System.register("engine/canvasElm/CanvasElm", [], function (exports_16, context_16) {
+    "use strict";
+    var CanvasElm;
+    var __moduleName = context_16 && context_16.id;
+    return {
+        setters: [],
+        execute: function () {
+            CanvasElm = class CanvasElm {
+                tick() { }
+                setWorld(world) {
+                    this.world = world;
+                }
+                dispose() {
+                    // @ts-expect-error
+                    this.world = undefined;
+                }
+            };
+            exports_16("CanvasElm", CanvasElm);
         }
     };
 });
@@ -1523,6 +1523,7 @@ System.register("engine/canvasElm/ParentCanvasElm", ["engine/util/removeElmFromA
                     }
                 }
                 dispose() {
+                    super.dispose();
                     for (const child of this.children) {
                         child.dispose();
                     }
@@ -1779,11 +1780,14 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
                     }
                     this.dialogOpen = true;
                     dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
-                        this.world.addElm(new NPCDialog_1.NPCDialog(dialog, new Rectangle_5.Rectangle(this.rect.x, this.rect.y, 500, 300)));
+                        this.npcDialog = new NPCDialog_1.NPCDialog(dialog, new Rectangle_5.Rectangle(this.rect.x, this.rect.y, 500, 300));
+                        this.world.addElm(this.npcDialog);
                     });
                 }
                 dispose() {
-                    throw new Error("Not implemented");
+                    if (this.npcDialog) {
+                        this.world.removeElm(this.npcDialog);
+                    }
                 }
             };
             exports_31("NPCWithDialog", NPCWithDialog);
@@ -2333,10 +2337,10 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                         .then(tileMapFile => {
                         this.tileMap = new TileMapEntity_2.TileMapEntity(tileMapFile);
                         this.overlay.setTileMap(this.tileMap.data);
-                        const mapLayer = new MapEditorMapLayer_1.MapEditorMapLayer(this.tileMap, this.overlay);
-                        const entityJointLayer = new MapEditorEntityJointLayer_1.MapEditorEntityJointLayer(this.tileMap, this.overlay);
-                        this.addChild(mapLayer);
-                        this.addChild(entityJointLayer);
+                        this.editorMapLayer = new MapEditorMapLayer_1.MapEditorMapLayer(this.tileMap, this.overlay);
+                        this.editorEntityJointLayer = new MapEditorEntityJointLayer_1.MapEditorEntityJointLayer(this.tileMap, this.overlay);
+                        this.addChild(this.editorMapLayer);
+                        this.addChild(this.editorEntityJointLayer);
                     });
                     this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
                     this.addChild(this.ghostPlayer);
@@ -2349,8 +2353,11 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                     this.world.htmlOverlay.elm.append(this.overlay);
                 }
                 dispose() {
+                    var _a, _b;
                     this.world.keyboard.removeKeydownHandler(settings_3.settings.keybindings.select, this.exportMapKeyHandler);
                     this.overlay.elm.remove();
+                    (_a = this.editorMapLayer) === null || _a === void 0 ? void 0 : _a.dispose();
+                    (_b = this.editorEntityJointLayer) === null || _b === void 0 ? void 0 : _b.dispose();
                 }
                 tick() {
                     super.tick();
@@ -2386,8 +2393,20 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
 });
 System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_39, context_39) {
     "use strict";
-    var World_1, collisions_5, GameView_1, MapEditor_1, world;
+    var World_1, collisions_5, GameView_1, MapEditor_1, world, currViewElm;
     var __moduleName = context_39 && context_39.id;
+    function navigateByHash() {
+        if (currViewElm) {
+            world.removeElm(currViewElm);
+        }
+        if (location.hash == "#mapEditor") {
+            currViewElm = new MapEditor_1.MapEditor();
+        }
+        else {
+            currViewElm = new GameView_1.GameView();
+        }
+        world.addElm(currViewElm);
+    }
     function requanf() {
         world.draw();
         requestAnimationFrame(requanf);
@@ -2412,13 +2431,11 @@ System.register("index", ["engine/World", "entities/collisions", "view/GameView"
             collisions_5.registerCollisions(world.collisionSystem.reactions);
             world.appendTo(document.body);
             world.startListen();
-            if (location.hash == "#mapEditor") {
-                world.addElm(new MapEditor_1.MapEditor());
-            }
-            else {
-                world.addElm(new GameView_1.GameView());
-            }
+            navigateByHash();
             requanf();
+            addEventListener("hashchange", function () {
+                navigateByHash();
+            });
             // @ts-ignore -- debug
             window.world = world;
             history.scrollRestoration = "manual";

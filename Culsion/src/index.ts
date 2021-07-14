@@ -1,3 +1,4 @@
+import { CanvasElm } from "./engine/canvasElm/CanvasElm";
 import { World } from "./engine/World";
 import { registerCollisions } from "./entities/collisions";
 import { GameView } from "./view/GameView";
@@ -10,10 +11,19 @@ registerCollisions(world.collisionSystem.reactions);
 world.appendTo(document.body);
 world.startListen();
 
-if (location.hash == "#mapEditor") {
-    world.addElm(new MapEditor());
-} else {
-    world.addElm(new GameView());
+let currViewElm: CanvasElm | undefined;
+
+function navigateByHash() {
+    if (currViewElm) {
+        world.removeElm(currViewElm);
+    }
+
+    if (location.hash == "#mapEditor") {
+        currViewElm = new MapEditor();
+    } else {
+        currViewElm = new GameView();
+    }
+    world.addElm(currViewElm);
 }
 
 function requanf() {
@@ -21,7 +31,12 @@ function requanf() {
     requestAnimationFrame(requanf);
 }
 
+navigateByHash();
 requanf();
+
+addEventListener("hashchange", function () {
+    navigateByHash();
+});
 
 // @ts-ignore -- debug
 window.world = world;
