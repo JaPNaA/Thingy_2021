@@ -23,6 +23,7 @@ export class NPCWithDialog extends NPC {
     }
 
     public dispose() {
+        super.dispose();
         if (this.npcDialog && !this.npcDialog.closed) {
             this.world.removeElm(this.npcDialog);
         }

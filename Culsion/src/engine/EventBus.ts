@@ -61,8 +61,10 @@ export class EventBus {
     }
 
     public unsubscribe(name: string, handler: Handler | EventBus) {
-        const arr = this.map[name]!;
+        const arr = this.map[name];
+        if (!arr) { return; }
         removeElmFromArray(handler, arr);
+
         if (!arr.length) {
             this.map[name] = undefined;
             if (this.parentBus) {

@@ -191,6 +191,9 @@ System.register("engine/EventBus", ["engine/util/removeElmFromArray"], function 
                 }
                 unsubscribe(name, handler) {
                     const arr = this.map[name];
+                    if (!arr) {
+                        return;
+                    }
                     removeElmFromArray_1.removeElmFromArray(handler, arr);
                     if (!arr.length) {
                         this.map[name] = undefined;
@@ -1311,6 +1314,7 @@ System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/uti
                         X.drawImage(texture, xIndex * this.tileTextureSize, yIndex * this.tileTextureSize);
                     }
                     else {
+                        X.clearRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
                         X.fillStyle = this.data.getBlockColor(xIndex, yIndex);
                         X.fillRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
                     }
@@ -1622,6 +1626,7 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "settings"], func
                     super();
                     this.dialog = dialog;
                     this.rect = rect;
+                    this.closed = false;
                     this.index = 0;
                     this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
                 }
@@ -1644,6 +1649,7 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "settings"], func
                 advanceDialogHandler() {
                     this.index++;
                     if (this.dialog[this.index] === undefined) {
+                        this.closed = true;
                         this.world.removeElm(this);
                     }
                 }
@@ -1769,23 +1775,28 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
             NPCWithDialog = class NPCWithDialog extends NPC_1.NPC {
                 constructor() {
                     super(...arguments);
-                    this.dialogOpen = false;
+                    this.loadingDialog = false;
                 }
                 onCollision(other) {
                     if (!(other instanceof Player_1.Player)) {
                         return;
                     }
-                    if (this.dialogOpen) {
+                    if (this.loadingDialog) {
                         return;
                     }
-                    this.dialogOpen = true;
+                    if (this.npcDialog && !this.npcDialog.closed) {
+                        return;
+                    }
+                    this.loadingDialog = true;
                     dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
                         this.npcDialog = new NPCDialog_1.NPCDialog(dialog, new Rectangle_5.Rectangle(this.rect.x, this.rect.y, 500, 300));
                         this.world.addElm(this.npcDialog);
+                        this.loadingDialog = false;
                     });
                 }
                 dispose() {
-                    if (this.npcDialog) {
+                    super.dispose();
+                    if (this.npcDialog && !this.npcDialog.closed) {
                         this.world.removeElm(this.npcDialog);
                     }
                 }
@@ -2148,7 +2159,11 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                     this.rejPromise("Canceled by user");
                 }
                 trySubmit() {
-                    this.resPromise(this.getResponse());
+                    const response = this.getResponse();
+                    if (!response) {
+                        return;
+                    }
+                    this.resPromise(response);
                     this.elm.remove();
                 }
                 getResponse() {
@@ -2161,15 +2176,18 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                             }
                             response[key] = val;
                         }
-                        else if (options.type === "string") {
+                        else if (options.type === "text") {
                             const val = input.getValue();
                             if (!val) {
                                 return;
                             }
                             response[key] = val;
                         }
-                        else if (options.type === "boolean") {
+                        else if (options.type === "checkbox") {
                             response[key] = input.getValue();
+                        }
+                        else {
+                            console.warn("Unknown type", options.type);
                         }
                     }
                     return response;
@@ -2337,10 +2355,8 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                         .then(tileMapFile => {
                         this.tileMap = new TileMapEntity_2.TileMapEntity(tileMapFile);
                         this.overlay.setTileMap(this.tileMap.data);
-                        this.editorMapLayer = new MapEditorMapLayer_1.MapEditorMapLayer(this.tileMap, this.overlay);
-                        this.editorEntityJointLayer = new MapEditorEntityJointLayer_1.MapEditorEntityJointLayer(this.tileMap, this.overlay);
-                        this.addChild(this.editorMapLayer);
-                        this.addChild(this.editorEntityJointLayer);
+                        this.addChild(new MapEditorMapLayer_1.MapEditorMapLayer(this.tileMap, this.overlay));
+                        this.addChild(new MapEditorEntityJointLayer_1.MapEditorEntityJointLayer(this.tileMap, this.overlay));
                     });
                     this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
                     this.addChild(this.ghostPlayer);
@@ -2353,11 +2369,9 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                     this.world.htmlOverlay.elm.append(this.overlay);
                 }
                 dispose() {
-                    var _a, _b;
                     this.world.keyboard.removeKeydownHandler(settings_3.settings.keybindings.select, this.exportMapKeyHandler);
+                    super.dispose();
                     this.overlay.elm.remove();
-                    (_a = this.editorMapLayer) === null || _a === void 0 ? void 0 : _a.dispose();
-                    (_b = this.editorEntityJointLayer) === null || _b === void 0 ? void 0 : _b.dispose();
                 }
                 tick() {
                     super.tick();
