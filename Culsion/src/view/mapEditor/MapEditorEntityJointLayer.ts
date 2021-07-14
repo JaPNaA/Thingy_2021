@@ -26,7 +26,11 @@ export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
             const dy = cursorY - joint.y;
 
             if (dx * dx + dy * dy < jointRadius * jointRadius) {
-                this.overlay.editJoint(joint.joint);
+                if (this.world.mouse.rightDown) {
+                    this.tileMap.data.removeJoint(joint.joint);
+                } else {
+                    this.overlay.editJoint(joint.joint);
+                }
                 this.eventBus.stopPropagation();
             }
         }

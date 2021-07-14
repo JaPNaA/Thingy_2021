@@ -2230,7 +2230,12 @@ System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/C
                         const dx = cursorX - joint.x;
                         const dy = cursorY - joint.y;
                         if (dx * dx + dy * dy < jointRadius * jointRadius) {
-                            this.overlay.editJoint(joint.joint);
+                            if (this.world.mouse.rightDown) {
+                                this.tileMap.data.removeJoint(joint.joint);
+                            }
+                            else {
+                                this.overlay.editJoint(joint.joint);
+                            }
                             this.eventBus.stopPropagation();
                         }
                     }
