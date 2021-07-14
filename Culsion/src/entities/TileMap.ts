@@ -1,115 +1,68 @@
-import { PrerenderCanvas } from "../engine/PrerenderCanvas";
-import { Rectangle } from "../engine/util/Rectangle";
-import { World } from "../engine/World";
 import { resourceFetcher } from "../resources/resourceFetcher";
 import { BlockType, TileMapFile, TileMapJoint } from "../resources/TileMapFile";
-import { collisions } from "./collisions";
-import { Entity } from "./Entity";
 
-export class TileMap extends Entity {
-    public collisionType = collisions.types.map;
-    public readonly tileSize = 48;
+export class TileMap {
+    public width: number;
+    public height: number;
+
+    public onMinorEdit = new EventHandler<[number, number]>();
+    public onMajorEdit = new EventHandler();
 
     private map: number[][];
     private blockTypes: BlockType[];
     private textures: (HTMLImageElement | null)[] = [];
-    private width: number;
-    private height: number;
 
     private file: TileMapFile;
-    private prerender: PrerenderCanvas;
 
-    private readonly tileTextureSize = 12;
+    constructor(tileMapFile: TileMapFile | ArrayBuffer) {
+        if (tileMapFile instanceof TileMapFile) {
+            this.file = tileMapFile;
+        } else {
+            this.file = TileMapFile.fromBuffer(tileMapFile);
+        }
 
-    constructor(tileMapFile: TileMapFile) {
-        super();
-
-        this.file = tileMapFile;
-        this.width = tileMapFile.width;
-        this.height = tileMapFile.height;
-        this.rect.height = tileMapFile.height * this.tileSize;
-        this.rect.width = tileMapFile.width * this.tileSize;
+        this.width = this.file.width;
+        this.height = this.file.height;
 
         this.map = [];
-        for (let y = 0; y < tileMapFile.height; y++) {
+        for (let y = 0; y < this.file.height; y++) {
             const row = [];
 
-            for (let x = 0; x < tileMapFile.width; x++) {
-                row[x] = tileMapFile.mapData[y * tileMapFile.width + x];
+            for (let x = 0; x < this.file.width; x++) {
+                row[x] = this.file.mapData[y * this.file.width + x];
             }
 
             this.map[y] = row;
         }
 
-        this.blockTypes = tileMapFile.jsonData.blockTypes || [];
-        this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
-
-        this.loadTextures().then(() => this.updatePrerender());
+        this.blockTypes = this.file.jsonData.blockTypes || [];
     }
 
-    public setWorld(world: World) {
-        super.setWorld(world);
+    public getBlockTexture(xIndex: number, yIndex: number): HTMLImageElement | null {
+        return this.textures[this.map[yIndex][xIndex]];
     }
 
-    public draw(): void {
-        this.world.canvas.X.imageSmoothingEnabled = false;
-        this.prerender.drawToContext(this.world.canvas.X, this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+    public getBlockColor(xIndex: number, yIndex: number): string {
+        return this.blockTypes[this.map[yIndex][xIndex]].color;
     }
 
-    public updatePrerender() {
-        this.prerender.resize(this.width * this.tileTextureSize, this.height * this.tileTextureSize);
-        this.prerender.clear();
-
-        const X = this.prerender.X;
-        X.imageSmoothingEnabled = false;
-
-        for (let y = 0; y < this.height; y++) {
-            for (let x = 0; x < this.width; x++) {
-                const blockTypeIndex = this.map[y][x];
-                if (this.textures[blockTypeIndex]) {
-                    X.drawImage(
-                        this.textures[blockTypeIndex]!,
-                        x * this.tileTextureSize, y * this.tileTextureSize,
-                    );
-                } else {
-                    X.fillStyle = this.blockTypes[blockTypeIndex].color;
-                    X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
-                }
-            }
-        }
+    public isSolid(xIndex: number, yIndex: number): boolean {
+        return xIndex < this.width && xIndex >= 0 &&
+            yIndex < this.height && yIndex >= 0 &&
+            this.blockTypes[this.map[yIndex][xIndex]].solid;
     }
 
-    public updatePrerenderTile(xIndex: number, yIndex: number) {
-        const X = this.prerender.X;
-        X.imageSmoothingEnabled = false;
-
-        const blockTypeIndex = this.map[yIndex][xIndex];
-        if (this.textures[blockTypeIndex]) {
-            X.drawImage(
-                this.textures[blockTypeIndex]!,
-                xIndex * this.tileTextureSize, yIndex * this.tileTextureSize,
-            );
-        } else {
-            X.clearRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
-            X.fillStyle = this.blockTypes[blockTypeIndex].color;
-            X.fillRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
-        }
-    }
-
-    public setBlock(x: number, y: number, block: number) {
-        const xIndex = Math.floor((x - this.rect.x) / this.tileSize);
-        const yIndex = Math.floor((y - this.rect.y) / this.tileSize);
-
+    public setBlockByIndex(xIndex: number, yIndex: number, block: number): void {
         if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
         this.map[yIndex][xIndex] = block;
-        this.updatePrerenderTile(xIndex, yIndex);
+        this.onMinorEdit.dispatch([xIndex, yIndex]);
     }
 
-    public _getJoints(): readonly TileMapJoint[] {
+    public getJoints(): readonly TileMapJoint[] {
         return this.file.jsonData.joints || [];
     }
 
-    public _getJointById(id: number): TileMapJoint | undefined {
+    public getJointById(id: number): TileMapJoint | undefined {
         if (!this.file.jsonData.joints) { return; }
         for (const joint of this.file.jsonData.joints) {
             if (joint.id === id) { return joint; }
@@ -120,15 +73,7 @@ export class TileMap extends Entity {
         return this.blockTypes;
     }
 
-    public getWidth(): number {
-        return this.width;
-    }
-
-    public getHeight(): number {
-        return this.height;
-    }
-
-    public resize(newWidth: number, newHeight: number) {
+    public resizeMap(newWidth: number, newHeight: number): void {
         for (let y = 0; y < this.height; y++) {
             for (let x = this.width; x < newWidth; x++) {
                 this.map[y][x] = 0;
@@ -146,12 +91,11 @@ export class TileMap extends Entity {
 
         this.width = newWidth;
         this.height = newHeight;
-        this.rect.width = this.width * this.tileSize;
-        this.rect.height = this.height * this.tileSize;
-        this.updatePrerender();
+
+        this.onMajorEdit.dispatch();
     }
 
-    public exportTileMapFile(): TileMapFile {
+    public exportToFile(): TileMapFile {
         const width = this.map[0].length;
         const height = this.map.length;
         const file = TileMapFile.create(width, height);
@@ -167,104 +111,7 @@ export class TileMap extends Entity {
         return file;
     }
 
-    public getCollisionTiles(x: number, y: number): Rectangle[] {
-        const xIndex = Math.floor((x - this.rect.x) / this.tileSize);
-        const yIndex = Math.floor((y - this.rect.y) / this.tileSize);
-
-        const rects = [];
-
-        let capturedTopLeft = false;
-        let capturedTopRight = false;
-        let capturedBottomLeft = false;
-        let capturedBottomRight = false;
-
-        if (this.isBlock(xIndex, yIndex)) {
-            rects.push(this.rectFromIndexes(xIndex, yIndex));
-        }
-
-        if (this.isBlock(xIndex - 1, yIndex)) {
-            let rect = this.rectFromIndexes(xIndex - 1, yIndex);
-            if (this.isBlock(xIndex - 1, yIndex - 1)) {
-                rect.y -= this.tileSize;
-                rect.height += this.tileSize;
-                capturedTopLeft = true;
-            }
-            if (this.isBlock(xIndex - 1, yIndex + 1)) {
-                rect.height += this.tileSize;
-                capturedBottomLeft = true;
-            }
-            rects.push(rect);
-        }
-
-        if (this.isBlock(xIndex + 1, yIndex)) {
-            let rect = this.rectFromIndexes(xIndex + 1, yIndex);
-            if (this.isBlock(xIndex + 1, yIndex - 1)) {
-                rect.y -= this.tileSize;
-                rect.height += this.tileSize;
-                capturedTopRight = true;
-            }
-            if (this.isBlock(xIndex + 1, yIndex + 1)) {
-                rect.height += this.tileSize;
-                capturedBottomRight = true;
-            }
-            rects.push(rect);
-        }
-
-        if (this.isBlock(xIndex, yIndex + 1)) {
-            let rect = this.rectFromIndexes(xIndex, yIndex + 1);
-            if (this.isBlock(xIndex - 1, yIndex + 1)) {
-                rect.x -= this.tileSize;
-                rect.width += this.tileSize;
-                capturedBottomLeft = true;
-            }
-            if (this.isBlock(xIndex + 1, yIndex + 1)) {
-                rect.width += this.tileSize;
-                capturedBottomRight = true;
-            }
-            rects.push(rect);
-        }
-
-        if (this.isBlock(xIndex, yIndex - 1)) {
-            let rect = this.rectFromIndexes(xIndex, yIndex - 1);
-            if (this.isBlock(xIndex - 1, yIndex - 1)) {
-                rect.x -= this.tileSize;
-                rect.width += this.tileSize;
-                capturedTopLeft = true;
-            }
-            if (this.isBlock(xIndex + 1, yIndex - 1)) {
-                rect.width += this.tileSize;
-                capturedTopRight = true;
-            }
-            rects.push(rect);
-        }
-
-        if (!capturedBottomLeft && this.isBlock(xIndex - 1, yIndex + 1)) {
-            rects.push(this.rectFromIndexes(xIndex - 1, yIndex + 1));
-        }
-        if (!capturedBottomRight && this.isBlock(xIndex + 1, yIndex + 1)) {
-            rects.push(this.rectFromIndexes(xIndex + 1, yIndex + 1));
-        }
-        if (!capturedTopLeft && this.isBlock(xIndex - 1, yIndex - 1)) {
-            rects.push(this.rectFromIndexes(xIndex - 1, yIndex - 1));
-        }
-        if (!capturedTopRight && this.isBlock(xIndex + 1, yIndex - 1)) {
-            rects.push(this.rectFromIndexes(xIndex + 1, yIndex - 1));
-        }
-
-        return rects;
-    }
-
-    private isBlock(xIndex: number, yIndex: number) {
-        return xIndex < this.width && xIndex >= 0 &&
-            yIndex < this.height && yIndex >= 0 &&
-            this.blockTypes[this.map[yIndex][xIndex]].solid;
-    }
-
-    private rectFromIndexes(xIndex: number, yIndex: number): Rectangle {
-        return new Rectangle(xIndex * this.tileSize + this.rect.x, yIndex * this.tileSize + this.rect.y, this.tileSize, this.tileSize);
-    }
-
-    private async loadTextures() {
+    public async _loadTextures() {
         const proms = [];
 
         for (let i = 0; i < this.blockTypes.length; i++) {
@@ -280,5 +127,32 @@ export class TileMap extends Entity {
         }
 
         await Promise.all(proms);
+    }
+}
+
+
+type EventHandlerFunction<T> = (data: T) => void;
+
+class EventHandler<T = void> {
+    handlers: EventHandlerFunction<T>[];
+
+    constructor() {
+        this.handlers = [];
+    }
+
+    public addHandler(handler: EventHandlerFunction<T>) {
+        this.handlers.push(handler);
+    }
+
+    public removeHandler(handler: EventHandlerFunction<T>) {
+        const index = this.handlers.indexOf(handler);
+        if (index < 0) { throw new Error("Can't remove handler that doesn't exist"); }
+        this.handlers.splice(index, 1);
+    }
+
+    public dispatch(data: T): void {
+        for (const handler of this.handlers) {
+            handler(data);
+        }
     }
 }

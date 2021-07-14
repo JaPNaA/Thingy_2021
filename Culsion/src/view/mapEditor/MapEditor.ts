@@ -1,16 +1,15 @@
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { World } from "../../engine/World";
 import { GhostPlayer } from "../../entities/GhostPlayer";
-import { TileMap } from "../../entities/TileMap";
+import { TileMapEntity } from "../../entities/TileMapEntity";
 import { resourceFetcher } from "../../resources/resourceFetcher";
-import { TileMapFile } from "../../resources/TileMapFile";
 import { settings } from "../../settings";
 import { MapEditorEntityJointLayer } from "./MapEditorEntityJointLayer";
 import { MapEditorMapLayer } from "./MapEditorMapLayer";
 import { MapEditorOverlay } from "./MapEditorOverlay";
 
 export class MapEditor extends ParentCanvasElm {
-    private tileMap?: TileMap;
+    private tileMap?: TileMapEntity;
     private ghostPlayer = new GhostPlayer();
 
     private overlay = new MapEditorOverlay();
@@ -20,8 +19,8 @@ export class MapEditor extends ParentCanvasElm {
 
         resourceFetcher.fetchRaw("assets/" + prompt("Open map name") + ".tmap")
             .then(tileMapFile => {
-                this.tileMap = new TileMap(TileMapFile.fromBuffer(tileMapFile));
-                this.overlay.setTileMap(this.tileMap);
+                this.tileMap = new TileMapEntity(tileMapFile);
+                this.overlay.setTileMap(this.tileMap.data);
 
                 const mapLayer = new MapEditorMapLayer(this.tileMap, this.overlay);
                 const entityJointLayer = new MapEditorEntityJointLayer(this.tileMap, this.overlay);
@@ -63,8 +62,7 @@ export class MapEditor extends ParentCanvasElm {
 
     public exportMapKeyHandler() {
         if (!this.tileMap) { return; }
-        const file = this.tileMap.exportTileMapFile();
-        const blob = file.encode();
+        const blob = this.tileMap.data.exportToFile().encode();
         this.downloadBlob(blob);
     }
 

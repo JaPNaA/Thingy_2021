@@ -1,12 +1,12 @@
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
-import { TileMap } from "../../entities/TileMap";
+import { TileMapEntity } from "../../entities/TileMapEntity";
 import { MapEditorOverlay } from "./MapEditorOverlay";
 
 export class MapEditorMapLayer extends ParentCanvasElm {
     private leftDown = false;
     private rightDown = false;
 
-    constructor(private tileMap: TileMap, private overlay: MapEditorOverlay) {
+    constructor(private tileMap: TileMapEntity, private overlay: MapEditorOverlay) {
         super();
         this.addChild(tileMap);
 

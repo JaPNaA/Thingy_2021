@@ -27,7 +27,7 @@ export class MapEditorOverlay extends Component {
         this.tileMap = tileMap;
 
         this.setBlockTypes(tileMap.getBlockTypes());
-        this.setCanvasSize(tileMap.getWidth(), tileMap.getHeight());
+        this.setCanvasSize(tileMap.width, tileMap.height);
     }
 
     public setJoint(joint: TileMapJoint) {
@@ -89,7 +89,7 @@ export class MapEditorOverlay extends Component {
         const newHeight = parseInt(prompt("New height")!);
         if (isNaN(newHeight)) { return; }
 
-        this.tileMap.resize(newWidth, newHeight);
+        this.tileMap.resizeMap(newWidth, newHeight);
         this.setCanvasSize(newWidth, newHeight);
     }
 }

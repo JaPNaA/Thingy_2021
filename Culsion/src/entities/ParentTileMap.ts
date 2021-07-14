@@ -4,16 +4,16 @@ import { Rectangle } from "../engine/util/Rectangle";
 import { removeElmFromArray } from "../engine/util/removeElmFromArray";
 import { resourceFetcher } from "../resources/resourceFetcher";
 import { TileMapFile, TileMapJoint } from "../resources/TileMapFile";
-import { TileMap } from "./TileMap";
+import { TileMapEntity } from "./TileMapEntity";
 
 export class ParentTileMap extends ParentCanvasElm {
     private joinableJoints: JointRecord[] = [];
     private unjoinableJoints: JointRecord[] = [];
-    private activeMaps: TileMap[] = [];
+    private activeMaps: TileMapEntity[] = [];
 
     constructor(mapFile: TileMapFile, private view: Rectangle) {
         super();
-        this.addTileMap(new TileMap(mapFile));
+        this.addTileMap(new TileMapEntity(mapFile));
         console.log(this);
     }
 
@@ -27,8 +27,8 @@ export class ParentTileMap extends ParentCanvasElm {
 
             resourceFetcher.fetchRaw("assets/" + jointRecord.joint.toMap + ".tmap")
                 .then(buffer => {
-                    const tileMap = new TileMap(TileMapFile.fromBuffer(buffer));
-                    const newJoint = tileMap._getJointById(jointRecord.joint.toId);
+                    const tileMap = new TileMapEntity(TileMapFile.fromBuffer(buffer));
+                    const newJoint = tileMap.data.getJointById(jointRecord.joint.toId);
                     if (!newJoint) { throw new Error("Failed to join joints -- could not find target joint."); }
 
                     const dx = (jointRecord.joint.x - newJoint.x) * jointRecord.map.tileSize + jointRecord.map.rect.x;
@@ -52,8 +52,8 @@ export class ParentTileMap extends ParentCanvasElm {
         }
     }
 
-    private addTileMap(tileMap: TileMap, excludeJoint?: TileMapJoint): JointRecord | undefined {
-        const joints = tileMap._getJoints();
+    private addTileMap(tileMap: TileMapEntity, excludeJoint?: TileMapJoint): JointRecord | undefined {
+        const joints = tileMap.data.getJoints();
         let excludedJointRecord;
 
         for (const joint of joints) {
@@ -91,7 +91,7 @@ export class ParentTileMap extends ParentCanvasElm {
         this.joinableJoints.push(joint);
     }
 
-    private removeMap(map: TileMap) {
+    private removeMap(map: TileMapEntity) {
         removeElmFromArray(map, this.activeMaps);
 
         for (let i = this.joinableJoints.length - 1; i >= 0; i--) {
@@ -116,7 +116,7 @@ export class ParentTileMap extends ParentCanvasElm {
 
 interface JointRecord {
     joint: TileMapJoint;
-    map: TileMap;
-    toMap?: TileMap;
+    map: TileMapEntity;
+    toMap?: TileMapEntity;
     location: Rectangle;
 }

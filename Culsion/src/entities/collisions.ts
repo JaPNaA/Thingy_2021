@@ -4,7 +4,7 @@ import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding
 import { MovingRectangle } from "../engine/util/MovingRectangle";
 import { Rectangle } from "../engine/util/Rectangle";
 import { Entity } from "./Entity";
-import { TileMap } from "./TileMap";
+import { TileMapEntity } from "./TileMapEntity";
 
 export const collisions = {
     types: {
@@ -25,7 +25,7 @@ export function registerCollisions(collisionReactionMap: CollisionReactionMap) {
 
     collisionReactionMap.setCollisionReaction(
         collisions.types.map, collisions.types.moving,
-        function (map: Hitbox<TileMap>, moving: Hitbox<Entity>) {
+        function (map: Hitbox<TileMapEntity>, moving: Hitbox<Entity>) {
             const closestBlocks = map.elm.getCollisionTiles(
                 moving.rectangle.x + moving.rectangle.width / 2,
                 moving.rectangle.y + moving.rectangle.height / 2

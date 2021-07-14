@@ -1,17 +1,17 @@
 import { CanvasElmWithEventBus } from "../../engine/canvasElm/CanvasElmWithEventBus";
-import { TileMap } from "../../entities/TileMap";
+import { TileMapEntity } from "../../entities/TileMapEntity";
 import { TileMapJoint } from "../../resources/TileMapFile";
 import { MapEditorOverlay } from "./MapEditorOverlay";
 
 export class MapEditorEntityJointLayer extends CanvasElmWithEventBus {
     private joints: JointRecord[] = [];
 
-    constructor(private tileMap: TileMap, private overlay: MapEditorOverlay) {
+    constructor(private tileMap: TileMapEntity, private overlay: MapEditorOverlay) {
         super();
 
         this.eventBus.subscribe("mousedown", () => this.mousedownHandler());
 
-        for (const joint of this.tileMap._getJoints()) {
+        for (const joint of this.tileMap.data.getJoints()) {
             this.joints.push({
                 joint: joint,
                 x: this.tileMap.tileSize * (joint.x + 0.5),
