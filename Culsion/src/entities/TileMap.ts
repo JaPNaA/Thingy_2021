@@ -73,6 +73,11 @@ export class TileMap {
         return this.blockTypes;
     }
 
+    public addBlockType(blockType: BlockType) {
+        this.blockTypes.push(blockType);
+        this._loadTextures();
+    }
+
     public resizeMap(newWidth: number, newHeight: number): void {
         for (let y = 0; y < this.height; y++) {
             for (let x = this.width; x < newWidth; x++) {
@@ -106,7 +111,10 @@ export class TileMap {
             }
         }
 
-        file.jsonData = this.file.jsonData;
+        file.jsonData = {
+            blockTypes: this.blockTypes,
+            joints: this.file.jsonData.joints
+        };
 
         return file;
     }
