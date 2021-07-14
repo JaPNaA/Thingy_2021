@@ -74,6 +74,7 @@ export class TileMapEntity extends Entity {
                 xIndex * this.tileTextureSize, yIndex * this.tileTextureSize,
             );
         } else {
+            X.clearRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
             X.fillStyle = this.data.getBlockColor(xIndex, yIndex);
             X.fillRect(xIndex * this.tileTextureSize, yIndex * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
         }

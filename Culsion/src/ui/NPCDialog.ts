@@ -4,6 +4,8 @@ import { World } from "../engine/World";
 import { settings } from "../settings";
 
 export class NPCDialog extends CanvasElm {
+    public closed = false;
+
     private index = 0;
 
     constructor(private dialog: string[], private rect: Rectangle) {
@@ -35,6 +37,7 @@ export class NPCDialog extends CanvasElm {
     private advanceDialogHandler() {
         this.index++;
         if (this.dialog[this.index] === undefined) {
+            this.closed = true;
             this.world.removeElm(this);
         }
     }
