@@ -41,6 +41,9 @@ export class ParentTileMap extends ParentCanvasElm {
                     record.toMap = jointRecord.map;
                     jointRecord.toMap = record.map;
                 });
+
+            // break to prevent iterating through array while modifying it (through setJointRecordUnjoinable)
+            break;
         }
 
         for (const jointRecord of this.unjoinableJoints) {
@@ -49,6 +52,7 @@ export class ParentTileMap extends ParentCanvasElm {
                 isRectanglesColliding(jointRecord.map.rect, this.view)
             ) { continue; }
             this.removeMap(jointRecord.map);
+            break;
         }
     }
 

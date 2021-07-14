@@ -1851,6 +1851,8 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
                             record.toMap = jointRecord.map;
                             jointRecord.toMap = record.map;
                         });
+                        // break to prevent iterating through array while modifying it (through setJointRecordUnjoinable)
+                        break;
                     }
                     for (const jointRecord of this.unjoinableJoints) {
                         if (isRectanglesColliding_3.isRectanglesColliding(jointRecord.location, this.view) ||
@@ -1858,6 +1860,7 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
                             continue;
                         }
                         this.removeMap(jointRecord.map);
+                        break;
                     }
                 }
                 addTileMap(tileMap, excludeJoint) {
