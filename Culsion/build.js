@@ -573,6 +573,8 @@ System.register("engine/HTMLOverlay", ["engine/elements"], function (exports_13,
                 constructor() {
                     super("HTMLOverlay");
                     this.elm.on("mousedown", e => e.stopPropagation());
+                    this.elm.on("keydown", e => e.stopPropagation());
+                    this.elm.on("keyup", e => e.stopPropagation());
                 }
             };
             exports_13("HTMLOverlay", HTMLOverlay);
@@ -1078,12 +1080,15 @@ System.register("resources/resourceFetcher", [], function (exports_21, context_2
         }
     };
 });
-System.register("entities/TileMap", ["resources/resourceFetcher", "resources/TileMapFile"], function (exports_22, context_22) {
+System.register("entities/TileMap", ["engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile"], function (exports_22, context_22) {
     "use strict";
-    var resourceFetcher_1, TileMapFile_1, TileMap, EventHandler;
+    var removeElmFromArray_3, resourceFetcher_1, TileMapFile_1, TileMap, EventHandler;
     var __moduleName = context_22 && context_22.id;
     return {
         setters: [
+            function (removeElmFromArray_3_1) {
+                removeElmFromArray_3 = removeElmFromArray_3_1;
+            },
             function (resourceFetcher_1_1) {
                 resourceFetcher_1 = resourceFetcher_1_1;
             },
@@ -1094,7 +1099,8 @@ System.register("entities/TileMap", ["resources/resourceFetcher", "resources/Til
         execute: function () {
             TileMap = class TileMap {
                 constructor(tileMapFile) {
-                    this.onMinorEdit = new EventHandler();
+                    this.onTileEdit = new EventHandler();
+                    this.onJointEdit = new EventHandler();
                     this.onMajorEdit = new EventHandler();
                     this.textures = [];
                     if (tileMapFile instanceof TileMapFile_1.TileMapFile) {
@@ -1114,6 +1120,7 @@ System.register("entities/TileMap", ["resources/resourceFetcher", "resources/Til
                         this.map[y] = row;
                     }
                     this.blockTypes = this.file.jsonData.blockTypes || [];
+                    this.joints = this.file.jsonData.joints || [];
                 }
                 getBlockTexture(xIndex, yIndex) {
                     return this.textures[this.map[yIndex][xIndex]];
@@ -1131,10 +1138,18 @@ System.register("entities/TileMap", ["resources/resourceFetcher", "resources/Til
                         return;
                     }
                     this.map[yIndex][xIndex] = block;
-                    this.onMinorEdit.dispatch([xIndex, yIndex]);
+                    this.onTileEdit.dispatch([xIndex, yIndex]);
                 }
                 getJoints() {
                     return this.file.jsonData.joints || [];
+                }
+                removeJoint(joint) {
+                    removeElmFromArray_3.removeElmFromArray(joint, this.joints);
+                    this.onJointEdit.dispatch();
+                }
+                addJoint(joint) {
+                    this.joints.push(joint);
+                    this.onJointEdit.dispatch();
                 }
                 getJointById(id) {
                     if (!this.file.jsonData.joints) {
@@ -1148,6 +1163,10 @@ System.register("entities/TileMap", ["resources/resourceFetcher", "resources/Til
                 }
                 getBlockTypes() {
                     return this.blockTypes;
+                }
+                addBlockType(blockType) {
+                    this.blockTypes.push(blockType);
+                    this._loadTextures();
                 }
                 resizeMap(newWidth, newHeight) {
                     for (let y = 0; y < this.height; y++) {
@@ -1177,7 +1196,10 @@ System.register("entities/TileMap", ["resources/resourceFetcher", "resources/Til
                             file.mapData[y * width + x] = this.map[y][x];
                         }
                     }
-                    file.jsonData = this.file.jsonData;
+                    file.jsonData = {
+                        blockTypes: this.blockTypes,
+                        joints: this.joints
+                    };
                     return file;
                 }
                 async _loadTextures() {
@@ -1250,7 +1272,7 @@ System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/uti
                     this.tileTextureSize = 12;
                     this.data = new TileMap_1.TileMap(tileMapFile);
                     this.prerender = new PrerenderCanvas_1.PrerenderCanvas(this.rect.width, this.rect.height);
-                    this.data.onMinorEdit.addHandler(pos => this.updatePrerenderTile(pos[0], pos[1]));
+                    this.data.onTileEdit.addHandler(pos => this.updatePrerenderTile(pos[0], pos[1]));
                     this.data.onMajorEdit.addHandler(() => this.updatePrerender());
                     this.data._loadTextures().then(() => this.updatePrerender());
                 }
@@ -1467,12 +1489,12 @@ System.register("entities/collisions", ["engine/collision/isRectanglesColliding"
 });
 System.register("engine/canvasElm/ParentCanvasElm", ["engine/util/removeElmFromArray", "engine/canvasElm/CanvasElmWithEventBus"], function (exports_25, context_25) {
     "use strict";
-    var removeElmFromArray_3, CanvasElmWithEventBus_2, ParentCanvasElm;
+    var removeElmFromArray_4, CanvasElmWithEventBus_2, ParentCanvasElm;
     var __moduleName = context_25 && context_25.id;
     return {
         setters: [
-            function (removeElmFromArray_3_1) {
-                removeElmFromArray_3 = removeElmFromArray_3_1;
+            function (removeElmFromArray_4_1) {
+                removeElmFromArray_4 = removeElmFromArray_4_1;
             },
             function (CanvasElmWithEventBus_2_1) {
                 CanvasElmWithEventBus_2 = CanvasElmWithEventBus_2_1;
@@ -1515,7 +1537,7 @@ System.register("engine/canvasElm/ParentCanvasElm", ["engine/util/removeElmFromA
                     }
                 }
                 removeChild(child) {
-                    removeElmFromArray_3.removeElmFromArray(child, this.children);
+                    removeElmFromArray_4.removeElmFromArray(child, this.children);
                     child.dispose();
                 }
             };
@@ -1770,7 +1792,7 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
 });
 System.register("entities/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile", "entities/TileMapEntity"], function (exports_32, context_32) {
     "use strict";
-    var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_6, removeElmFromArray_4, resourceFetcher_3, TileMapFile_2, TileMapEntity_1, ParentTileMap;
+    var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_6, removeElmFromArray_5, resourceFetcher_3, TileMapFile_2, TileMapEntity_1, ParentTileMap;
     var __moduleName = context_32 && context_32.id;
     return {
         setters: [
@@ -1783,8 +1805,8 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
             function (Rectangle_6_1) {
                 Rectangle_6 = Rectangle_6_1;
             },
-            function (removeElmFromArray_4_1) {
-                removeElmFromArray_4 = removeElmFromArray_4_1;
+            function (removeElmFromArray_5_1) {
+                removeElmFromArray_5 = removeElmFromArray_5_1;
             },
             function (resourceFetcher_3_1) {
                 resourceFetcher_3 = resourceFetcher_3_1;
@@ -1860,15 +1882,15 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
                     return excludedJointRecord;
                 }
                 setJointRecordUnjoinable(joint) {
-                    removeElmFromArray_4.removeElmFromArray(joint, this.joinableJoints);
+                    removeElmFromArray_5.removeElmFromArray(joint, this.joinableJoints);
                     this.unjoinableJoints.push(joint);
                 }
                 setJointRecordJoinable(joint) {
-                    removeElmFromArray_4.removeElmFromArray(joint, this.unjoinableJoints);
+                    removeElmFromArray_5.removeElmFromArray(joint, this.unjoinableJoints);
                     this.joinableJoints.push(joint);
                 }
                 removeMap(map) {
-                    removeElmFromArray_4.removeElmFromArray(map, this.activeMaps);
+                    removeElmFromArray_5.removeElmFromArray(map, this.activeMaps);
                     for (let i = this.joinableJoints.length - 1; i >= 0; i--) {
                         const joint = this.joinableJoints[i];
                         if (joint.map === map) {
@@ -1963,7 +1985,7 @@ System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player
 });
 System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function (exports_35, context_35) {
     "use strict";
-    var elements_2, MapEditorOverlay;
+    var elements_2, MapEditorOverlay, DialogBoxForm;
     var __moduleName = context_35 && context_35.id;
     return {
         setters: [
@@ -1982,22 +2004,24 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                     this.canvasSizeElm = new elements_2.Elm().class("canvasSize")
                         .on("click", () => this.openChangeMapSizeDialog())
                         .appendTo(this.elm);
-                    this.jointEditor = new elements_2.Elm().class("jointEditor", "hidden")
-                        .appendTo(this.elm);
                 }
                 setTileMap(tileMap) {
                     this.tileMap = tileMap;
                     this.setBlockTypes(tileMap.getBlockTypes());
                     this.setCanvasSize(tileMap.width, tileMap.height);
                 }
-                setJoint(joint) {
-                    this.jointEditor.removeClass("hidden");
-                    this.jointEditor.replaceContents(new elements_2.Elm("h3").append("Joint: "), new elements_2.Elm().append("pos: (", joint.x, ", ", joint.y, ")"), new elements_2.Elm().append("id: ", joint.id), new elements_2.Elm().append("toMap: ", joint.toMap), new elements_2.Elm().append("toId: ", joint.toId));
-                }
-                unsetJoint() {
-                    this.jointEditor.class("hidden");
+                editJoint(joint) {
+                    DialogBoxForm.createFilledForm(this.elm, joint)
+                        .then(updated => {
+                        if (!this.tileMap) {
+                            return;
+                        }
+                        this.tileMap.removeJoint(joint);
+                        this.tileMap.addJoint(updated);
+                    });
                 }
                 setBlockTypes(blockTypes) {
+                    this.blockTypesElm.clear();
                     for (let i = 0; i < blockTypes.length; i++) {
                         const blockType = blockTypes[i];
                         let elm;
@@ -2014,6 +2038,19 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                         this.blockTypesElm.append(elm);
                         this.blockTypeElms[i] = elm;
                     }
+                    this.blockTypesElm.append(new elements_2.Elm("div").append("+").on("click", () => {
+                        DialogBoxForm.createEmptyForm(this.elm, {
+                            color: "string",
+                            texture: "string",
+                            solid: "boolean"
+                        }).then(response => {
+                            if (!this.tileMap) {
+                                return;
+                            }
+                            this.tileMap.addBlockType(response);
+                            this.setBlockTypes(this.tileMap.getBlockTypes());
+                        });
+                    }));
                     this.selectBlock(this.selectedBlock);
                 }
                 selectBlock(index) {
@@ -2042,6 +2079,100 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                 }
             };
             exports_35("MapEditorOverlay", MapEditorOverlay);
+            DialogBoxForm = class DialogBoxForm extends elements_2.Component {
+                constructor() {
+                    super("dialogBox");
+                    this.inputsElm = new elements_2.Elm();
+                    this.inputsMap = new Map();
+                    this.elm.class("dialogBox", "form");
+                    this.elm.append(this.inputsElm, new elements_2.Elm().append(new elements_2.Elm("button").append("Cancel")
+                        .on("click", () => {
+                        this.cancel();
+                    }), new elements_2.Elm("button").append("Submit")
+                        .on("click", () => {
+                        this.trySubmit();
+                    })));
+                    this.reponsePromise = new Promise((res, rej) => {
+                        this.resPromise = res;
+                        this.rejPromise = rej;
+                    });
+                }
+                static async createEmptyForm(parent, fields) {
+                    const keys = Object.keys(fields);
+                    const dialogBoxForm = new DialogBoxForm();
+                    for (const key of keys) {
+                        dialogBoxForm.addInput(key, {
+                            type: DialogBoxForm.typeToInputType[fields[key]]
+                        });
+                    }
+                    dialogBoxForm.appendTo(parent);
+                    return dialogBoxForm.reponsePromise;
+                }
+                static async createFilledForm(parent, fields) {
+                    const keys = Object.keys(fields);
+                    const dialogBoxForm = new DialogBoxForm();
+                    for (const key of keys) {
+                        dialogBoxForm.addInput(key, {
+                            type: typeof fields[key],
+                            default: fields[key]
+                        });
+                    }
+                    dialogBoxForm.appendTo(parent);
+                    return dialogBoxForm.reponsePromise;
+                }
+                addInput(key, options) {
+                    const input = new elements_2.InputElm().setType(options.type);
+                    if (options.default !== undefined) {
+                        input.setValue(options.default);
+                    }
+                    input.on("keydown", e => {
+                        if (e.code === "Enter") {
+                            this.trySubmit();
+                        }
+                        else if (e.code === "Escape") {
+                            this.cancel();
+                        }
+                    });
+                    this.inputsElm.append(new elements_2.Elm("label").class("field").append(key, ": ", input));
+                    this.inputsMap.set(key, [input, options]);
+                }
+                cancel() {
+                    this.elm.remove();
+                    this.rejPromise("Canceled by user");
+                }
+                trySubmit() {
+                    this.resPromise(this.getResponse());
+                    this.elm.remove();
+                }
+                getResponse() {
+                    const response = {};
+                    for (const [key, [input, options]] of this.inputsMap) {
+                        if (options.type === "number") {
+                            const val = parseFloat(input.getValue());
+                            if (isNaN(val)) {
+                                return;
+                            }
+                            response[key] = val;
+                        }
+                        else if (options.type === "string") {
+                            const val = input.getValue();
+                            if (!val) {
+                                return;
+                            }
+                            response[key] = val;
+                        }
+                        else if (options.type === "boolean") {
+                            response[key] = input.getValue();
+                        }
+                    }
+                    return response;
+                }
+            };
+            DialogBoxForm.typeToInputType = {
+                number: "number",
+                string: "text",
+                boolean: "checkbox"
+            };
         }
     };
 });
@@ -2063,24 +2194,18 @@ System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/C
                     this.overlay = overlay;
                     this.joints = [];
                     this.eventBus.subscribe("mousedown", () => this.mousedownHandler());
-                    for (const joint of this.tileMap.data.getJoints()) {
-                        this.joints.push({
-                            joint: joint,
-                            x: this.tileMap.tileSize * (joint.x + 0.5),
-                            y: this.tileMap.tileSize * (joint.y + 0.5)
-                        });
-                    }
+                    this.updateJointRecords();
+                    this.tileMap.data.onJointEdit.addHandler(() => this.updateJointRecords());
                 }
                 mousedownHandler() {
                     const jointRadius = this.tileMap.tileSize / 4;
-                    this.overlay.unsetJoint();
                     for (const joint of this.joints) {
                         const cursorX = this.world.camera.clientXToWorld(this.world.mouse.x);
                         const cursorY = this.world.camera.clientYToWorld(this.world.mouse.y);
                         const dx = cursorX - joint.x;
                         const dy = cursorY - joint.y;
                         if (dx * dx + dy * dy < jointRadius * jointRadius) {
-                            this.overlay.setJoint(joint.joint);
+                            this.overlay.editJoint(joint.joint);
                             this.eventBus.stopPropagation();
                         }
                     }
@@ -2093,6 +2218,16 @@ System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/C
                         X.beginPath();
                         X.arc(joint.x, joint.y, jointRadius, 0, Math.PI * 2);
                         X.fill();
+                    }
+                }
+                updateJointRecords() {
+                    this.joints.length = 0;
+                    for (const joint of this.tileMap.data.getJoints()) {
+                        this.joints.push({
+                            joint: joint,
+                            x: this.tileMap.tileSize * (joint.x + 0.5),
+                            y: this.tileMap.tileSize * (joint.y + 0.5)
+                        });
                     }
                 }
             };
