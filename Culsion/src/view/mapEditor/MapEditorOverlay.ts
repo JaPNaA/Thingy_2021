@@ -210,7 +210,9 @@ class DialogBoxForm extends Component {
     }
 
     private trySubmit() {
-        this.resPromise(this.getResponse());
+        const response = this.getResponse();
+        if (!response) { return; }
+        this.resPromise(response);
         this.elm.remove();
     }
 
@@ -222,12 +224,14 @@ class DialogBoxForm extends Component {
                 const val = parseFloat(input.getValue() as string);
                 if (isNaN(val)) { return; }
                 response[key] = val;
-            } else if (options.type === "string") {
+            } else if (options.type === "text") {
                 const val = input.getValue() as string;
                 if (!val) { return; }
                 response[key] = val;
-            } else if (options.type === "boolean") {
+            } else if (options.type === "checkbox") {
                 response[key] = input.getValue() as boolean;
+            } else {
+                console.warn("Unknown type", options.type);
             }
         }
 
