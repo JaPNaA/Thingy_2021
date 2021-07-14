@@ -31,14 +31,23 @@ export class MapEditorOverlay extends Component {
     }
 
     public setJoint(joint: TileMapJoint) {
-        this.jointEditor.removeClass("hidden");
-        this.jointEditor.replaceContents(
-            new Elm("h3").append("Joint: "),
-            new Elm().append("pos: (", joint.x, ", ", joint.y, ")"),
-            new Elm().append("id: ", joint.id),
-            new Elm().append("toMap: ", joint.toMap),
-            new Elm().append("toId: ", joint.toId)
-        );
+        // this.jointEditor.removeClass("hidden");
+        // this.jointEditor.replaceContents(
+        //     new Elm("h3").append("Joint: "),
+        //     new Elm().append("pos: (", joint.x, ", ", joint.y, ")"),
+        //     new Elm().append("id: ", joint.id),
+        //     new Elm().append("toMap: ", joint.toMap),
+        //     new Elm().append("toId: ", joint.toId)
+        // );
+
+        DialogBoxForm.createFilledForm(this.elm, joint as any)
+            .then(updated => {
+                joint.x = updated.x;
+                joint.y = updated.y;
+                joint.id = updated.id;
+                joint.toId = updated.toId;
+                joint.toMap = updated.toMap;
+            });
     }
 
     public unsetJoint() {
@@ -71,7 +80,7 @@ export class MapEditorOverlay extends Component {
 
         this.blockTypesElm.append(
             new Elm("div").append("+").on("click", () => {
-                DialogBox.createEmptyForm({
+                DialogBoxForm.createEmptyForm(this.elm, {
                     color: "string",
                     texture: "string",
                     solid: "boolean"
@@ -110,76 +119,120 @@ export class MapEditorOverlay extends Component {
     }
 }
 
-class DialogBox extends Component {
+type InputOptions = { type: string, optional?: boolean, default?: any };
+
+class DialogBoxForm extends Component {
+    public reponsePromise: Promise<any>;
+
     private static typeToInputType = {
         number: "number",
         string: "text",
         boolean: "checkbox"
     };
 
+    private inputsElm = new Elm();
+
+    private inputsMap: Map<string, [InputElm, InputOptions]> = new Map();
+    private resPromise!: (x: any) => void;
+    private rejPromise!: (x: string) => void;
+
+    constructor() {
+        super("dialogBox");
+        this.elm.class("dialogBox", "form");
+
+        this.elm.append(
+            this.inputsElm,
+            new Elm().append(
+                new Elm("button").append("Cancel")
+                    .on("click", () => {
+                        this.elm.remove();
+                        this.rejPromise("Canceled by user");
+                    }),
+                new Elm("button").append("Submit")
+                    .on("click", () => {
+                        this.resPromise(this.getResponse());
+                        this.elm.remove();
+                    })
+            )
+        )
+
+        this.reponsePromise = new Promise<any>((res, rej) => {
+            this.resPromise = res;
+            this.rejPromise = rej;
+        });
+    }
+
     public static async createEmptyForm<T extends { [x: string]: ("number" | "string" | "boolean") }>
-        (fields: T):
-        Promise<{
+        (parent: Elm, fields: T): Promise<{
             [x in keyof T]:
             T[x] extends "number" ? number :
             T[x] extends "string" ? string : boolean
         }> {
 
         const keys = Object.keys(fields);
-        //* temp: appending to document body
-        const formElm = new Elm().class("dialogBox", "form").appendTo(document.body);
-
-        const inputsMap: Map<string, InputElm> = new Map();
+        const dialogBoxForm = new DialogBoxForm();
 
         for (const key of keys) {
-            const input = new InputElm().setType(DialogBox.typeToInputType[fields[key]]);
-
-            formElm.append(
-                new Elm("label").class("field").append(
-                    key, ": ", input
-                )
-            );
-
-            inputsMap.set(key, input);
+            dialogBoxForm.addInput(key, {
+                type: DialogBoxForm.typeToInputType[fields[key]]
+            });
         }
 
-        let resPromise: (x: any) => void, rejPromise: () => void;
-        const promise = new Promise<any>((res, rej) => {
-            resPromise = res;
-            rejPromise = rej;
-        })
+        dialogBoxForm.appendTo(parent);
 
-        function trySubmit() {
-            const response: { [x: string]: any } = {};
+        return dialogBoxForm.reponsePromise;
+    }
 
-            for (const [key, input] of inputsMap) {
-                if (fields[key] === "number") {
-                    const val = parseFloat(input.getValue() as string);
-                    if (isNaN(val)) { return; }
-                    response[key] = val;
-                } else if (fields[key] === "string") {
-                    const val = input.getValue() as string;
-                    if (!val) { return; }
-                    response[key] = val;
-                } else if (fields[key] === "boolean") {
-                    response[key] = input.getValue() as boolean;
-                }
-            }
+    public static async createFilledForm<T extends { [x: string]: number | string | boolean }>
+        (parent: Elm, fields: T): Promise<T> {
 
-            resPromise(response);
-            formElm.remove();
+        const keys = Object.keys(fields);
+        const dialogBoxForm = new DialogBoxForm();
+
+        for (const key of keys) {
+            dialogBoxForm.addInput(key, {
+                type: typeof fields[key],
+                default: fields[key]
+            });
         }
 
-        formElm.append(
-            new Elm("button").append("Cancel")
-                .on("click", () => {
-                    formElm.remove();
-                    rejPromise()
-                }),
-            new Elm("button").append("Submit")
-                .on("click", trySubmit),
+        dialogBoxForm.appendTo(parent);
+
+        return dialogBoxForm.reponsePromise;
+    }
+
+    public addInput(key: string, options: InputOptions) {
+        const input = new InputElm().setType(options.type);
+        if (options.default !== undefined) {
+            input.setValue(options.default);
+        }
+
+        this.inputsElm.append(
+            new Elm("label").class("field").append(
+                key, ": ", input
+            )
         );
 
-        return promise;
+        this.inputsMap.set(key, [input, options]);
+    }
+
+    private getResponse(): any {
+        const response: { [x: string]: any } = {};
+
+        for (const [key, [input, options]] of this.inputsMap) {
+            if (options.type === "number") {
+                const val = parseFloat(input.getValue() as string);
+                if (isNaN(val)) { return; }
+                response[key] = val;
+            } else if (options.type === "string") {
+                const val = input.getValue() as string;
+                if (!val) { return; }
+                response[key] = val;
+            } else if (options.type === "boolean") {
+                response[key] = input.getValue() as boolean;
+            }
+        }
+
+        return response;
     }
 }
