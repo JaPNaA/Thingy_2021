@@ -13,6 +13,8 @@ export class MapEditor extends ParentCanvasElm {
     private ghostPlayer = new GhostPlayer();
 
     private overlay = new MapEditorOverlay();
+    private editorMapLayer?: MapEditorMapLayer;
+    private editorEntityJointLayer?: MapEditorEntityJointLayer;
 
     constructor() {
         super();
@@ -22,10 +24,10 @@ export class MapEditor extends ParentCanvasElm {
                 this.tileMap = new TileMapEntity(tileMapFile);
                 this.overlay.setTileMap(this.tileMap.data);
 
-                const mapLayer = new MapEditorMapLayer(this.tileMap, this.overlay);
-                const entityJointLayer = new MapEditorEntityJointLayer(this.tileMap, this.overlay);
-                this.addChild(mapLayer);
-                this.addChild(entityJointLayer);
+                this.editorMapLayer = new MapEditorMapLayer(this.tileMap, this.overlay);
+                this.editorEntityJointLayer = new MapEditorEntityJointLayer(this.tileMap, this.overlay);
+                this.addChild(this.editorMapLayer);
+                this.addChild(this.editorEntityJointLayer);
             });
 
         this.exportMapKeyHandler = this.exportMapKeyHandler.bind(this);
@@ -44,6 +46,8 @@ export class MapEditor extends ParentCanvasElm {
     public dispose() {
         this.world.keyboard.removeKeydownHandler(settings.keybindings.select, this.exportMapKeyHandler);
         this.overlay.elm.remove();
+        this.editorMapLayer?.dispose();
+        this.editorEntityJointLayer?.dispose();
     }
 
     public tick() {

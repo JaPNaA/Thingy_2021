@@ -26,6 +26,7 @@ export class ParentCanvasElm extends CanvasElmWithEventBus {
     }
 
     public dispose() {
+        super.dispose();
         for (const child of this.children) {
             child.dispose();
         }
