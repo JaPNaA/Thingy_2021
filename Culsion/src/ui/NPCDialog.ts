@@ -1,4 +1,5 @@
 import { CanvasElm } from "../engine/canvasElm/CanvasElm";
+import { Elm } from "../engine/elements";
 import { Rectangle } from "../engine/util/Rectangle";
 import { World } from "../engine/World";
 import { settings } from "../settings";
@@ -6,7 +7,12 @@ import { settings } from "../settings";
 export class NPCDialog extends CanvasElm {
     public closed = false;
 
+    private elm = new Elm().class("NPCDialog");
+
     private index = 0;
+    private charIndex = 0;
+    private secondPerChar = 0.03;
+    private timeToNext = 0;
 
     constructor(private dialog: string[], private rect: Rectangle) {
         super();
@@ -17,20 +23,21 @@ export class NPCDialog extends CanvasElm {
     public setWorld(world: World) {
         super.setWorld(world);
 
+        world.htmlOverlay.elm.append(this.elm);
         world.keyboard.addKeydownHandler(settings.keybindings.select, this.advanceDialogHandler);
     }
 
-    public draw() {
-        const X = this.world.canvas.X;
-        X.fillStyle = "#4448";
-        X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+    public draw() { }
 
-        X.fillStyle = "#aaa";
-        X.font = "24px Arial";
-        X.textBaseline = "top";
-        const lines = this.dialog[this.index].split("\n");
-        for (let y = 0; y < lines.length; y++) {
-            X.fillText(lines[y] || "[...]", this.rect.x + 8, this.rect.y + 8 + y * 36);
+    public tick() {
+        if (this.charIndex >= this.dialog[this.index].length) { return; }
+
+        this.timeToNext -= this.world.timeElapsed;
+
+        while (this.timeToNext < 0) {
+            this.elm.append(this.dialog[this.index][this.charIndex]);
+            this.charIndex++;
+            this.timeToNext += this.secondPerChar;
         }
     }
 
@@ -39,11 +46,15 @@ export class NPCDialog extends CanvasElm {
         if (this.dialog[this.index] === undefined) {
             this.closed = true;
             this.world.removeElm(this);
+        } else {
+            this.elm.clear();
+            this.charIndex = 0;
         }
     }
 
     public dispose() {
         this.world.keyboard.removeKeydownHandler(settings.keybindings.select, this.advanceDialogHandler);
+        this.elm.remove();
         super.dispose();
     }
 }

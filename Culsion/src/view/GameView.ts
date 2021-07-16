@@ -12,14 +12,14 @@ export class GameView extends ParentCanvasElm {
     constructor() {
         super();
 
-        this.addChild(new NPCWithDialog(2500, 2500));
-
         resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
             .then(file => {
                 this.addChild(
                     new ParentTileMap(TileMapFile.fromBuffer(file), this.world.camera.rect)
                 );
                 this.addChild(this.player);
+                this.addChild(new NPCWithDialog(3750, 3750));
+                this.addChild(new NPCWithDialog(100, -200));
             });
     }
 

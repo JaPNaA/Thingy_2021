@@ -19,6 +19,15 @@ canvas {
     height: 0;
 }
 
+.NPCDialog {
+    width: 100vw;
+    max-width: 720px;
+    height: 224px;
+    background-color: #7b7b7b61;
+    white-space: pre;
+    padding: 8px;
+}
+
 .MapEditorOverlay {
     user-select: none;
     background-color: #70707071;

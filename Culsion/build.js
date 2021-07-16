@@ -1622,14 +1622,17 @@ System.register("settings", [], function (exports_27, context_27) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "settings"], function (exports_28, context_28) {
+System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements", "settings"], function (exports_28, context_28) {
     "use strict";
-    var CanvasElm_3, settings_1, NPCDialog;
+    var CanvasElm_3, elements_2, settings_1, NPCDialog;
     var __moduleName = context_28 && context_28.id;
     return {
         setters: [
             function (CanvasElm_3_1) {
                 CanvasElm_3 = CanvasElm_3_1;
+            },
+            function (elements_2_1) {
+                elements_2 = elements_2_1;
             },
             function (settings_1_1) {
                 settings_1 = settings_1_1;
@@ -1642,23 +1645,28 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "settings"], func
                     this.dialog = dialog;
                     this.rect = rect;
                     this.closed = false;
+                    this.elm = new elements_2.Elm().class("NPCDialog");
                     this.index = 0;
+                    this.charIndex = 0;
+                    this.secondPerChar = 0.03;
+                    this.timeToNext = 0;
                     this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
                 }
                 setWorld(world) {
                     super.setWorld(world);
+                    world.htmlOverlay.elm.append(this.elm);
                     world.keyboard.addKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
                 }
-                draw() {
-                    const X = this.world.canvas.X;
-                    X.fillStyle = "#4448";
-                    X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
-                    X.fillStyle = "#aaa";
-                    X.font = "24px Arial";
-                    X.textBaseline = "top";
-                    const lines = this.dialog[this.index].split("\n");
-                    for (let y = 0; y < lines.length; y++) {
-                        X.fillText(lines[y] || "[...]", this.rect.x + 8, this.rect.y + 8 + y * 36);
+                draw() { }
+                tick() {
+                    if (this.charIndex >= this.dialog[this.index].length) {
+                        return;
+                    }
+                    this.timeToNext -= this.world.timeElapsed;
+                    while (this.timeToNext < 0) {
+                        this.elm.append(this.dialog[this.index][this.charIndex]);
+                        this.charIndex++;
+                        this.timeToNext += this.secondPerChar;
                     }
                 }
                 advanceDialogHandler() {
@@ -1667,9 +1675,14 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "settings"], func
                         this.closed = true;
                         this.world.removeElm(this);
                     }
+                    else {
+                        this.elm.clear();
+                        this.charIndex = 0;
+                    }
                 }
                 dispose() {
                     this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
+                    this.elm.remove();
                     super.dispose();
                 }
             };
@@ -1931,11 +1944,12 @@ System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/
                 constructor() {
                     super();
                     this.player = new Player_2.Player();
-                    this.addChild(new NPCWithDialog_1.NPCWithDialog(2500, 2500));
                     resourceFetcher_4.resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
                         .then(file => {
                         this.addChild(new ParentTileMap_1.ParentTileMap(TileMapFile_3.TileMapFile.fromBuffer(file), this.world.camera.rect));
                         this.addChild(this.player);
+                        this.addChild(new NPCWithDialog_1.NPCWithDialog(3750, 3750));
+                        this.addChild(new NPCWithDialog_1.NPCWithDialog(100, -200));
                     });
                 }
                 setWorld(world) {
@@ -1973,23 +1987,23 @@ System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player
 });
 System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function (exports_35, context_35) {
     "use strict";
-    var elements_2, MapEditorOverlay, DialogBoxForm;
+    var elements_3, MapEditorOverlay, DialogBoxForm;
     var __moduleName = context_35 && context_35.id;
     return {
         setters: [
-            function (elements_2_1) {
-                elements_2 = elements_2_1;
+            function (elements_3_1) {
+                elements_3 = elements_3_1;
             }
         ],
         execute: function () {
-            MapEditorOverlay = class MapEditorOverlay extends elements_2.Component {
+            MapEditorOverlay = class MapEditorOverlay extends elements_3.Component {
                 constructor() {
                     super("MapEditorOverlay");
                     this.selectedBlock = 1;
                     this.blockTypeElms = [];
-                    this.blockTypesElm = new elements_2.Elm().class("blockTypes")
+                    this.blockTypesElm = new elements_3.Elm().class("blockTypes")
                         .appendTo(this.elm);
-                    this.canvasSizeElm = new elements_2.Elm().class("canvasSize")
+                    this.canvasSizeElm = new elements_3.Elm().class("canvasSize")
                         .on("click", () => this.openChangeMapSizeDialog())
                         .appendTo(this.elm);
                 }
@@ -2015,17 +2029,17 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                         let elm;
                         if (blockType.texture) {
                             if (Array.isArray(blockType.texture)) {
-                                elm = new elements_2.Elm("div").class("layered");
+                                elm = new elements_3.Elm("div").class("layered");
                                 for (const layer of blockType.texture) {
-                                    new elements_2.Elm("img").attribute("src", "assets/img/tile/" + layer + ".png").class("layer").appendTo(elm);
+                                    new elements_3.Elm("img").attribute("src", "assets/img/tile/" + layer + ".png").class("layer").appendTo(elm);
                                 }
                             }
                             else {
-                                elm = new elements_2.Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
+                                elm = new elements_3.Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
                             }
                         }
                         else {
-                            elm = new elements_2.Elm("div");
+                            elm = new elements_3.Elm("div");
                         }
                         elm.class("blockType").attribute("style", "background-color: " + blockType.color);
                         elm.on("click", () => {
@@ -2034,7 +2048,7 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                         this.blockTypesElm.append(elm);
                         this.blockTypeElms[i] = elm;
                     }
-                    this.blockTypesElm.append(new elements_2.Elm("div").append("+").on("click", () => {
+                    this.blockTypesElm.append(new elements_3.Elm("div").append("+").on("click", () => {
                         DialogBoxForm.createEmptyForm(this.elm, {
                             color: "string",
                             texture: "string",
@@ -2079,16 +2093,16 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                 }
             };
             exports_35("MapEditorOverlay", MapEditorOverlay);
-            DialogBoxForm = class DialogBoxForm extends elements_2.Component {
+            DialogBoxForm = class DialogBoxForm extends elements_3.Component {
                 constructor() {
                     super("dialogBox");
-                    this.inputsElm = new elements_2.Elm();
+                    this.inputsElm = new elements_3.Elm();
                     this.inputsMap = new Map();
                     this.elm.class("dialogBox", "form");
-                    this.elm.append(this.inputsElm, new elements_2.Elm().append(new elements_2.Elm("button").append("Cancel")
+                    this.elm.append(this.inputsElm, new elements_3.Elm().append(new elements_3.Elm("button").append("Cancel")
                         .on("click", () => {
                         this.cancel();
-                    }), new elements_2.Elm("button").append("Submit")
+                    }), new elements_3.Elm("button").append("Submit")
                         .on("click", () => {
                         this.trySubmit();
                     })));
@@ -2121,7 +2135,7 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                     return dialogBoxForm.reponsePromise;
                 }
                 addInput(key, options) {
-                    const input = new elements_2.InputElm().setType(options.type);
+                    const input = new elements_3.InputElm().setType(options.type);
                     if (options.default !== undefined) {
                         input.setValue(options.default);
                     }
@@ -2133,7 +2147,7 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                             this.cancel();
                         }
                     });
-                    this.inputsElm.append(new elements_2.Elm("label").class("field").append(key, ": ", input));
+                    this.inputsElm.append(new elements_3.Elm("label").class("field").append(key, ": ", input));
                     this.inputsMap.set(key, [input, options]);
                 }
                 cancel() {
