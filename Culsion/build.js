@@ -2039,9 +2039,13 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                             color: "string",
                             texture: "string",
                             solid: "boolean"
-                        }).then(response => {
+                        }).then((response) => {
+                            var _a;
                             if (!this.tileMap) {
                                 return;
+                            }
+                            if ((_a = response.texture) === null || _a === void 0 ? void 0 : _a.includes("+")) {
+                                response.texture = response.texture.split("+");
                             }
                             this.tileMap.addBlockType(response);
                             this.setBlockTypes(this.tileMap.getBlockTypes());

@@ -73,8 +73,13 @@ export class MapEditorOverlay extends Component {
                     color: "string",
                     texture: "string",
                     solid: "boolean"
-                }).then(response => {
+                }).then((response: BlockType) => {
                     if (!this.tileMap) { return; }
+
+                    if (response.texture?.includes("+")) {
+                        response.texture = (response.texture as string).split("+");
+                    }
+
                     this.tileMap.addBlockType(response);
                     this.setBlockTypes(this.tileMap.getBlockTypes());
                 });
