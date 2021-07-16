@@ -39,6 +39,18 @@ canvas {
     cursor: pointer;
 }
 
+.MapEditorOverlay .blockType.layered {
+    position: relative;
+}
+
+.MapEditorOverlay .blockType.layered .layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
 .MapEditorOverlay .blockType.selected {
     border-color: #1b58ff;
 }

@@ -45,7 +45,14 @@ export class MapEditorOverlay extends Component {
             let elm: Elm<any>;
 
             if (blockType.texture) {
-                elm = new Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
+                if (Array.isArray(blockType.texture)) {
+                    elm = new Elm("div").class("layered");
+                    for (const layer of blockType.texture) {
+                        new Elm("img").attribute("src", "assets/img/tile/" + layer + ".png").class("layer").appendTo(elm);
+                    }
+                } else {
+                    elm = new Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
+                }
             } else {
                 elm = new Elm("div");
             }

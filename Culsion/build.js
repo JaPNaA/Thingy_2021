@@ -1217,6 +1217,10 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/remo
                     const proms = [];
                     for (let i = 0; i < this.blockTypes.length; i++) {
                         const blockType = this.blockTypes[i];
+                        if (!blockType.texture) {
+                            this.textures[i] = null;
+                            continue;
+                        }
                         if (Array.isArray(blockType.texture)) {
                             const layerProms = [];
                             for (const layerTexture of blockType.texture) {
@@ -1230,12 +1234,9 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/remo
                                 this.textures[i] = canvas;
                             }));
                         }
-                        else if (blockType.texture) {
+                        else {
                             proms.push(resourceFetcher_1.resourceFetcher.fetchImg("assets/img/tile/" + blockType.texture + ".png")
                                 .then(img => this.textures[i] = img));
-                        }
-                        else {
-                            this.textures[i] = null;
                         }
                     }
                     await Promise.all(proms);
@@ -2013,7 +2014,15 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                         const blockType = blockTypes[i];
                         let elm;
                         if (blockType.texture) {
-                            elm = new elements_2.Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
+                            if (Array.isArray(blockType.texture)) {
+                                elm = new elements_2.Elm("div").class("layered");
+                                for (const layer of blockType.texture) {
+                                    new elements_2.Elm("img").attribute("src", "assets/img/tile/" + layer + ".png").class("layer").appendTo(elm);
+                                }
+                            }
+                            else {
+                                elm = new elements_2.Elm("img").attribute("src", "assets/img/tile/" + blockType.texture + ".png");
+                            }
                         }
                         else {
                             elm = new elements_2.Elm("div");
