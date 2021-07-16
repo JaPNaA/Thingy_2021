@@ -1017,6 +1017,11 @@ System.register("resources/TileMapFile", [], function (exports_21, context_21) {
     "use strict";
     var TileMapFile, DataViewWalker;
     var __moduleName = context_21 && context_21.id;
+    function isTileMapJointExtention(joint) {
+        // @ts-expect-error
+        return joint.toId !== undefined;
+    }
+    exports_21("isTileMapJointExtention", isTileMapJointExtention);
     return {
         setters: [],
         execute: function () {
@@ -1083,12 +1088,15 @@ System.register("resources/TileMapFile", [], function (exports_21, context_21) {
         }
     };
 });
-System.register("entities/TileMap", ["engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile"], function (exports_22, context_22) {
+System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile"], function (exports_22, context_22) {
     "use strict";
-    var removeElmFromArray_3, resourceFetcher_1, TileMapFile_1, TileMap, EventHandler;
+    var PrerenderCanvas_1, removeElmFromArray_3, resourceFetcher_1, TileMapFile_1, TileMap, EventHandler;
     var __moduleName = context_22 && context_22.id;
     return {
         setters: [
+            function (PrerenderCanvas_1_1) {
+                PrerenderCanvas_1 = PrerenderCanvas_1_1;
+            },
             function (removeElmFromArray_3_1) {
                 removeElmFromArray_3 = removeElmFromArray_3_1;
             },
@@ -1209,7 +1217,20 @@ System.register("entities/TileMap", ["engine/util/removeElmFromArray", "resource
                     const proms = [];
                     for (let i = 0; i < this.blockTypes.length; i++) {
                         const blockType = this.blockTypes[i];
-                        if (blockType.texture) {
+                        if (Array.isArray(blockType.texture)) {
+                            const layerProms = [];
+                            for (const layerTexture of blockType.texture) {
+                                layerProms.push(resourceFetcher_1.resourceFetcher.fetchImg("assets/img/tile/" + layerTexture + ".png"));
+                            }
+                            proms.push(Promise.all(layerProms).then(imgs => {
+                                const canvas = new PrerenderCanvas_1.PrerenderCanvas(imgs[0].naturalWidth, imgs[1].naturalHeight);
+                                for (const img of imgs) {
+                                    canvas.X.drawImage(img, 0, 0);
+                                }
+                                this.textures[i] = canvas;
+                            }));
+                        }
+                        else if (blockType.texture) {
                             proms.push(resourceFetcher_1.resourceFetcher.fetchImg("assets/img/tile/" + blockType.texture + ".png")
                                 .then(img => this.textures[i] = img));
                         }
@@ -1246,12 +1267,12 @@ System.register("entities/TileMap", ["engine/util/removeElmFromArray", "resource
 });
 System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/util/Rectangle", "entities/collisions", "entities/Entity"], function (exports_23, context_23) {
     "use strict";
-    var PrerenderCanvas_1, Rectangle_4, collisions_2, Entity_1, TileMapEntity;
+    var PrerenderCanvas_2, Rectangle_4, collisions_2, Entity_1, TileMapEntity;
     var __moduleName = context_23 && context_23.id;
     return {
         setters: [
-            function (PrerenderCanvas_1_1) {
-                PrerenderCanvas_1 = PrerenderCanvas_1_1;
+            function (PrerenderCanvas_2_1) {
+                PrerenderCanvas_2 = PrerenderCanvas_2_1;
             },
             function (Rectangle_4_1) {
                 Rectangle_4 = Rectangle_4_1;
@@ -1271,7 +1292,7 @@ System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/uti
                     this.tileSize = TileMapEntity.tileSize;
                     this.tileTextureSize = 12;
                     this.data = tileMap;
-                    this.prerender = new PrerenderCanvas_1.PrerenderCanvas(this.rect.width, this.rect.height);
+                    this.prerender = new PrerenderCanvas_2.PrerenderCanvas(this.rect.width, this.rect.height);
                     this.data.onTileEdit.addHandler(pos => this.updatePrerenderTile(pos[0], pos[1]));
                     this.data.onMajorEdit.addHandler(() => this.updatePrerender());
                     this.data._loadTextures().then(() => this.updatePrerender());
@@ -1292,22 +1313,17 @@ System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/uti
                     X.imageSmoothingEnabled = false;
                     for (let y = 0; y < this.data.height; y++) {
                         for (let x = 0; x < this.data.width; x++) {
-                            const texture = this.data.getBlockTexture(x, y);
-                            if (texture) {
-                                X.drawImage(texture, x * this.tileTextureSize, y * this.tileTextureSize);
-                            }
-                            else {
-                                X.fillStyle = this.data.getBlockColor(x, y);
-                                X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
-                            }
+                            this.updatePrerenderTile(x, y);
                         }
                     }
                 }
                 updatePrerenderTile(xIndex, yIndex) {
                     const X = this.prerender.X;
-                    X.imageSmoothingEnabled = false;
                     const texture = this.data.getBlockTexture(xIndex, yIndex);
-                    if (texture) {
+                    if (texture instanceof PrerenderCanvas_2.PrerenderCanvas) {
+                        texture.drawToContext(X, xIndex * this.tileTextureSize, yIndex * this.tileTextureSize);
+                    }
+                    else if (texture) {
                         X.drawImage(texture, xIndex * this.tileTextureSize, yIndex * this.tileTextureSize);
                     }
                     else {
@@ -1865,7 +1881,7 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
                         active: false
                     });
                     for (const joint of joints) {
-                        if (!joint.toMap || !joint.toId) {
+                        if (!TileMapFile_2.isTileMapJointExtention(joint)) {
                             continue;
                         }
                         resourceFetcher_3.resourceFetcher.fetchRaw("assets/" + joint.toMap + ".tmap")

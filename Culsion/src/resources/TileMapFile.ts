@@ -104,14 +104,24 @@ class DataViewWalker {
 
 export interface BlockType {
     color: string;
-    texture?: string;
+    texture?: string | string[];
     solid: boolean;
 }
 
-export interface TileMapJoint {
-    x: number,
-    y: number,
-    id: number,
-    toId?: number,
-    toMap?: string
+interface TileMapJointAnchor {
+    x: number;
+    y: number;
+    id: number;
+}
+
+interface TileMapJointExtention extends TileMapJointAnchor {
+    toId: number;
+    toMap: string;
+}
+
+export type TileMapJoint = TileMapJointAnchor | TileMapJointExtention;
+
+export function isTileMapJointExtention(joint: TileMapJoint): joint is TileMapJointExtention {
+    // @ts-expect-error
+    return joint.toId !== undefined;
 }

@@ -1,3 +1,4 @@
+import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { removeElmFromArray } from "../engine/util/removeElmFromArray";
 import { resourceFetcher } from "../resources/resourceFetcher";
 import { BlockType, TileMapFile, TileMapJoint } from "../resources/TileMapFile";
@@ -13,7 +14,7 @@ export class TileMap {
     private map: number[][];
     private blockTypes: BlockType[];
     private joints: TileMapJoint[];
-    private textures: (HTMLImageElement | null)[] = [];
+    private textures: (HTMLImageElement | PrerenderCanvas | null)[] = [];
 
     private file: TileMapFile;
 
@@ -42,7 +43,7 @@ export class TileMap {
         this.joints = this.file.jsonData.joints || [];
     }
 
-    public getBlockTexture(xIndex: number, yIndex: number): HTMLImageElement | null {
+    public getBlockTexture(xIndex: number, yIndex: number): HTMLImageElement | PrerenderCanvas | null {
         return this.textures[this.map[yIndex][xIndex]];
     }
 
@@ -134,17 +135,36 @@ export class TileMap {
     }
 
     public async _loadTextures() {
-        const proms = [];
+        const proms: Promise<any>[] = [];
 
         for (let i = 0; i < this.blockTypes.length; i++) {
             const blockType = this.blockTypes[i];
-            if (blockType.texture) {
+            if (!blockType.texture) {
+                this.textures[i] = null;
+                continue;
+            }
+
+            if (Array.isArray(blockType.texture)) {
+                const layerProms = [];
+                for (const layerTexture of blockType.texture) {
+                    layerProms.push(resourceFetcher.fetchImg("assets/img/tile/" + layerTexture + ".png"));
+                }
+                proms.push(
+                    Promise.all(
+                        layerProms
+                    ).then(imgs => {
+                        const canvas = new PrerenderCanvas(imgs[0].naturalWidth, imgs[1].naturalHeight);
+                        for (const img of imgs) {
+                            canvas.X.drawImage(img, 0, 0);
+                        }
+                        this.textures[i] = canvas;
+                    })
+                );
+            } else {
                 proms.push(
                     resourceFetcher.fetchImg("assets/img/tile/" + blockType.texture + ".png")
                         .then(img => this.textures[i] = img)
                 );
-            } else {
-                this.textures[i] = null;
             }
         }
 

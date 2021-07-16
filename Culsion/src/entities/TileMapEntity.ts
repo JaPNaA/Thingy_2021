@@ -49,26 +49,18 @@ export class TileMapEntity extends Entity {
 
         for (let y = 0; y < this.data.height; y++) {
             for (let x = 0; x < this.data.width; x++) {
-                const texture = this.data.getBlockTexture(x, y);
-                if (texture) {
-                    X.drawImage(
-                        texture,
-                        x * this.tileTextureSize, y * this.tileTextureSize,
-                    );
-                } else {
-                    X.fillStyle = this.data.getBlockColor(x, y);
-                    X.fillRect(x * this.tileTextureSize, y * this.tileTextureSize, this.tileTextureSize, this.tileTextureSize);
-                }
+                this.updatePrerenderTile(x, y);
             }
         }
     }
 
     public updatePrerenderTile(xIndex: number, yIndex: number) {
         const X = this.prerender.X;
-        X.imageSmoothingEnabled = false;
 
         const texture = this.data.getBlockTexture(xIndex, yIndex);
-        if (texture) {
+        if (texture instanceof PrerenderCanvas) {
+            texture.drawToContext(X, xIndex * this.tileTextureSize, yIndex * this.tileTextureSize);
+        } else if (texture) {
             X.drawImage(
                 texture,
                 xIndex * this.tileTextureSize, yIndex * this.tileTextureSize,

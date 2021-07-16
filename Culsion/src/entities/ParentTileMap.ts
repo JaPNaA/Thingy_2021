@@ -2,7 +2,7 @@ import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding
 import { ParentCanvasElm } from "../engine/canvasElm/ParentCanvasElm";
 import { Rectangle } from "../engine/util/Rectangle";
 import { resourceFetcher } from "../resources/resourceFetcher";
-import { TileMapFile } from "../resources/TileMapFile";
+import { isTileMapJointExtention, TileMapFile } from "../resources/TileMapFile";
 import { TileMapEntity } from "./TileMapEntity";
 import { TileMap } from "./TileMap";
 
@@ -46,12 +46,12 @@ export class ParentTileMap extends ParentCanvasElm {
         });
 
         for (const joint of joints) {
-            if (!joint.toMap || !joint.toId) { continue; }
+            if (!isTileMapJointExtention(joint)) { continue; }
 
             resourceFetcher.fetchRaw("assets/" + joint.toMap + ".tmap")
                 .then(buffer => {
                     const tileMap = new TileMap(TileMapFile.fromBuffer(buffer));
-                    const newJoint = tileMap.getJointById(joint.toId!);
+                    const newJoint = tileMap.getJointById(joint.toId);
                     if (!newJoint) { throw new Error("Failed to join joints -- could not find target joint."); }
 
                     this.addTileMap(
