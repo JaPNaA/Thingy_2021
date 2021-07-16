@@ -1,126 +1,71 @@
 import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding";
 import { ParentCanvasElm } from "../engine/canvasElm/ParentCanvasElm";
 import { Rectangle } from "../engine/util/Rectangle";
-import { removeElmFromArray } from "../engine/util/removeElmFromArray";
 import { resourceFetcher } from "../resources/resourceFetcher";
-import { TileMapFile, TileMapJoint } from "../resources/TileMapFile";
+import { TileMapFile } from "../resources/TileMapFile";
 import { TileMapEntity } from "./TileMapEntity";
+import { TileMap } from "./TileMap";
 
 export class ParentTileMap extends ParentCanvasElm {
-    private joinableJoints: JointRecord[] = [];
-    private unjoinableJoints: JointRecord[] = [];
-    private activeMaps: TileMapEntity[] = [];
+    private activeMapEntities: TileMapEntity[] = [];
+    private maps: MapRecord[] = [];
 
     constructor(mapFile: TileMapFile, private view: Rectangle) {
         super();
-        this.addTileMap(new TileMapEntity(mapFile));
+        this.addTileMap(new TileMap(mapFile), 0, 0);
         console.log(this);
     }
 
     public tick() {
         super.tick();
 
-        for (const jointRecord of this.joinableJoints) {
-            if (!isRectanglesColliding(jointRecord.location, this.view)) { continue; }
+        for (const map of this.maps) {
+            if (map.active) { continue; }
 
-            this.setJointRecordUnjoinable(jointRecord);
-
-            resourceFetcher.fetchRaw("assets/" + jointRecord.joint.toMap + ".tmap")
-                .then(buffer => {
-                    const tileMap = new TileMapEntity(TileMapFile.fromBuffer(buffer));
-                    const newJoint = tileMap.data.getJointById(jointRecord.joint.toId);
-                    if (!newJoint) { throw new Error("Failed to join joints -- could not find target joint."); }
-
-                    const dx = (jointRecord.joint.x - newJoint.x) * jointRecord.map.tileSize + jointRecord.map.rect.x;
-                    const dy = (jointRecord.joint.y - newJoint.y) * jointRecord.map.tileSize + jointRecord.map.rect.y;
-
-                    tileMap.rect.x += dx;
-                    tileMap.rect.y += dy;
-
-                    const record = this.addTileMap(tileMap, newJoint)!;
-                    record.toMap = jointRecord.map;
-                    jointRecord.toMap = record.map;
-                });
-
-            // break to prevent iterating through array while modifying it (through setJointRecordUnjoinable)
-            break;
-        }
-
-        for (const jointRecord of this.unjoinableJoints) {
-            if (
-                isRectanglesColliding(jointRecord.location, this.view) ||
-                isRectanglesColliding(jointRecord.map.rect, this.view)
-            ) { continue; }
-            this.removeMap(jointRecord.map);
-            break;
+            if (isRectanglesColliding(this.view, map.rect)) {
+                const entity = new TileMapEntity(map.map);
+                entity.rect.x = map.rect.x;
+                entity.rect.y = map.rect.y;
+                this.activeMapEntities.push(entity);
+                this.addChild(entity);
+                map.active = true;
+            }
         }
     }
 
-    private addTileMap(tileMap: TileMapEntity, excludeJoint?: TileMapJoint): JointRecord | undefined {
-        const joints = tileMap.data.getJoints();
-        let excludedJointRecord;
+    private addTileMap(tileMap: TileMap, offsetX: number, offsetY: number) {
+        const joints = tileMap.getJoints();
+
+        this.maps.push({
+            map: tileMap,
+            rect: new Rectangle(offsetX, offsetY,
+                tileMap.width * TileMapEntity.tileSize,
+                tileMap.height * TileMapEntity.tileSize
+            ),
+            active: false
+        });
 
         for (const joint of joints) {
-            const record = {
-                map: tileMap,
-                joint: joint,
-                location: new Rectangle(
-                    joint.x * tileMap.tileSize + tileMap.rect.x,
-                    joint.y * tileMap.tileSize + tileMap.rect.y,
-                    tileMap.tileSize, tileMap.tileSize
-                )
-            };
+            if (!joint.toMap || !joint.toId) { continue; }
 
-            if (joint === excludeJoint) {
-                this.unjoinableJoints.push(record);
-                excludedJointRecord = record;
-            } else {
-                this.joinableJoints.push(record);
-            }
+            resourceFetcher.fetchRaw("assets/" + joint.toMap + ".tmap")
+                .then(buffer => {
+                    const tileMap = new TileMap(TileMapFile.fromBuffer(buffer));
+                    const newJoint = tileMap.getJointById(joint.toId!);
+                    if (!newJoint) { throw new Error("Failed to join joints -- could not find target joint."); }
+
+                    this.addTileMap(
+                        tileMap,
+                        (joint.x - newJoint.x) * TileMapEntity.tileSize + offsetX,
+                        (joint.y - newJoint.y) * TileMapEntity.tileSize + offsetY,
+                    );
+                });
         }
-
-        this.activeMaps.push(tileMap);
-        this.addChild(tileMap);
-
-        return excludedJointRecord;
-    }
-
-    private setJointRecordUnjoinable(joint: JointRecord) {
-        removeElmFromArray(joint, this.joinableJoints);
-        this.unjoinableJoints.push(joint);
-    }
-
-    private setJointRecordJoinable(joint: JointRecord) {
-        removeElmFromArray(joint, this.unjoinableJoints);
-        this.joinableJoints.push(joint);
-    }
-
-    private removeMap(map: TileMapEntity) {
-        removeElmFromArray(map, this.activeMaps);
-
-        for (let i = this.joinableJoints.length - 1; i >= 0; i--) {
-            const joint = this.joinableJoints[i];
-            if (joint.map === map) {
-                this.joinableJoints.splice(i, 1);
-            }
-        }
-
-        for (let j = this.unjoinableJoints.length - 1; j >= 0; j--) {
-            const joint = this.unjoinableJoints[j];
-            if (joint.map === map) {
-                this.unjoinableJoints.splice(j, 1);
-            } else if (joint.toMap === map) {
-                this.setJointRecordJoinable(joint);
-            }
-        }
-
-        this.removeChild(map);
     }
 }
 
-interface JointRecord {
-    joint: TileMapJoint;
-    map: TileMapEntity;
-    toMap?: TileMapEntity;
-    location: Rectangle;
+interface MapRecord {
+    map: TileMap;
+    rect: Rectangle;
+    active: boolean;
 }

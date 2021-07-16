@@ -1,14 +1,14 @@
 import { PrerenderCanvas } from "../engine/PrerenderCanvas";
 import { Rectangle } from "../engine/util/Rectangle";
 import { World } from "../engine/World";
-import { TileMapFile } from "../resources/TileMapFile";
 import { collisions } from "./collisions";
 import { Entity } from "./Entity";
 import { TileMap } from "./TileMap";
 
 export class TileMapEntity extends Entity {
+    public static readonly tileSize = 48;
     public collisionType = collisions.types.map;
-    public readonly tileSize = 48;
+    public readonly tileSize = TileMapEntity.tileSize;
 
     public data: TileMap;
 
@@ -16,10 +16,10 @@ export class TileMapEntity extends Entity {
 
     private readonly tileTextureSize = 12;
 
-    constructor(tileMapFile: TileMapFile | ArrayBuffer) {
+    constructor(tileMap: TileMap) {
         super();
 
-        this.data = new TileMap(tileMapFile);
+        this.data = tileMap;
 
         this.prerender = new PrerenderCanvas(this.rect.width, this.rect.height);
 

@@ -1,6 +1,7 @@
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { World } from "../../engine/World";
 import { GhostPlayer } from "../../entities/GhostPlayer";
+import { TileMap } from "../../entities/TileMap";
 import { TileMapEntity } from "../../entities/TileMapEntity";
 import { resourceFetcher } from "../../resources/resourceFetcher";
 import { settings } from "../../settings";
@@ -19,7 +20,7 @@ export class MapEditor extends ParentCanvasElm {
 
         resourceFetcher.fetchRaw("assets/" + prompt("Open map name") + ".tmap")
             .then(tileMapFile => {
-                this.tileMap = new TileMapEntity(tileMapFile);
+                this.tileMap = new TileMapEntity(new TileMap(tileMapFile));
                 this.overlay.setTileMap(this.tileMap.data);
 
                 this.addChild(new MapEditorMapLayer(this.tileMap, this.overlay));

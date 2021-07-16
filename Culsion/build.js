@@ -939,94 +939,10 @@ System.register("engine/PrerenderCanvas", [], function (exports_19, context_19) 
         }
     };
 });
-/**
- * Map file structure:
- *
- * 1 byte - version number (1)
- * 4 bytes - width
- * 4 bytes - height
- * width * height bytes - map data
- * rest of file - JSON data:
- *   {
- *     blockTypes: [blockType, blockType, blockType, ...],
- *     joints: [joint, joint, ...]
- *     entities: [ ... ]
- *   }
- */
-System.register("resources/TileMapFile", [], function (exports_20, context_20) {
-    "use strict";
-    var TileMapFile, DataViewWalker;
-    var __moduleName = context_20 && context_20.id;
-    return {
-        setters: [],
-        execute: function () {
-            TileMapFile = class TileMapFile {
-                static fromBuffer(buffer) {
-                    const mapFile = new TileMapFile();
-                    const dataWalker = new DataViewWalker(buffer);
-                    mapFile.version = dataWalker.nextUint8();
-                    mapFile.width = dataWalker.nextUint32();
-                    mapFile.height = dataWalker.nextUint32();
-                    mapFile.mapData = dataWalker.nextUint8Array(mapFile.width * mapFile.height);
-                    const textDecoder = new TextDecoder();
-                    mapFile.jsonData = JSON.parse(textDecoder.decode(dataWalker.nextUint8Array()));
-                    return mapFile;
-                }
-                static create(width, height) {
-                    const mapFile = new TileMapFile();
-                    mapFile.version = 1;
-                    mapFile.width = width;
-                    mapFile.height = height;
-                    mapFile.mapData = new Uint8Array(width * height);
-                    mapFile.jsonData = {};
-                    return mapFile;
-                }
-                encode() {
-                    const version = new Uint8Array(1);
-                    version[0] = this.version;
-                    const widthHeight = new Uint32Array(2);
-                    widthHeight[0] = this.width;
-                    widthHeight[1] = this.height;
-                    const jsonDataStr = JSON.stringify(this.jsonData);
-                    return new Blob([version, widthHeight, this.mapData, jsonDataStr]);
-                }
-            };
-            exports_20("TileMapFile", TileMapFile);
-            DataViewWalker = class DataViewWalker {
-                constructor(buffer) {
-                    this.currOffset = 0;
-                    this.dataWalker = new DataView(buffer);
-                }
-                nextUint8() {
-                    const val = this.dataWalker.getUint8(this.currOffset);
-                    this.currOffset += 1;
-                    return val;
-                }
-                nextUint8Array(length) {
-                    if (length) {
-                        const arr = new Uint8Array(this.dataWalker.buffer, this.currOffset, length);
-                        this.currOffset += length;
-                        return arr;
-                    }
-                    else {
-                        const arr = new Uint8Array(this.dataWalker.buffer, this.currOffset);
-                        this.currOffset = this.dataWalker.byteLength;
-                        return arr;
-                    }
-                }
-                nextUint32() {
-                    const val = this.dataWalker.getUint32(this.currOffset, true);
-                    this.currOffset += 4;
-                    return val;
-                }
-            };
-        }
-    };
-});
-System.register("resources/resourceFetcher", [], function (exports_21, context_21) {
+System.register("resources/resourceFetcher", [], function (exports_20, context_20) {
     "use strict";
     var ResourceFetcher, resourceFetcher;
-    var __moduleName = context_21 && context_21.id;
+    var __moduleName = context_20 && context_20.id;
     return {
         setters: [],
         execute: function () {
@@ -1079,7 +995,91 @@ System.register("resources/resourceFetcher", [], function (exports_21, context_2
                     }
                 }
             };
-            exports_21("resourceFetcher", resourceFetcher = new ResourceFetcher());
+            exports_20("resourceFetcher", resourceFetcher = new ResourceFetcher());
+        }
+    };
+});
+/**
+ * Map file structure:
+ *
+ * 1 byte - version number (1)
+ * 4 bytes - width
+ * 4 bytes - height
+ * width * height bytes - map data
+ * rest of file - JSON data:
+ *   {
+ *     blockTypes: [blockType, blockType, blockType, ...],
+ *     joints: [joint, joint, ...]
+ *     entities: [ ... ]
+ *   }
+ */
+System.register("resources/TileMapFile", [], function (exports_21, context_21) {
+    "use strict";
+    var TileMapFile, DataViewWalker;
+    var __moduleName = context_21 && context_21.id;
+    return {
+        setters: [],
+        execute: function () {
+            TileMapFile = class TileMapFile {
+                static fromBuffer(buffer) {
+                    const mapFile = new TileMapFile();
+                    const dataWalker = new DataViewWalker(buffer);
+                    mapFile.version = dataWalker.nextUint8();
+                    mapFile.width = dataWalker.nextUint32();
+                    mapFile.height = dataWalker.nextUint32();
+                    mapFile.mapData = dataWalker.nextUint8Array(mapFile.width * mapFile.height);
+                    const textDecoder = new TextDecoder();
+                    mapFile.jsonData = JSON.parse(textDecoder.decode(dataWalker.nextUint8Array()));
+                    return mapFile;
+                }
+                static create(width, height) {
+                    const mapFile = new TileMapFile();
+                    mapFile.version = 1;
+                    mapFile.width = width;
+                    mapFile.height = height;
+                    mapFile.mapData = new Uint8Array(width * height);
+                    mapFile.jsonData = {};
+                    return mapFile;
+                }
+                encode() {
+                    const version = new Uint8Array(1);
+                    version[0] = this.version;
+                    const widthHeight = new Uint32Array(2);
+                    widthHeight[0] = this.width;
+                    widthHeight[1] = this.height;
+                    const jsonDataStr = JSON.stringify(this.jsonData);
+                    return new Blob([version, widthHeight, this.mapData, jsonDataStr]);
+                }
+            };
+            exports_21("TileMapFile", TileMapFile);
+            DataViewWalker = class DataViewWalker {
+                constructor(buffer) {
+                    this.currOffset = 0;
+                    this.dataWalker = new DataView(buffer);
+                }
+                nextUint8() {
+                    const val = this.dataWalker.getUint8(this.currOffset);
+                    this.currOffset += 1;
+                    return val;
+                }
+                nextUint8Array(length) {
+                    if (length) {
+                        const arr = new Uint8Array(this.dataWalker.buffer, this.currOffset, length);
+                        this.currOffset += length;
+                        return arr;
+                    }
+                    else {
+                        const arr = new Uint8Array(this.dataWalker.buffer, this.currOffset);
+                        this.currOffset = this.dataWalker.byteLength;
+                        return arr;
+                    }
+                }
+                nextUint32() {
+                    const val = this.dataWalker.getUint32(this.currOffset, true);
+                    this.currOffset += 4;
+                    return val;
+                }
+            };
         }
     };
 });
@@ -1244,9 +1244,9 @@ System.register("entities/TileMap", ["engine/util/removeElmFromArray", "resource
         }
     };
 });
-System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/util/Rectangle", "entities/collisions", "entities/Entity", "entities/TileMap"], function (exports_23, context_23) {
+System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/util/Rectangle", "entities/collisions", "entities/Entity"], function (exports_23, context_23) {
     "use strict";
-    var PrerenderCanvas_1, Rectangle_4, collisions_2, Entity_1, TileMap_1, TileMapEntity;
+    var PrerenderCanvas_1, Rectangle_4, collisions_2, Entity_1, TileMapEntity;
     var __moduleName = context_23 && context_23.id;
     return {
         setters: [
@@ -1261,19 +1261,16 @@ System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/uti
             },
             function (Entity_1_1) {
                 Entity_1 = Entity_1_1;
-            },
-            function (TileMap_1_1) {
-                TileMap_1 = TileMap_1_1;
             }
         ],
         execute: function () {
             TileMapEntity = class TileMapEntity extends Entity_1.Entity {
-                constructor(tileMapFile) {
+                constructor(tileMap) {
                     super();
                     this.collisionType = collisions_2.collisions.types.map;
-                    this.tileSize = 48;
+                    this.tileSize = TileMapEntity.tileSize;
                     this.tileTextureSize = 12;
-                    this.data = new TileMap_1.TileMap(tileMapFile);
+                    this.data = tileMap;
                     this.prerender = new PrerenderCanvas_1.PrerenderCanvas(this.rect.width, this.rect.height);
                     this.data.onTileEdit.addHandler(pos => this.updatePrerenderTile(pos[0], pos[1]));
                     this.data.onMajorEdit.addHandler(() => this.updatePrerender());
@@ -1406,6 +1403,7 @@ System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/uti
                 }
             };
             exports_23("TileMapEntity", TileMapEntity);
+            TileMapEntity.tileSize = 48;
         }
     };
 });
@@ -1805,9 +1803,9 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
         }
     };
 });
-System.register("entities/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile", "entities/TileMapEntity"], function (exports_32, context_32) {
+System.register("entities/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "resources/resourceFetcher", "resources/TileMapFile", "entities/TileMapEntity", "entities/TileMap"], function (exports_32, context_32) {
     "use strict";
-    var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_6, removeElmFromArray_5, resourceFetcher_3, TileMapFile_2, TileMapEntity_1, ParentTileMap;
+    var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_6, resourceFetcher_3, TileMapFile_2, TileMapEntity_1, TileMap_1, ParentTileMap;
     var __moduleName = context_32 && context_32.id;
     return {
         setters: [
@@ -1820,9 +1818,6 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
             function (Rectangle_6_1) {
                 Rectangle_6 = Rectangle_6_1;
             },
-            function (removeElmFromArray_5_1) {
-                removeElmFromArray_5 = removeElmFromArray_5_1;
-            },
             function (resourceFetcher_3_1) {
                 resourceFetcher_3 = resourceFetcher_3_1;
             },
@@ -1831,6 +1826,9 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
             },
             function (TileMapEntity_1_1) {
                 TileMapEntity_1 = TileMapEntity_1_1;
+            },
+            function (TileMap_1_1) {
+                TileMap_1 = TileMap_1_1;
             }
         ],
         execute: function () {
@@ -1838,93 +1836,48 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
                 constructor(mapFile, view) {
                     super();
                     this.view = view;
-                    this.joinableJoints = [];
-                    this.unjoinableJoints = [];
-                    this.activeMaps = [];
-                    this.addTileMap(new TileMapEntity_1.TileMapEntity(mapFile));
+                    this.activeMapEntities = [];
+                    this.maps = [];
+                    this.addTileMap(new TileMap_1.TileMap(mapFile), 0, 0);
                     console.log(this);
                 }
                 tick() {
                     super.tick();
-                    for (const jointRecord of this.joinableJoints) {
-                        if (!isRectanglesColliding_3.isRectanglesColliding(jointRecord.location, this.view)) {
+                    for (const map of this.maps) {
+                        if (map.active) {
                             continue;
                         }
-                        this.setJointRecordUnjoinable(jointRecord);
-                        resourceFetcher_3.resourceFetcher.fetchRaw("assets/" + jointRecord.joint.toMap + ".tmap")
+                        if (isRectanglesColliding_3.isRectanglesColliding(this.view, map.rect)) {
+                            const entity = new TileMapEntity_1.TileMapEntity(map.map);
+                            entity.rect.x = map.rect.x;
+                            entity.rect.y = map.rect.y;
+                            this.activeMapEntities.push(entity);
+                            this.addChild(entity);
+                            map.active = true;
+                        }
+                    }
+                }
+                addTileMap(tileMap, offsetX, offsetY) {
+                    const joints = tileMap.getJoints();
+                    this.maps.push({
+                        map: tileMap,
+                        rect: new Rectangle_6.Rectangle(offsetX, offsetY, tileMap.width * TileMapEntity_1.TileMapEntity.tileSize, tileMap.height * TileMapEntity_1.TileMapEntity.tileSize),
+                        active: false
+                    });
+                    for (const joint of joints) {
+                        if (!joint.toMap || !joint.toId) {
+                            continue;
+                        }
+                        resourceFetcher_3.resourceFetcher.fetchRaw("assets/" + joint.toMap + ".tmap")
                             .then(buffer => {
-                            const tileMap = new TileMapEntity_1.TileMapEntity(TileMapFile_2.TileMapFile.fromBuffer(buffer));
-                            const newJoint = tileMap.data.getJointById(jointRecord.joint.toId);
+                            const tileMap = new TileMap_1.TileMap(TileMapFile_2.TileMapFile.fromBuffer(buffer));
+                            const newJoint = tileMap.getJointById(joint.toId);
                             if (!newJoint) {
                                 throw new Error("Failed to join joints -- could not find target joint.");
                             }
-                            const dx = (jointRecord.joint.x - newJoint.x) * jointRecord.map.tileSize + jointRecord.map.rect.x;
-                            const dy = (jointRecord.joint.y - newJoint.y) * jointRecord.map.tileSize + jointRecord.map.rect.y;
-                            tileMap.rect.x += dx;
-                            tileMap.rect.y += dy;
-                            const record = this.addTileMap(tileMap, newJoint);
-                            record.toMap = jointRecord.map;
-                            jointRecord.toMap = record.map;
+                            this.addTileMap(tileMap, (joint.x - newJoint.x) * TileMapEntity_1.TileMapEntity.tileSize + offsetX, (joint.y - newJoint.y) * TileMapEntity_1.TileMapEntity.tileSize + offsetY);
                         });
-                        // break to prevent iterating through array while modifying it (through setJointRecordUnjoinable)
-                        break;
                     }
-                    for (const jointRecord of this.unjoinableJoints) {
-                        if (isRectanglesColliding_3.isRectanglesColliding(jointRecord.location, this.view) ||
-                            isRectanglesColliding_3.isRectanglesColliding(jointRecord.map.rect, this.view)) {
-                            continue;
-                        }
-                        this.removeMap(jointRecord.map);
-                        break;
-                    }
-                }
-                addTileMap(tileMap, excludeJoint) {
-                    const joints = tileMap.data.getJoints();
-                    let excludedJointRecord;
-                    for (const joint of joints) {
-                        const record = {
-                            map: tileMap,
-                            joint: joint,
-                            location: new Rectangle_6.Rectangle(joint.x * tileMap.tileSize + tileMap.rect.x, joint.y * tileMap.tileSize + tileMap.rect.y, tileMap.tileSize, tileMap.tileSize)
-                        };
-                        if (joint === excludeJoint) {
-                            this.unjoinableJoints.push(record);
-                            excludedJointRecord = record;
-                        }
-                        else {
-                            this.joinableJoints.push(record);
-                        }
-                    }
-                    this.activeMaps.push(tileMap);
-                    this.addChild(tileMap);
-                    return excludedJointRecord;
-                }
-                setJointRecordUnjoinable(joint) {
-                    removeElmFromArray_5.removeElmFromArray(joint, this.joinableJoints);
-                    this.unjoinableJoints.push(joint);
-                }
-                setJointRecordJoinable(joint) {
-                    removeElmFromArray_5.removeElmFromArray(joint, this.unjoinableJoints);
-                    this.joinableJoints.push(joint);
-                }
-                removeMap(map) {
-                    removeElmFromArray_5.removeElmFromArray(map, this.activeMaps);
-                    for (let i = this.joinableJoints.length - 1; i >= 0; i--) {
-                        const joint = this.joinableJoints[i];
-                        if (joint.map === map) {
-                            this.joinableJoints.splice(i, 1);
-                        }
-                    }
-                    for (let j = this.unjoinableJoints.length - 1; j >= 0; j--) {
-                        const joint = this.unjoinableJoints[j];
-                        if (joint.map === map) {
-                            this.unjoinableJoints.splice(j, 1);
-                        }
-                        else if (joint.toMap === map) {
-                            this.setJointRecordJoinable(joint);
-                        }
-                    }
-                    this.removeChild(map);
                 }
             };
             exports_32("ParentTileMap", ParentTileMap);
@@ -2319,9 +2272,9 @@ System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCan
         }
     };
 });
-System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm", "entities/GhostPlayer", "entities/TileMapEntity", "resources/resourceFetcher", "settings", "view/mapEditor/MapEditorEntityJointLayer", "view/mapEditor/MapEditorMapLayer", "view/mapEditor/MapEditorOverlay"], function (exports_38, context_38) {
+System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm", "entities/GhostPlayer", "entities/TileMap", "entities/TileMapEntity", "resources/resourceFetcher", "settings", "view/mapEditor/MapEditorEntityJointLayer", "view/mapEditor/MapEditorMapLayer", "view/mapEditor/MapEditorOverlay"], function (exports_38, context_38) {
     "use strict";
-    var ParentCanvasElm_4, GhostPlayer_1, TileMapEntity_2, resourceFetcher_5, settings_3, MapEditorEntityJointLayer_1, MapEditorMapLayer_1, MapEditorOverlay_1, MapEditor;
+    var ParentCanvasElm_4, GhostPlayer_1, TileMap_2, TileMapEntity_2, resourceFetcher_5, settings_3, MapEditorEntityJointLayer_1, MapEditorMapLayer_1, MapEditorOverlay_1, MapEditor;
     var __moduleName = context_38 && context_38.id;
     return {
         setters: [
@@ -2330,6 +2283,9 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
             },
             function (GhostPlayer_1_1) {
                 GhostPlayer_1 = GhostPlayer_1_1;
+            },
+            function (TileMap_2_1) {
+                TileMap_2 = TileMap_2_1;
             },
             function (TileMapEntity_2_1) {
                 TileMapEntity_2 = TileMapEntity_2_1;
@@ -2358,7 +2314,7 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                     this.overlay = new MapEditorOverlay_1.MapEditorOverlay();
                     resourceFetcher_5.resourceFetcher.fetchRaw("assets/" + prompt("Open map name") + ".tmap")
                         .then(tileMapFile => {
-                        this.tileMap = new TileMapEntity_2.TileMapEntity(tileMapFile);
+                        this.tileMap = new TileMapEntity_2.TileMapEntity(new TileMap_2.TileMap(tileMapFile));
                         this.overlay.setTileMap(this.tileMap.data);
                         this.addChild(new MapEditorMapLayer_1.MapEditorMapLayer(this.tileMap, this.overlay));
                         this.addChild(new MapEditorEntityJointLayer_1.MapEditorEntityJointLayer(this.tileMap, this.overlay));

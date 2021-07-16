@@ -112,6 +112,6 @@ export interface TileMapJoint {
     x: number,
     y: number,
     id: number,
-    toId: number,
-    toMap: string
+    toId?: number,
+    toMap?: string
 }
