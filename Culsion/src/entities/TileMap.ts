@@ -58,7 +58,12 @@ export class TileMap {
     }
 
     public setBlockByIndex(xIndex: number, yIndex: number, block: number): void {
-        if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) { return; }
+        if (
+            !this.map[yIndex] ||
+            this.map[yIndex].length <= xIndex ||
+            this.map[yIndex][xIndex] === block
+        ) { return; }
+
         this.map[yIndex][xIndex] = block;
         this.onTileEdit.dispatch([xIndex, yIndex]);
     }

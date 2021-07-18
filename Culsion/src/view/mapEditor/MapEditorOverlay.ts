@@ -4,13 +4,26 @@ import { BlockType, TileMapJoint } from "../../resources/TileMapFile";
 
 export class MapEditorOverlay extends Component {
     public selectedBlock = 1;
+    public fillMode = false;
 
     private blockTypeElms: Elm<any>[] = [];
 
     private blockTypesElm = new Elm().class("blockTypes")
         .appendTo(this.elm);
 
-    private canvasSizeElm = new Elm().class("canvasSize")
+    private fillModeToggle = new Elm().class("fillModeToggle", "button")
+        .append("Fill mode")
+        .on("click", () => {
+            this.fillMode = !this.fillMode;
+            if (this.fillMode) {
+                this.fillModeToggle.class("on");
+            } else {
+                this.fillModeToggle.removeClass("on");
+            }
+        })
+        .appendTo(this.elm);
+
+    private canvasSizeElm = new Elm().class("canvasSize", "button")
         .on("click", () => this.openChangeMapSizeDialog())
         .appendTo(this.elm);
 

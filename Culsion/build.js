@@ -1145,7 +1145,9 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/remo
                         this.blockTypes[this.map[yIndex][xIndex]].solid;
                 }
                 setBlockByIndex(xIndex, yIndex, block) {
-                    if (!this.map[yIndex] || this.map[yIndex].length <= xIndex) {
+                    if (!this.map[yIndex] ||
+                        this.map[yIndex].length <= xIndex ||
+                        this.map[yIndex][xIndex] === block) {
                         return;
                     }
                     this.map[yIndex][xIndex] = block;
@@ -2017,10 +2019,23 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                 constructor() {
                     super("MapEditorOverlay");
                     this.selectedBlock = 1;
+                    this.fillMode = false;
                     this.blockTypeElms = [];
                     this.blockTypesElm = new elements_3.Elm().class("blockTypes")
                         .appendTo(this.elm);
-                    this.canvasSizeElm = new elements_3.Elm().class("canvasSize")
+                    this.fillModeToggle = new elements_3.Elm().class("fillModeToggle", "button")
+                        .append("Fill mode")
+                        .on("click", () => {
+                        this.fillMode = !this.fillMode;
+                        if (this.fillMode) {
+                            this.fillModeToggle.class("on");
+                        }
+                        else {
+                            this.fillModeToggle.removeClass("on");
+                        }
+                    })
+                        .appendTo(this.elm);
+                    this.canvasSizeElm = new elements_3.Elm().class("canvasSize", "button")
                         .on("click", () => this.openChangeMapSizeDialog())
                         .appendTo(this.elm);
                 }
@@ -2065,7 +2080,7 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                         this.blockTypesElm.append(elm);
                         this.blockTypeElms[i] = elm;
                     }
-                    this.blockTypesElm.append(new elements_3.Elm("div").append("+").on("click", () => {
+                    this.blockTypesElm.append(new elements_3.Elm("div").append("+").class("blockType", "addBlockType").on("click", () => {
                         DialogBoxForm.createEmptyForm(this.elm, {
                             color: "string",
                             texture: "string",
@@ -2296,6 +2311,9 @@ System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCan
                     this.overlay = overlay;
                     this.leftDown = false;
                     this.rightDown = false;
+                    this.fillMode = false;
+                    this.fillModeCornerX = 0;
+                    this.fillModeCornerY = 0;
                     this.addChild(tileMap);
                     this.eventBus.subscribe("mousedown", () => this.updateMouse());
                     this.eventBus.subscribe("mouseup", () => this.updateMouse());
@@ -2303,29 +2321,56 @@ System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCan
                 updateMouse() {
                     this.leftDown = this.world.mouse.leftDown;
                     this.rightDown = this.world.mouse.rightDown;
+                    this.fillMode = this.overlay.fillMode;
+                    if (this.fillMode) {
+                        this.fillModeCornerX = this.getRelMouseX();
+                        this.fillModeCornerY = this.getRelMouseY();
+                    }
                 }
                 tick() {
                     super.tick();
-                    const x = this.world.camera.clientXToWorld(this.world.mouse.x);
-                    const y = this.world.camera.clientYToWorld(this.world.mouse.y);
+                    const xIndex = this.getRelMouseX();
+                    const yIndex = this.getRelMouseY();
+                    let selectedBlock;
                     if (this.leftDown) {
-                        this.tileMap.setBlock(x, y, this.overlay.selectedBlock);
+                        selectedBlock = this.overlay.selectedBlock;
                     }
                     else if (this.rightDown) {
-                        this.tileMap.setBlock(x, y, 0);
+                        selectedBlock = 0;
+                    }
+                    else {
+                        return;
+                    }
+                    if (this.fillMode) {
+                        const left = Math.min(xIndex, this.fillModeCornerX);
+                        const right = Math.max(xIndex, this.fillModeCornerX);
+                        const top = Math.min(yIndex, this.fillModeCornerY);
+                        const bottom = Math.max(yIndex, this.fillModeCornerY);
+                        for (let y = top; y <= bottom; y++) {
+                            for (let x = left; x <= right; x++) {
+                                this.tileMap.data.setBlockByIndex(x, y, selectedBlock);
+                            }
+                        }
+                    }
+                    else {
+                        this.tileMap.data.setBlockByIndex(xIndex, yIndex, selectedBlock);
                     }
                 }
                 draw() {
                     super.draw();
-                    const x = this.world.camera.clientXToWorld(this.world.mouse.x);
-                    const y = this.world.camera.clientYToWorld(this.world.mouse.y);
-                    const xIndex = Math.floor(x / this.tileMap.tileSize);
-                    const yIndex = Math.floor(y / this.tileMap.tileSize);
+                    const xIndex = this.getRelMouseX();
+                    const yIndex = this.getRelMouseY();
                     const X = this.world.canvas.X;
                     X.fillStyle = "#ff0000";
                     X.font = "12px Arial";
                     X.textBaseline = "top";
                     X.fillText("(" + xIndex + ", " + yIndex + ")", xIndex * this.tileMap.tileSize, yIndex * this.tileMap.tileSize);
+                }
+                getRelMouseX() {
+                    return Math.floor(this.world.camera.clientXToWorld(this.world.mouse.x) / this.tileMap.tileSize);
+                }
+                getRelMouseY() {
+                    return Math.floor(this.world.camera.clientYToWorld(this.world.mouse.y) / this.tileMap.tileSize);
                 }
             };
             exports_38("MapEditorMapLayer", MapEditorMapLayer);
@@ -2369,7 +2414,7 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                     super();
                     this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
                     this.overlay = new MapEditorOverlay_1.MapEditorOverlay();
-                    tileMapFetcher_3.tileMapFetcher.fetch(prompt("Open map name"))
+                    tileMapFetcher_3.tileMapFetcher.fetch("mazeSolved" || prompt("Open map name"))
                         .then(tileMap => {
                         this.tileMap = new TileMapEntity_2.TileMapEntity(tileMap);
                         this.overlay.setTileMap(this.tileMap.data);

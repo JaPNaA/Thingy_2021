@@ -70,11 +70,19 @@ canvas {
     border-color: #1b58ff;
 }
 
-.MapEditorOverlay .canvasSize {
+.MapEditorOverlay .button {
+    text-align: center;
+    font-size: 0.9em;
     background-color: #0000002a;
-    padding: 4px;
+    padding: 6px 12px;
+    margin: 4px 0;
     border-radius: 2px;
     cursor: pointer;
+}
+
+.MapEditorOverlay .fillModeToggle.on {
+    background-color: #ffffff;
+    color: #000000;
 }
 
 .dialogBox.form {
