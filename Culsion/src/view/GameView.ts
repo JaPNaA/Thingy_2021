@@ -3,8 +3,7 @@ import { World } from "../engine/World";
 import { NPCWithDialog } from "../entities/NPCWithDialog";
 import { ParentTileMap } from "../entities/ParentTileMap";
 import { Player } from "../entities/Player";
-import { resourceFetcher } from "../resources/resourceFetcher";
-import { TileMapFile } from "../resources/TileMapFile";
+import { tileMapFetcher } from "../resources/tileMapFetcher";
 
 export class GameView extends ParentCanvasElm {
     private player = new Player();
@@ -12,10 +11,10 @@ export class GameView extends ParentCanvasElm {
     constructor() {
         super();
 
-        resourceFetcher.fetchRaw("assets/mazeSolved.tmap")
-            .then(file => {
+        tileMapFetcher.fetch("mazeSolved")
+            .then(tileMap => {
                 this.addChild(
-                    new ParentTileMap(TileMapFile.fromBuffer(file), this.world.camera.rect)
+                    new ParentTileMap(tileMap, this.world.camera.rect)
                 );
                 this.addChild(this.player);
                 this.addChild(new NPCWithDialog(3750, 3750));
