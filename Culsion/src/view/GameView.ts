@@ -11,7 +11,7 @@ export class GameView extends ParentCanvasElm {
     constructor() {
         super();
 
-        tileMapFetcher.fetch("mazeSolved")
+        tileMapFetcher.fetch("cave")
             .then(tileMap => {
                 this.addChild(
                     new ParentTileMap(tileMap, this.world.camera.rect)

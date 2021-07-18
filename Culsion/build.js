@@ -1743,8 +1743,8 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
                 constructor() {
                     super();
                     this.collisionType = collisions_3.collisions.types.moving;
-                    this.rect = new MovingRectangle_2.MovingRectangle(32, 32, 24, 24);
-                    this.speed = 1000;
+                    this.rect = new MovingRectangle_2.MovingRectangle(296, 200, 24, 24);
+                    this.speed = 300;
                 }
                 draw() {
                     const X = this.world.canvas.X;
@@ -1963,7 +1963,7 @@ System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/
                 constructor() {
                     super();
                     this.player = new Player_2.Player();
-                    tileMapFetcher_2.tileMapFetcher.fetch("mazeSolved")
+                    tileMapFetcher_2.tileMapFetcher.fetch("cave")
                         .then(tileMap => {
                         this.addChild(new ParentTileMap_1.ParentTileMap(tileMap, this.world.camera.rect));
                         this.addChild(this.player);
@@ -1998,6 +1998,11 @@ System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player
                 constructor() {
                     super(...arguments);
                     this.collisionType = collisions_4.collisions.types.none;
+                    this.actualSpeed = 1000;
+                }
+                tick() {
+                    this.speed = this.actualSpeed / this.world.camera.scale;
+                    super.tick();
                 }
             };
             exports_35("GhostPlayer", GhostPlayer);
@@ -2414,7 +2419,7 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                     super();
                     this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
                     this.overlay = new MapEditorOverlay_1.MapEditorOverlay();
-                    tileMapFetcher_3.tileMapFetcher.fetch("mazeSolved" || prompt("Open map name"))
+                    tileMapFetcher_3.tileMapFetcher.fetch(prompt("Open map name"))
                         .then(tileMap => {
                         this.tileMap = new TileMapEntity_2.TileMapEntity(tileMap);
                         this.overlay.setTileMap(this.tileMap.data);
