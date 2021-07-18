@@ -68,7 +68,7 @@ export class MapEditorOverlay extends Component {
         }
 
         this.blockTypesElm.append(
-            new Elm("div").append("+").on("click", () => {
+            new Elm("div").append("+").class("blockType", "addBlockType").on("click", () => {
                 DialogBoxForm.createEmptyForm(this.elm, {
                     color: "string",
                     texture: "string",
