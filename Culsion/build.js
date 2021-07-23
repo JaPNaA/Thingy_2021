@@ -1719,14 +1719,20 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_29, conte
         }
     };
 });
-System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "entities/collisions", "entities/Entity"], function (exports_30, context_30) {
+System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/MovingRectangle", "resources/resourceFetcher", "settings", "entities/collisions", "entities/Entity"], function (exports_30, context_30) {
     "use strict";
-    var MovingRectangle_2, settings_2, collisions_3, Entity_3, Player;
+    var PrerenderCanvas_3, MovingRectangle_2, resourceFetcher_3, settings_2, collisions_3, Entity_3, Player;
     var __moduleName = context_30 && context_30.id;
     return {
         setters: [
+            function (PrerenderCanvas_3_1) {
+                PrerenderCanvas_3 = PrerenderCanvas_3_1;
+            },
             function (MovingRectangle_2_1) {
                 MovingRectangle_2 = MovingRectangle_2_1;
+            },
+            function (resourceFetcher_3_1) {
+                resourceFetcher_3 = resourceFetcher_3_1;
             },
             function (settings_2_1) {
                 settings_2 = settings_2_1;
@@ -1743,13 +1749,22 @@ System.register("entities/Player", ["engine/util/MovingRectangle", "settings", "
                 constructor() {
                     super();
                     this.collisionType = collisions_3.collisions.types.moving;
-                    this.rect = new MovingRectangle_2.MovingRectangle(296, 200, 24, 24);
+                    this.rect = new MovingRectangle_2.MovingRectangle(296, 200, 32, 32);
                     this.speed = 300;
+                    this.texture = new PrerenderCanvas_3.PrerenderCanvas(12, 16);
+                    this.texture.X.fillStyle = "#ff0000";
+                    this.texture.X.fillRect(0, 0, 12, 16);
+                    resourceFetcher_3.resourceFetcher.fetchImg("assets/img/char/magmaDown.png")
+                        .then(img => {
+                        this.texture.clear();
+                        this.texture.X.drawImage(img, 0, 0);
+                    });
                 }
                 draw() {
                     const X = this.world.canvas.X;
-                    X.fillStyle = "#f00";
-                    X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    this.texture.drawToContext(X, this.rect.x - this.texture.width * 2 + this.rect.width / 2, this.rect.y - this.texture.height * 4 + this.rect.height, this.texture.width * 4, this.texture.height * 4);
+                    // X.fillStyle = "#f00";
+                    // X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
                 tick() {
                     let dirX = 0;
@@ -1837,21 +1852,21 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
 });
 System.register("resources/tileMapFetcher", ["entities/tilemap/TileMap", "resources/resourceFetcher"], function (exports_32, context_32) {
     "use strict";
-    var TileMap_1, resourceFetcher_3, TileMapFetcher, tileMapFetcher;
+    var TileMap_1, resourceFetcher_4, TileMapFetcher, tileMapFetcher;
     var __moduleName = context_32 && context_32.id;
     return {
         setters: [
             function (TileMap_1_1) {
                 TileMap_1 = TileMap_1_1;
             },
-            function (resourceFetcher_3_1) {
-                resourceFetcher_3 = resourceFetcher_3_1;
+            function (resourceFetcher_4_1) {
+                resourceFetcher_4 = resourceFetcher_4_1;
             }
         ],
         execute: function () {
             TileMapFetcher = class TileMapFetcher {
                 async fetch(url) {
-                    const data = await resourceFetcher_3.resourceFetcher.fetchRaw("assets/map/" + url + ".tmap");
+                    const data = await resourceFetcher_4.resourceFetcher.fetchRaw("assets/map/" + url + ".tmap");
                     return new TileMap_1.TileMap(data);
                 }
             };
