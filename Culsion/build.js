@@ -1088,7 +1088,7 @@ System.register("resources/TileMapFile", [], function (exports_21, context_21) {
         }
     };
 });
-System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile"], function (exports_22, context_22) {
+System.register("entities/tilemap/TileMap", ["engine/PrerenderCanvas", "engine/util/removeElmFromArray", "resources/resourceFetcher", "resources/TileMapFile"], function (exports_22, context_22) {
     "use strict";
     var PrerenderCanvas_1, removeElmFromArray_3, resourceFetcher_1, TileMapFile_1, TileMap, EventHandler;
     var __moduleName = context_22 && context_22.id;
@@ -1268,7 +1268,7 @@ System.register("entities/TileMap", ["engine/PrerenderCanvas", "engine/util/remo
         }
     };
 });
-System.register("entities/TileMapEntity", ["engine/PrerenderCanvas", "engine/util/Rectangle", "entities/collisions", "entities/Entity"], function (exports_23, context_23) {
+System.register("entities/tilemap/TileMapEntity", ["engine/PrerenderCanvas", "engine/util/Rectangle", "entities/collisions", "entities/Entity"], function (exports_23, context_23) {
     "use strict";
     var PrerenderCanvas_2, Rectangle_4, collisions_2, Entity_1, TileMapEntity;
     var __moduleName = context_23 && context_23.id;
@@ -1835,7 +1835,7 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
         }
     };
 });
-System.register("resources/tileMapFetcher", ["entities/TileMap", "resources/resourceFetcher"], function (exports_32, context_32) {
+System.register("resources/tileMapFetcher", ["entities/tilemap/TileMap", "resources/resourceFetcher"], function (exports_32, context_32) {
     "use strict";
     var TileMap_1, resourceFetcher_3, TileMapFetcher, tileMapFetcher;
     var __moduleName = context_32 && context_32.id;
@@ -1859,7 +1859,7 @@ System.register("resources/tileMapFetcher", ["entities/TileMap", "resources/reso
         }
     };
 });
-System.register("entities/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "resources/TileMapFile", "entities/TileMapEntity", "resources/tileMapFetcher"], function (exports_33, context_33) {
+System.register("entities/tilemap/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "resources/TileMapFile", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher"], function (exports_33, context_33) {
     "use strict";
     var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_6, TileMapFile_2, TileMapEntity_1, tileMapFetcher_1, ParentTileMap;
     var __moduleName = context_33 && context_33.id;
@@ -1936,7 +1936,7 @@ System.register("entities/ParentTileMap", ["engine/collision/isRectanglesCollidi
         }
     };
 });
-System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/NPCWithDialog", "entities/ParentTileMap", "entities/Player", "resources/tileMapFetcher"], function (exports_34, context_34) {
+System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/NPCWithDialog", "entities/tilemap/ParentTileMap", "entities/Player", "resources/tileMapFetcher"], function (exports_34, context_34) {
     "use strict";
     var ParentCanvasElm_2, NPCWithDialog_1, ParentTileMap_1, Player_2, tileMapFetcher_2, GameView;
     var __moduleName = context_34 && context_34.id;
@@ -2382,7 +2382,7 @@ System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCan
         }
     };
 });
-System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm", "entities/GhostPlayer", "entities/TileMapEntity", "resources/tileMapFetcher", "settings", "view/mapEditor/MapEditorEntityJointLayer", "view/mapEditor/MapEditorMapLayer", "view/mapEditor/MapEditorOverlay"], function (exports_39, context_39) {
+System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm", "entities/GhostPlayer", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher", "settings", "view/mapEditor/MapEditorEntityJointLayer", "view/mapEditor/MapEditorMapLayer", "view/mapEditor/MapEditorOverlay"], function (exports_39, context_39) {
     "use strict";
     var ParentCanvasElm_4, GhostPlayer_1, TileMapEntity_2, tileMapFetcher_3, settings_3, MapEditorEntityJointLayer_1, MapEditorMapLayer_1, MapEditorOverlay_1, MapEditor;
     var __moduleName = context_39 && context_39.id;

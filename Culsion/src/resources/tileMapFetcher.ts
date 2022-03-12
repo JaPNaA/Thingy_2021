@@ -1,4 +1,4 @@
-import { TileMap } from "../entities/TileMap";
+import { TileMap } from "../entities/tilemap/TileMap";
 import { resourceFetcher } from "./resourceFetcher";
 
 class TileMapFetcher {

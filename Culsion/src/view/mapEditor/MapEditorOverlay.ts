@@ -1,5 +1,5 @@
 import { Component, Elm, InputElm } from "../../engine/elements";
-import { TileMap } from "../../entities/TileMap";
+import { TileMap } from "../../entities/tilemap/TileMap";
 import { BlockType, TileMapJoint } from "../../resources/TileMapFile";
 
 export class MapEditorOverlay extends Component {

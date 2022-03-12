@@ -1,7 +1,7 @@
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { World } from "../../engine/World";
 import { GhostPlayer } from "../../entities/GhostPlayer";
-import { TileMapEntity } from "../../entities/TileMapEntity";
+import { TileMapEntity } from "../../entities/tilemap/TileMapEntity";
 import { tileMapFetcher } from "../../resources/tileMapFetcher";
 import { settings } from "../../settings";
 import { MapEditorEntityJointLayer } from "./MapEditorEntityJointLayer";

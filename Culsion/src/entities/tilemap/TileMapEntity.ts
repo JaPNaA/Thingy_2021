@@ -1,8 +1,8 @@
-import { PrerenderCanvas } from "../engine/PrerenderCanvas";
-import { Rectangle } from "../engine/util/Rectangle";
-import { World } from "../engine/World";
-import { collisions } from "./collisions";
-import { Entity } from "./Entity";
+import { PrerenderCanvas } from "../../engine/PrerenderCanvas";
+import { Rectangle } from "../../engine/util/Rectangle";
+import { World } from "../../engine/World";
+import { collisions } from "./../collisions";
+import { Entity } from "./../Entity";
 import { TileMap } from "./TileMap";
 
 export class TileMapEntity extends Entity {

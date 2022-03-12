@@ -1,5 +1,5 @@
 import { CanvasElmWithEventBus } from "../../engine/canvasElm/CanvasElmWithEventBus";
-import { TileMapEntity } from "../../entities/TileMapEntity";
+import { TileMapEntity } from "../../entities/tilemap/TileMapEntity";
 import { TileMapJoint } from "../../resources/TileMapFile";
 import { MapEditorOverlay } from "./MapEditorOverlay";
 

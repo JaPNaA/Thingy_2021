@@ -1,10 +1,10 @@
-import { isRectanglesColliding } from "../engine/collision/isRectanglesColliding";
-import { ParentCanvasElm } from "../engine/canvasElm/ParentCanvasElm";
-import { Rectangle } from "../engine/util/Rectangle";
-import { isTileMapJointExtention } from "../resources/TileMapFile";
+import { isRectanglesColliding } from "../../engine/collision/isRectanglesColliding";
+import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
+import { Rectangle } from "../../engine/util/Rectangle";
+import { isTileMapJointExtention } from "../../resources/TileMapFile";
 import { TileMapEntity } from "./TileMapEntity";
 import { TileMap } from "./TileMap";
-import { tileMapFetcher } from "../resources/tileMapFetcher";
+import { tileMapFetcher } from "../../resources/tileMapFetcher";
 
 export class ParentTileMap extends ParentCanvasElm {
     private activeMapEntities: TileMapEntity[] = [];

@@ -1,7 +1,7 @@
-import { PrerenderCanvas } from "../engine/PrerenderCanvas";
-import { removeElmFromArray } from "../engine/util/removeElmFromArray";
-import { resourceFetcher } from "../resources/resourceFetcher";
-import { BlockType, TileMapFile, TileMapJoint } from "../resources/TileMapFile";
+import { PrerenderCanvas } from "../../engine/PrerenderCanvas";
+import { removeElmFromArray } from "../../engine/util/removeElmFromArray";
+import { resourceFetcher } from "../../resources/resourceFetcher";
+import { BlockType, TileMapFile, TileMapJoint } from "../../resources/TileMapFile";
 
 export class TileMap {
     public width: number;

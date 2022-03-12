@@ -1,5 +1,5 @@
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
-import { TileMapEntity } from "../../entities/TileMapEntity";
+import { TileMapEntity } from "../../entities/tilemap/TileMapEntity";
 import { MapEditorOverlay } from "./MapEditorOverlay";
 
 export class MapEditorMapLayer extends ParentCanvasElm {

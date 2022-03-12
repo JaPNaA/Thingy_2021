@@ -1,7 +1,7 @@
 import { ParentCanvasElm } from "../engine/canvasElm/ParentCanvasElm";
 import { World } from "../engine/World";
 import { NPCWithDialog } from "../entities/NPCWithDialog";
-import { ParentTileMap } from "../entities/ParentTileMap";
+import { ParentTileMap } from "../entities/tilemap/ParentTileMap";
 import { Player } from "../entities/Player";
 import { tileMapFetcher } from "../resources/tileMapFetcher";
 
