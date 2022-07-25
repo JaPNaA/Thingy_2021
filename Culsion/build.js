@@ -1762,6 +1762,7 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
                 }
                 draw() {
                     const X = this.world.canvas.X;
+                    X.imageSmoothingEnabled = false;
                     this.texture.drawToContext(X, this.rect.x - this.texture.width * 2 + this.rect.width / 2, this.rect.y - this.texture.height * 4 + this.rect.height, this.texture.width * 4, this.texture.height * 4);
                     // X.fillStyle = "#f00";
                     // X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);

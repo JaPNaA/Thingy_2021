@@ -27,6 +27,7 @@ export class Player extends Entity {
 
     draw() {
         const X = this.world.canvas.X;
+        X.imageSmoothingEnabled = false;
         this.texture.drawToContext(X,
             this.rect.x - this.texture.width * 2 + this.rect.width / 2,
             this.rect.y - this.texture.height * 4 + this.rect.height,
