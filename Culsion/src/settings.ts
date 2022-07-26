@@ -4,7 +4,7 @@ export const settings = {
         moveDown: ["KeyS", "ArrowDown"],
         moveLeft: ["KeyA", "ArrowLeft"],
         moveRight: ["KeyD", "ArrowRight"],
-        select: ["Enter", "NumpadEnter", "Space", "Z"],
+        select: ["Enter", "NumpadEnter", "Space", "KeyZ"],
         zoomOut: ["Minus", "NumpadSubtract"],
         zoomIn: ["Equal", "NumpadAdd"]
     }

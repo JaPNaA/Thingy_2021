@@ -1,3 +1,4 @@
+import { Rectangle } from "../util/Rectangle";
 import { removeElmFromArray } from "../util/removeElmFromArray";
 import { CollisionReactionMap } from "./CollisionReactionMap";
 import { Hitbox } from "./Hitbox";
@@ -14,6 +15,16 @@ export class CollisionSystem {
 
     public removeHitbox(rectangle: Hitbox<any>) {
         removeElmFromArray(rectangle, this.hitboxes);
+    }
+
+    public getCollisionsWith(rectangle: Rectangle): Hitbox<any>[] {
+        const colliding: Hitbox<any>[] = [];
+        for (const hitbox of this.hitboxes) {
+            if (isRectanglesColliding(rectangle, hitbox.rectangle)) {
+                colliding.push(hitbox);
+            }
+        }
+        return colliding;
     }
 
     public _checkCollisions() {

@@ -2,16 +2,17 @@ import { Rectangle } from "../engine/util/Rectangle";
 import { dialogFetcher } from "../resources/dialogFetcher";
 import { NPCDialog } from "../ui/NPCDialog";
 import { NPC } from "./NPC";
-import { Player } from "./Player";
 
 export class NPCWithDialog extends NPC {
     private npcDialog?: NPCDialog;
     private loadingDialog = false;
 
-    onCollision(other: any) {
-        if (!(other instanceof Player)) { return; }
-        if (this.loadingDialog) { return; }
-        if (this.npcDialog && !this.npcDialog.closed) { return; }
+    public canStartDialog() {
+        return !this.loadingDialog && (!this.npcDialog || this.npcDialog.closed);
+    }
+
+    public startDialog() {
+        if (!this.canStartDialog()) { return; }
 
         this.loadingDialog = true;
 
