@@ -36,7 +36,7 @@ export class ParentTileMap extends ParentCanvasElm {
 
     private activateMap(map: MapRecord) {
         const tileMapEntity = new TileMapEntity(map.map);
-        const entitiesInTileMap = new EntitiesInTileMap(map.map.getEntityData());
+        const entitiesInTileMap = new EntitiesInTileMap(map.map);
         tileMapEntity.rect.x = map.rect.x;
         tileMapEntity.rect.y = map.rect.y;
         this.activeMapEntities.push(tileMapEntity);
