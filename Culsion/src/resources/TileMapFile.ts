@@ -21,7 +21,8 @@ export class TileMapFile {
     public mapData!: Uint8Array;
     public jsonData!: {
         blockTypes?: BlockType[],
-        joints?: TileMapJoint[]
+        joints?: TileMapJoint[],
+        entities?: EntityData[]
     };
 
     public static fromBuffer(buffer: ArrayBuffer): TileMapFile {
@@ -121,7 +122,13 @@ interface TileMapJointExtention extends TileMapJointAnchor {
 
 export type TileMapJoint = TileMapJointAnchor | TileMapJointExtention;
 
-export function isTileMapJointExtention(joint: TileMapJoint): joint is TileMapJointExtention {
+export function isTileMapJointExtension(joint: TileMapJoint): joint is TileMapJointExtention {
     // @ts-expect-error
     return joint.toId !== undefined;
+}
+
+export interface EntityData {
+    x: number;
+    y: number;
+    id: number;
 }

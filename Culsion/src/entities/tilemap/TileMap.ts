@@ -1,7 +1,7 @@
 import { PrerenderCanvas } from "../../engine/PrerenderCanvas";
 import { removeElmFromArray } from "../../engine/util/removeElmFromArray";
 import { resourceFetcher } from "../../resources/resourceFetcher";
-import { BlockType, TileMapFile, TileMapJoint } from "../../resources/TileMapFile";
+import { BlockType, TileMapFile, TileMapJoint, EntityData } from "../../resources/TileMapFile";
 
 export class TileMap {
     public width: number;
@@ -14,6 +14,7 @@ export class TileMap {
     private map: number[][];
     private blockTypes: BlockType[];
     private joints: TileMapJoint[];
+    private entities: EntityData[];
     private textures: (HTMLImageElement | PrerenderCanvas | null)[] = [];
 
     private file: TileMapFile;
@@ -41,6 +42,7 @@ export class TileMap {
 
         this.blockTypes = this.file.jsonData.blockTypes || [];
         this.joints = this.file.jsonData.joints || [];
+        this.entities = this.file.jsonData.entities || [];
     }
 
     public getBlockTexture(xIndex: number, yIndex: number): HTMLImageElement | PrerenderCanvas | null {
@@ -69,7 +71,7 @@ export class TileMap {
     }
 
     public getJoints(): readonly TileMapJoint[] {
-        return this.file.jsonData.joints || [];
+        return this.joints;
     }
 
     public removeJoint(joint: TileMapJoint) {
@@ -87,6 +89,10 @@ export class TileMap {
         for (const joint of this.file.jsonData.joints) {
             if (joint.id === id) { return joint; }
         }
+    }
+
+    public getEntityData(): readonly EntityData[] {
+        return this.entities;
     }
 
     public getBlockTypes(): readonly BlockType[] {

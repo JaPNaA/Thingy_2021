@@ -1,11 +1,17 @@
 import { isRectanglesColliding } from "../../engine/collision/isRectanglesColliding";
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { Rectangle } from "../../engine/util/Rectangle";
-import { isTileMapJointExtention } from "../../resources/TileMapFile";
+import { isTileMapJointExtension } from "../../resources/TileMapFile";
 import { TileMapEntity } from "./TileMapEntity";
 import { TileMap } from "./TileMap";
 import { tileMapFetcher } from "../../resources/tileMapFetcher";
+import { EntitiesInTileMap } from "./EntitiesInTileMap";
 
+/**
+ * A parent for TileMaps. Manages TileMap loading and unloading.
+ * 
+ * Children include TileMapEntity and EntitiesInTileMap.
+ */
 export class ParentTileMap extends ParentCanvasElm {
     private activeMapEntities: TileMapEntity[] = [];
     private maps: MapRecord[] = [];
@@ -23,14 +29,20 @@ export class ParentTileMap extends ParentCanvasElm {
             if (map.active) { continue; }
 
             if (isRectanglesColliding(this.view, map.rect)) {
-                const entity = new TileMapEntity(map.map);
-                entity.rect.x = map.rect.x;
-                entity.rect.y = map.rect.y;
-                this.activeMapEntities.push(entity);
-                this.addChild(entity);
-                map.active = true;
+                this.activateMap(map);
             }
         }
+    }
+
+    private activateMap(map: MapRecord) {
+        const tileMapEntity = new TileMapEntity(map.map);
+        const entitiesInTileMap = new EntitiesInTileMap(map.map.getEntityData());
+        tileMapEntity.rect.x = map.rect.x;
+        tileMapEntity.rect.y = map.rect.y;
+        this.activeMapEntities.push(tileMapEntity);
+        this.addChild(tileMapEntity);
+        this.addChild(entitiesInTileMap);
+        map.active = true;
     }
 
     private addTileMap(tileMap: TileMap, offsetX: number, offsetY: number) {
@@ -46,7 +58,7 @@ export class ParentTileMap extends ParentCanvasElm {
         });
 
         for (const joint of joints) {
-            if (!isTileMapJointExtention(joint)) { continue; }
+            if (!isTileMapJointExtension(joint)) { continue; }
 
             tileMapFetcher.fetch(joint.toMap)
                 .then(tileMap => {
