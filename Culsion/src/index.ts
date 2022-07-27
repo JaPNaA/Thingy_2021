@@ -1,6 +1,7 @@
 import { CanvasElm } from "./engine/canvasElm/CanvasElm";
 import { World } from "./engine/World";
 import { registerCollisions } from "./entities/collisions";
+import { FlowEditor } from "./view/flowEditor/FlowEditor";
 import { GameView } from "./view/GameView";
 import { MapEditor } from "./view/mapEditor/MapEditor";
 
@@ -20,6 +21,8 @@ function navigateByHash() {
 
     if (location.hash == "#mapEditor") {
         currViewElm = new MapEditor();
+    } else if (location.hash == "#flowEditor") {
+        currViewElm = new FlowEditor();
     } else {
         currViewElm = new GameView();
     }

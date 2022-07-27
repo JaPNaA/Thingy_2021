@@ -1,0 +1,172 @@
+{
+    "meta": {
+        "speakers": {
+            "Caveman": {
+                "aliases": [
+                    "原人"
+                ]
+            }
+        }
+    },
+    "flow": [
+        [
+            "Caveman",
+            "English? 日本語？"
+        ],
+        {
+            "ctrl": "split",
+            "options": [
+                [
+                    0,
+                    "Again"
+                ],
+                [
+                    "English",
+                    "English"
+                ],
+                [
+                    "Japanese",
+                    "日本語"
+                ]
+            ]
+        },
+        {
+            "ctrl": "marker",
+            "name": "English"
+        },
+        [
+            "Caveman",
+            "Hey!"
+        ],
+        [
+            "Caveman",
+            "Ya tryin' to start a fight?!\nRed boy?",
+            {
+                "color": "red"
+            }
+        ],
+        {
+            "ctrl": "split",
+            "options": [
+                [
+                    "Fight",
+                    "Fight"
+                ],
+                [
+                    "NoFight",
+                    "Don't fight"
+                ]
+            ]
+        },
+        {
+            "ctrl": "marker",
+            "name": "Fight"
+        },
+        [
+            "Caveman",
+            "Imma kill you!"
+        ],
+        {
+            "ctrl": "marker",
+            "name": "Abbreviated"
+        },
+        [
+            "Caveman",
+            "And then your family,\nyour friends,\nand your pets too!\nImma kill everyone!"
+        ],
+        {
+            "ctrl": "end"
+        },
+        {
+            "ctrl": "marker",
+            "name": "NoFight"
+        },
+        [
+            "Caveman",
+            "No?"
+        ],
+        [
+            "Caveman",
+            "Maybe I got your language wrong."
+        ],
+        {
+            "ctrl": "split",
+            "options": [
+                [
+                    0,
+                    "Choose a different language"
+                ]
+            ]
+        },
+        {
+            "ctrl": "end"
+        },
+        {
+            "ctrl": "marker",
+            "name": "Japanese"
+        },
+        [
+            "原人",
+            "こら！",
+            {
+                "color": "red"
+            }
+        ],
+        [
+            "原人",
+            "ケンカ売ってんのか！？\n赤い小僧"
+        ],
+        {
+            "ctrl": "split",
+            "options": [
+                [
+                    "戦う",
+                    "はい。そうです。"
+                ],
+                [
+                    "戦わない",
+                    "いいえ。そうではありません。"
+                ]
+            ]
+        },
+        {
+            "ctrl": "marker",
+            "name": "戦う"
+        },
+        [
+            "原人",
+            "ぶっ殺すぞ！"
+        ],
+        [
+            "原人",
+            "そして貴様の家族も\n友達も\nペットも\nみんな　ぶっ殺すぞ！！"
+        ],
+        {
+            "ctrl": "end"
+        },
+        {
+            "ctrl": "marker",
+            "name": "戦わない"
+        },
+        [
+            "原人",
+            "勘違いか？"
+        ],
+        [
+            "原人",
+            "もしかして、言葉通じてない？"
+        ],
+        {
+            "ctrl": "split",
+            "options": [
+                [
+                    0,
+                    "別の言語を選ぶ"
+                ]
+            ]
+        },
+        {
+            "ctrl": "end"
+        }
+    ]
+}
