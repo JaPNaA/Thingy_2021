@@ -11,7 +11,7 @@ export class EntitiesInTileMap extends ParentCanvasElm {
     constructor(private tileMap: TileMap) {
         super();
 
-        const entities = tileMap.getEntityData();
+        const entities = tileMap.getEntities();
         for (const entity of entities) {
             this.addChild(new NPCWithDialog(
                 entity.x * TileMapEntity.tileSize,

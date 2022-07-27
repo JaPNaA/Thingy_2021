@@ -1,6 +1,5 @@
 import { ParentCanvasElm } from "../engine/canvasElm/ParentCanvasElm";
 import { World } from "../engine/World";
-import { NPCWithDialog } from "../entities/NPCWithDialog";
 import { ParentTileMap } from "../entities/tilemap/ParentTileMap";
 import { Player } from "../entities/Player";
 import { tileMapFetcher } from "../resources/tileMapFetcher";
@@ -17,8 +16,6 @@ export class GameView extends ParentCanvasElm {
                     new ParentTileMap(tileMap, this.world.camera.rect)
                 );
                 this.addChild(this.player);
-                this.addChild(new NPCWithDialog(3750, 3750));
-                this.addChild(new NPCWithDialog(100, -200));
             });
     }
 

@@ -360,6 +360,15 @@ System.register("engine/collision/CollisionSystem", ["engine/util/removeElmFromA
                 removeHitbox(rectangle) {
                     removeElmFromArray_2.removeElmFromArray(rectangle, this.hitboxes);
                 }
+                getCollisionsWith(rectangle) {
+                    const colliding = [];
+                    for (const hitbox of this.hitboxes) {
+                        if (isRectanglesColliding_1.isRectanglesColliding(rectangle, hitbox.rectangle)) {
+                            colliding.push(hitbox);
+                        }
+                    }
+                    return colliding;
+                }
                 _checkCollisions() {
                     const numHitboxes = this.hitboxes.length;
                     for (let i = 0; i < numHitboxes; i++) {
@@ -1017,11 +1026,11 @@ System.register("resources/TileMapFile", [], function (exports_21, context_21) {
     "use strict";
     var TileMapFile, DataViewWalker;
     var __moduleName = context_21 && context_21.id;
-    function isTileMapJointExtention(joint) {
+    function isTileMapJointExtension(joint) {
         // @ts-expect-error
         return joint.toId !== undefined;
     }
-    exports_21("isTileMapJointExtention", isTileMapJointExtention);
+    exports_21("isTileMapJointExtension", isTileMapJointExtension);
     return {
         setters: [],
         execute: function () {
@@ -1112,6 +1121,7 @@ System.register("entities/tilemap/TileMap", ["engine/PrerenderCanvas", "engine/u
                 constructor(tileMapFile) {
                     this.onTileEdit = new EventHandler();
                     this.onJointEdit = new EventHandler();
+                    this.onEntityEdit = new EventHandler();
                     this.onMajorEdit = new EventHandler();
                     this.textures = [];
                     if (tileMapFile instanceof TileMapFile_1.TileMapFile) {
@@ -1132,6 +1142,7 @@ System.register("entities/tilemap/TileMap", ["engine/PrerenderCanvas", "engine/u
                     }
                     this.blockTypes = this.file.jsonData.blockTypes || [];
                     this.joints = this.file.jsonData.joints || [];
+                    this.entities = this.file.jsonData.entities || [];
                 }
                 getBlockTexture(xIndex, yIndex) {
                     return this.textures[this.map[yIndex][xIndex]];
@@ -1154,7 +1165,7 @@ System.register("entities/tilemap/TileMap", ["engine/PrerenderCanvas", "engine/u
                     this.onTileEdit.dispatch([xIndex, yIndex]);
                 }
                 getJoints() {
-                    return this.file.jsonData.joints || [];
+                    return this.joints;
                 }
                 removeJoint(joint) {
                     removeElmFromArray_3.removeElmFromArray(joint, this.joints);
@@ -1173,6 +1184,17 @@ System.register("entities/tilemap/TileMap", ["engine/PrerenderCanvas", "engine/u
                             return joint;
                         }
                     }
+                }
+                getEntities() {
+                    return this.entities;
+                }
+                removeEntity(entity) {
+                    removeElmFromArray_3.removeElmFromArray(entity, this.entities);
+                    this.onEntityEdit.dispatch();
+                }
+                addEntity(entity) {
+                    this.entities.push(entity);
+                    this.onEntityEdit.dispatch();
                 }
                 getBlockTypes() {
                     return this.blockTypes;
@@ -1211,7 +1233,8 @@ System.register("entities/tilemap/TileMap", ["engine/PrerenderCanvas", "engine/u
                     }
                     file.jsonData = {
                         blockTypes: this.blockTypes,
-                        joints: this.joints
+                        joints: this.joints,
+                        entities: this.entities
                     };
                     return file;
                 }
@@ -1288,6 +1311,9 @@ System.register("entities/tilemap/TileMapEntity", ["engine/PrerenderCanvas", "en
             }
         ],
         execute: function () {
+            /**
+             * An entity that represents a TileMap.
+             */
             TileMapEntity = class TileMapEntity extends Entity_1.Entity {
                 constructor(tileMap) {
                     super();
@@ -1567,20 +1593,44 @@ System.register("engine/canvasElm/ParentCanvasElm", ["engine/util/removeElmFromA
         }
     };
 });
-System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_26, context_26) {
+System.register("resources/tileMapFetcher", ["entities/tilemap/TileMap", "resources/resourceFetcher"], function (exports_26, context_26) {
     "use strict";
-    var resourceFetcher_2, DialogFetcher, dialogFetcher;
+    var TileMap_1, resourceFetcher_2, TileMapFetcher, tileMapFetcher;
     var __moduleName = context_26 && context_26.id;
     return {
         setters: [
+            function (TileMap_1_1) {
+                TileMap_1 = TileMap_1_1;
+            },
             function (resourceFetcher_2_1) {
                 resourceFetcher_2 = resourceFetcher_2_1;
             }
         ],
         execute: function () {
+            TileMapFetcher = class TileMapFetcher {
+                async fetch(url) {
+                    const data = await resourceFetcher_2.resourceFetcher.fetchRaw("assets/map/" + url + ".tmap");
+                    return new TileMap_1.TileMap(data);
+                }
+            };
+            exports_26("tileMapFetcher", tileMapFetcher = new TileMapFetcher());
+        }
+    };
+});
+System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_27, context_27) {
+    "use strict";
+    var resourceFetcher_3, DialogFetcher, dialogFetcher;
+    var __moduleName = context_27 && context_27.id;
+    return {
+        setters: [
+            function (resourceFetcher_3_1) {
+                resourceFetcher_3 = resourceFetcher_3_1;
+            }
+        ],
+        execute: function () {
             DialogFetcher = class DialogFetcher {
                 async fetch(url) {
-                    const str = await resourceFetcher_2.resourceFetcher.fetchText("assets/" + url + ".txt");
+                    const str = await resourceFetcher_3.resourceFetcher.fetchText("assets/" + url + ".txt");
                     const lines = str.split("\n");
                     const arr = [];
                     let currArrElm = [];
@@ -1599,24 +1649,24 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
                     return arr;
                 }
             };
-            exports_26("dialogFetcher", dialogFetcher = new DialogFetcher());
+            exports_27("dialogFetcher", dialogFetcher = new DialogFetcher());
         }
     };
 });
-System.register("settings", [], function (exports_27, context_27) {
+System.register("settings", [], function (exports_28, context_28) {
     "use strict";
     var settings;
-    var __moduleName = context_27 && context_27.id;
+    var __moduleName = context_28 && context_28.id;
     return {
         setters: [],
         execute: function () {
-            exports_27("settings", settings = {
+            exports_28("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW", "ArrowUp"],
                     moveDown: ["KeyS", "ArrowDown"],
                     moveLeft: ["KeyA", "ArrowLeft"],
                     moveRight: ["KeyD", "ArrowRight"],
-                    select: ["Enter", "NumpadEnter", "Space", "Z"],
+                    select: ["Enter", "NumpadEnter", "Space", "KeyZ"],
                     zoomOut: ["Minus", "NumpadSubtract"],
                     zoomIn: ["Equal", "NumpadAdd"]
                 }
@@ -1624,10 +1674,10 @@ System.register("settings", [], function (exports_27, context_27) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements", "settings"], function (exports_28, context_28) {
+System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements", "settings"], function (exports_29, context_29) {
     "use strict";
     var CanvasElm_3, elements_2, settings_1, NPCDialog;
-    var __moduleName = context_28 && context_28.id;
+    var __moduleName = context_29 && context_29.id;
     return {
         setters: [
             function (CanvasElm_3_1) {
@@ -1688,14 +1738,14 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     super.dispose();
                 }
             };
-            exports_28("NPCDialog", NPCDialog);
+            exports_29("NPCDialog", NPCDialog);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_29, context_29) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_30, context_30) {
     "use strict";
     var Entity_2, NPC;
-    var __moduleName = context_29 && context_29.id;
+    var __moduleName = context_30 && context_30.id;
     return {
         setters: [
             function (Entity_2_1) {
@@ -1715,14 +1765,188 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_29, conte
                     X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
             };
-            exports_29("NPC", NPC);
+            exports_30("NPC", NPC);
         }
     };
 });
-System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/MovingRectangle", "resources/resourceFetcher", "settings", "entities/collisions", "entities/Entity"], function (exports_30, context_30) {
+System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC"], function (exports_31, context_31) {
     "use strict";
-    var PrerenderCanvas_3, MovingRectangle_2, resourceFetcher_3, settings_2, collisions_3, Entity_3, Player;
-    var __moduleName = context_30 && context_30.id;
+    var Rectangle_5, dialogFetcher_1, NPCDialog_1, NPC_1, NPCWithDialog;
+    var __moduleName = context_31 && context_31.id;
+    return {
+        setters: [
+            function (Rectangle_5_1) {
+                Rectangle_5 = Rectangle_5_1;
+            },
+            function (dialogFetcher_1_1) {
+                dialogFetcher_1 = dialogFetcher_1_1;
+            },
+            function (NPCDialog_1_1) {
+                NPCDialog_1 = NPCDialog_1_1;
+            },
+            function (NPC_1_1) {
+                NPC_1 = NPC_1_1;
+            }
+        ],
+        execute: function () {
+            NPCWithDialog = class NPCWithDialog extends NPC_1.NPC {
+                constructor() {
+                    super(...arguments);
+                    this.loadingDialog = false;
+                }
+                canStartDialog() {
+                    return !this.loadingDialog && (!this.npcDialog || this.npcDialog.closed);
+                }
+                startDialog() {
+                    if (!this.canStartDialog()) {
+                        return;
+                    }
+                    this.loadingDialog = true;
+                    dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
+                        this.npcDialog = new NPCDialog_1.NPCDialog(dialog, new Rectangle_5.Rectangle(this.rect.x, this.rect.y, 500, 300));
+                        this.world.addElm(this.npcDialog);
+                        this.loadingDialog = false;
+                    });
+                }
+                dispose() {
+                    super.dispose();
+                    if (this.npcDialog && !this.npcDialog.closed) {
+                        this.world.removeElm(this.npcDialog);
+                    }
+                }
+            };
+            exports_31("NPCWithDialog", NPCWithDialog);
+        }
+    };
+});
+System.register("entities/tilemap/EntitiesInTileMap", ["engine/canvasElm/ParentCanvasElm", "entities/NPCWithDialog", "entities/tilemap/TileMapEntity"], function (exports_32, context_32) {
+    "use strict";
+    var ParentCanvasElm_1, NPCWithDialog_1, TileMapEntity_1, EntitiesInTileMap;
+    var __moduleName = context_32 && context_32.id;
+    return {
+        setters: [
+            function (ParentCanvasElm_1_1) {
+                ParentCanvasElm_1 = ParentCanvasElm_1_1;
+            },
+            function (NPCWithDialog_1_1) {
+                NPCWithDialog_1 = NPCWithDialog_1_1;
+            },
+            function (TileMapEntity_1_1) {
+                TileMapEntity_1 = TileMapEntity_1_1;
+            }
+        ],
+        execute: function () {
+            /**
+             * A parent to store Entities inside of TileMaps.
+             */
+            EntitiesInTileMap = class EntitiesInTileMap extends ParentCanvasElm_1.ParentCanvasElm {
+                constructor(tileMap) {
+                    super();
+                    this.tileMap = tileMap;
+                    const entities = tileMap.getEntities();
+                    for (const entity of entities) {
+                        this.addChild(new NPCWithDialog_1.NPCWithDialog(entity.x * TileMapEntity_1.TileMapEntity.tileSize, entity.y * TileMapEntity_1.TileMapEntity.tileSize));
+                    }
+                }
+            };
+            exports_32("EntitiesInTileMap", EntitiesInTileMap);
+        }
+    };
+});
+System.register("entities/tilemap/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "resources/TileMapFile", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher", "entities/tilemap/EntitiesInTileMap"], function (exports_33, context_33) {
+    "use strict";
+    var isRectanglesColliding_3, ParentCanvasElm_2, Rectangle_6, TileMapFile_2, TileMapEntity_2, tileMapFetcher_1, EntitiesInTileMap_1, ParentTileMap;
+    var __moduleName = context_33 && context_33.id;
+    return {
+        setters: [
+            function (isRectanglesColliding_3_1) {
+                isRectanglesColliding_3 = isRectanglesColliding_3_1;
+            },
+            function (ParentCanvasElm_2_1) {
+                ParentCanvasElm_2 = ParentCanvasElm_2_1;
+            },
+            function (Rectangle_6_1) {
+                Rectangle_6 = Rectangle_6_1;
+            },
+            function (TileMapFile_2_1) {
+                TileMapFile_2 = TileMapFile_2_1;
+            },
+            function (TileMapEntity_2_1) {
+                TileMapEntity_2 = TileMapEntity_2_1;
+            },
+            function (tileMapFetcher_1_1) {
+                tileMapFetcher_1 = tileMapFetcher_1_1;
+            },
+            function (EntitiesInTileMap_1_1) {
+                EntitiesInTileMap_1 = EntitiesInTileMap_1_1;
+            }
+        ],
+        execute: function () {
+            /**
+             * A parent for TileMaps. Manages TileMap loading and unloading.
+             *
+             * Children include TileMapEntity and EntitiesInTileMap.
+             */
+            ParentTileMap = class ParentTileMap extends ParentCanvasElm_2.ParentCanvasElm {
+                constructor(mapFile, view) {
+                    super();
+                    this.view = view;
+                    this.activeMapEntities = [];
+                    this.maps = [];
+                    this.addTileMap(mapFile, 0, 0);
+                    console.log(this);
+                }
+                tick() {
+                    super.tick();
+                    for (const map of this.maps) {
+                        if (map.active) {
+                            continue;
+                        }
+                        if (isRectanglesColliding_3.isRectanglesColliding(this.view, map.rect)) {
+                            this.activateMap(map);
+                        }
+                    }
+                }
+                activateMap(map) {
+                    const tileMapEntity = new TileMapEntity_2.TileMapEntity(map.map);
+                    const entitiesInTileMap = new EntitiesInTileMap_1.EntitiesInTileMap(map.map);
+                    tileMapEntity.rect.x = map.rect.x;
+                    tileMapEntity.rect.y = map.rect.y;
+                    this.activeMapEntities.push(tileMapEntity);
+                    this.addChild(tileMapEntity);
+                    this.addChild(entitiesInTileMap);
+                    map.active = true;
+                }
+                addTileMap(tileMap, offsetX, offsetY) {
+                    const joints = tileMap.getJoints();
+                    this.maps.push({
+                        map: tileMap,
+                        rect: new Rectangle_6.Rectangle(offsetX, offsetY, tileMap.width * TileMapEntity_2.TileMapEntity.tileSize, tileMap.height * TileMapEntity_2.TileMapEntity.tileSize),
+                        active: false
+                    });
+                    for (const joint of joints) {
+                        if (!TileMapFile_2.isTileMapJointExtension(joint)) {
+                            continue;
+                        }
+                        tileMapFetcher_1.tileMapFetcher.fetch(joint.toMap)
+                            .then(tileMap => {
+                            const newJoint = tileMap.getJointById(joint.toId);
+                            if (!newJoint) {
+                                throw new Error("Failed to join joints -- could not find target joint.");
+                            }
+                            this.addTileMap(tileMap, (joint.x - newJoint.x) * TileMapEntity_2.TileMapEntity.tileSize + offsetX, (joint.y - newJoint.y) * TileMapEntity_2.TileMapEntity.tileSize + offsetY);
+                        });
+                    }
+                }
+            };
+            exports_33("ParentTileMap", ParentTileMap);
+        }
+    };
+});
+System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/MovingRectangle", "engine/util/Rectangle", "resources/resourceFetcher", "settings", "entities/collisions", "entities/Entity", "entities/NPCWithDialog"], function (exports_34, context_34) {
+    "use strict";
+    var PrerenderCanvas_3, MovingRectangle_2, Rectangle_7, resourceFetcher_4, settings_2, collisions_3, Entity_3, NPCWithDialog_2, Player;
+    var __moduleName = context_34 && context_34.id;
     return {
         setters: [
             function (PrerenderCanvas_3_1) {
@@ -1731,8 +1955,11 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
             function (MovingRectangle_2_1) {
                 MovingRectangle_2 = MovingRectangle_2_1;
             },
-            function (resourceFetcher_3_1) {
-                resourceFetcher_3 = resourceFetcher_3_1;
+            function (Rectangle_7_1) {
+                Rectangle_7 = Rectangle_7_1;
+            },
+            function (resourceFetcher_4_1) {
+                resourceFetcher_4 = resourceFetcher_4_1;
             },
             function (settings_2_1) {
                 settings_2 = settings_2_1;
@@ -1742,6 +1969,9 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
             },
             function (Entity_3_1) {
                 Entity_3 = Entity_3_1;
+            },
+            function (NPCWithDialog_2_1) {
+                NPCWithDialog_2 = NPCWithDialog_2_1;
             }
         ],
         execute: function () {
@@ -1751,23 +1981,38 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
                     this.collisionType = collisions_3.collisions.types.moving;
                     this.rect = new MovingRectangle_2.MovingRectangle(296, 200, 32, 32);
                     this.speed = 300;
+                    this.interactionRange = 50;
                     this.texture = new PrerenderCanvas_3.PrerenderCanvas(12, 16);
+                    this.interactHintTexture = new PrerenderCanvas_3.PrerenderCanvas(32, 16);
+                    this.interactTarget = null;
                     this.texture.X.fillStyle = "#ff0000";
                     this.texture.X.fillRect(0, 0, 12, 16);
-                    resourceFetcher_3.resourceFetcher.fetchImg("assets/img/char/magmaDown.png")
+                    resourceFetcher_4.resourceFetcher.fetchImg("assets/img/char/magmaDown.png")
                         .then(img => {
                         this.texture.clear();
                         this.texture.X.drawImage(img, 0, 0);
+                    });
+                    this.renderInteractHintTexture();
+                }
+                setWorld(world) {
+                    super.setWorld(world);
+                    this.world.keyboard.addKeydownHandler(settings_2.settings.keybindings.select, () => {
+                        if (this.interactTarget) {
+                            this.interactTarget.startDialog();
+                        }
                     });
                 }
                 draw() {
                     const X = this.world.canvas.X;
                     X.imageSmoothingEnabled = false;
                     this.texture.drawToContext(X, this.rect.x - this.texture.width * 2 + this.rect.width / 2, this.rect.y - this.texture.height * 4 + this.rect.height, this.texture.width * 4, this.texture.height * 4);
-                    // X.fillStyle = "#f00";
-                    // X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    if (this.interactTarget) {
+                        this.interactHintTexture.drawToContext(X, this.interactTarget.rect.x + this.interactTarget.rect.width, this.interactTarget.rect.y +
+                            (this.interactTarget.rect.height - this.interactHintTexture.height) / 2);
+                    }
                 }
                 tick() {
+                    // movement
                     let dirX = 0;
                     let dirY = 0;
                     if (this.world.keyboard.isDown(settings_2.settings.keybindings.moveLeft)) {
@@ -1789,202 +2034,65 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
                     }
                     this.rect.x += dirX * this.speed * this.world.timeElapsed;
                     this.rect.y += dirY * this.speed * this.world.timeElapsed;
+                    // interaction hint
+                    const interactTarget = this.getInteractTarget();
+                    this.interactTarget = interactTarget;
                 }
-            };
-            exports_30("Player", Player);
-        }
-    };
-});
-System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC", "entities/Player"], function (exports_31, context_31) {
-    "use strict";
-    var Rectangle_5, dialogFetcher_1, NPCDialog_1, NPC_1, Player_1, NPCWithDialog;
-    var __moduleName = context_31 && context_31.id;
-    return {
-        setters: [
-            function (Rectangle_5_1) {
-                Rectangle_5 = Rectangle_5_1;
-            },
-            function (dialogFetcher_1_1) {
-                dialogFetcher_1 = dialogFetcher_1_1;
-            },
-            function (NPCDialog_1_1) {
-                NPCDialog_1 = NPCDialog_1_1;
-            },
-            function (NPC_1_1) {
-                NPC_1 = NPC_1_1;
-            },
-            function (Player_1_1) {
-                Player_1 = Player_1_1;
-            }
-        ],
-        execute: function () {
-            NPCWithDialog = class NPCWithDialog extends NPC_1.NPC {
-                constructor() {
-                    super(...arguments);
-                    this.loadingDialog = false;
+                renderInteractHintTexture() {
+                    const X = this.interactHintTexture.X;
+                    X.fillStyle = "#ffffff";
+                    X.strokeStyle = "#000000";
+                    X.font = "10px Monospace";
+                    X.textBaseline = "middle";
+                    X.textAlign = "center";
+                    X.rect(0, 0, this.interactHintTexture.width, this.interactHintTexture.height);
+                    X.fill();
+                    X.stroke();
+                    X.fillStyle = "#000000";
+                    X.fillText(settings_2.settings.keybindings.select[0], this.interactHintTexture.width / 2, this.interactHintTexture.height / 2);
                 }
-                onCollision(other) {
-                    if (!(other instanceof Player_1.Player)) {
-                        return;
-                    }
-                    if (this.loadingDialog) {
-                        return;
-                    }
-                    if (this.npcDialog && !this.npcDialog.closed) {
-                        return;
-                    }
-                    this.loadingDialog = true;
-                    dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
-                        this.npcDialog = new NPCDialog_1.NPCDialog(dialog, new Rectangle_5.Rectangle(this.rect.x, this.rect.y, 500, 300));
-                        this.world.addElm(this.npcDialog);
-                        this.loadingDialog = false;
-                    });
-                }
-                dispose() {
-                    super.dispose();
-                    if (this.npcDialog && !this.npcDialog.closed) {
-                        this.world.removeElm(this.npcDialog);
-                    }
-                }
-            };
-            exports_31("NPCWithDialog", NPCWithDialog);
-        }
-    };
-});
-System.register("resources/tileMapFetcher", ["entities/tilemap/TileMap", "resources/resourceFetcher"], function (exports_32, context_32) {
-    "use strict";
-    var TileMap_1, resourceFetcher_4, TileMapFetcher, tileMapFetcher;
-    var __moduleName = context_32 && context_32.id;
-    return {
-        setters: [
-            function (TileMap_1_1) {
-                TileMap_1 = TileMap_1_1;
-            },
-            function (resourceFetcher_4_1) {
-                resourceFetcher_4 = resourceFetcher_4_1;
-            }
-        ],
-        execute: function () {
-            TileMapFetcher = class TileMapFetcher {
-                async fetch(url) {
-                    const data = await resourceFetcher_4.resourceFetcher.fetchRaw("assets/map/" + url + ".tmap");
-                    return new TileMap_1.TileMap(data);
-                }
-            };
-            exports_32("tileMapFetcher", tileMapFetcher = new TileMapFetcher());
-        }
-    };
-});
-System.register("entities/tilemap/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "resources/TileMapFile", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher"], function (exports_33, context_33) {
-    "use strict";
-    var isRectanglesColliding_3, ParentCanvasElm_1, Rectangle_6, TileMapFile_2, TileMapEntity_1, tileMapFetcher_1, ParentTileMap;
-    var __moduleName = context_33 && context_33.id;
-    return {
-        setters: [
-            function (isRectanglesColliding_3_1) {
-                isRectanglesColliding_3 = isRectanglesColliding_3_1;
-            },
-            function (ParentCanvasElm_1_1) {
-                ParentCanvasElm_1 = ParentCanvasElm_1_1;
-            },
-            function (Rectangle_6_1) {
-                Rectangle_6 = Rectangle_6_1;
-            },
-            function (TileMapFile_2_1) {
-                TileMapFile_2 = TileMapFile_2_1;
-            },
-            function (TileMapEntity_1_1) {
-                TileMapEntity_1 = TileMapEntity_1_1;
-            },
-            function (tileMapFetcher_1_1) {
-                tileMapFetcher_1 = tileMapFetcher_1_1;
-            }
-        ],
-        execute: function () {
-            ParentTileMap = class ParentTileMap extends ParentCanvasElm_1.ParentCanvasElm {
-                constructor(mapFile, view) {
-                    super();
-                    this.view = view;
-                    this.activeMapEntities = [];
-                    this.maps = [];
-                    this.addTileMap(mapFile, 0, 0);
-                    console.log(this);
-                }
-                tick() {
-                    super.tick();
-                    for (const map of this.maps) {
-                        if (map.active) {
-                            continue;
-                        }
-                        if (isRectanglesColliding_3.isRectanglesColliding(this.view, map.rect)) {
-                            const entity = new TileMapEntity_1.TileMapEntity(map.map);
-                            entity.rect.x = map.rect.x;
-                            entity.rect.y = map.rect.y;
-                            this.activeMapEntities.push(entity);
-                            this.addChild(entity);
-                            map.active = true;
+                getInteractTarget() {
+                    const items = this.world.collisionSystem.getCollisionsWith(new Rectangle_7.Rectangle(this.rect.x - this.interactionRange, this.rect.y - this.interactionRange, this.rect.width + this.interactionRange * 2, this.rect.height + this.interactionRange * 2));
+                    for (const item of items) {
+                        if (item.elm instanceof NPCWithDialog_2.NPCWithDialog && item.elm.canStartDialog()) {
+                            return item.elm;
                         }
                     }
-                }
-                addTileMap(tileMap, offsetX, offsetY) {
-                    const joints = tileMap.getJoints();
-                    this.maps.push({
-                        map: tileMap,
-                        rect: new Rectangle_6.Rectangle(offsetX, offsetY, tileMap.width * TileMapEntity_1.TileMapEntity.tileSize, tileMap.height * TileMapEntity_1.TileMapEntity.tileSize),
-                        active: false
-                    });
-                    for (const joint of joints) {
-                        if (!TileMapFile_2.isTileMapJointExtention(joint)) {
-                            continue;
-                        }
-                        tileMapFetcher_1.tileMapFetcher.fetch(joint.toMap)
-                            .then(tileMap => {
-                            const newJoint = tileMap.getJointById(joint.toId);
-                            if (!newJoint) {
-                                throw new Error("Failed to join joints -- could not find target joint.");
-                            }
-                            this.addTileMap(tileMap, (joint.x - newJoint.x) * TileMapEntity_1.TileMapEntity.tileSize + offsetX, (joint.y - newJoint.y) * TileMapEntity_1.TileMapEntity.tileSize + offsetY);
-                        });
-                    }
+                    return null;
                 }
             };
-            exports_33("ParentTileMap", ParentTileMap);
+            exports_34("Player", Player);
         }
     };
 });
-System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/NPCWithDialog", "entities/tilemap/ParentTileMap", "entities/Player", "resources/tileMapFetcher"], function (exports_34, context_34) {
+System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/tilemap/ParentTileMap", "entities/Player", "resources/tileMapFetcher"], function (exports_35, context_35) {
     "use strict";
-    var ParentCanvasElm_2, NPCWithDialog_1, ParentTileMap_1, Player_2, tileMapFetcher_2, GameView;
-    var __moduleName = context_34 && context_34.id;
+    var ParentCanvasElm_3, ParentTileMap_1, Player_1, tileMapFetcher_2, GameView;
+    var __moduleName = context_35 && context_35.id;
     return {
         setters: [
-            function (ParentCanvasElm_2_1) {
-                ParentCanvasElm_2 = ParentCanvasElm_2_1;
-            },
-            function (NPCWithDialog_1_1) {
-                NPCWithDialog_1 = NPCWithDialog_1_1;
+            function (ParentCanvasElm_3_1) {
+                ParentCanvasElm_3 = ParentCanvasElm_3_1;
             },
             function (ParentTileMap_1_1) {
                 ParentTileMap_1 = ParentTileMap_1_1;
             },
-            function (Player_2_1) {
-                Player_2 = Player_2_1;
+            function (Player_1_1) {
+                Player_1 = Player_1_1;
             },
             function (tileMapFetcher_2_1) {
                 tileMapFetcher_2 = tileMapFetcher_2_1;
             }
         ],
         execute: function () {
-            GameView = class GameView extends ParentCanvasElm_2.ParentCanvasElm {
+            GameView = class GameView extends ParentCanvasElm_3.ParentCanvasElm {
                 constructor() {
                     super();
-                    this.player = new Player_2.Player();
+                    this.player = new Player_1.Player();
                     tileMapFetcher_2.tileMapFetcher.fetch("cave")
                         .then(tileMap => {
                         this.addChild(new ParentTileMap_1.ParentTileMap(tileMap, this.world.camera.rect));
                         this.addChild(this.player);
-                        this.addChild(new NPCWithDialog_1.NPCWithDialog(3750, 3750));
-                        this.addChild(new NPCWithDialog_1.NPCWithDialog(100, -200));
                     });
                 }
                 setWorld(world) {
@@ -1992,25 +2100,25 @@ System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/
                     world.camera.follow(this.player.rect);
                 }
             };
-            exports_34("GameView", GameView);
+            exports_35("GameView", GameView);
         }
     };
 });
-System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player"], function (exports_35, context_35) {
+System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player"], function (exports_36, context_36) {
     "use strict";
-    var collisions_4, Player_3, GhostPlayer;
-    var __moduleName = context_35 && context_35.id;
+    var collisions_4, Player_2, GhostPlayer;
+    var __moduleName = context_36 && context_36.id;
     return {
         setters: [
             function (collisions_4_1) {
                 collisions_4 = collisions_4_1;
             },
-            function (Player_3_1) {
-                Player_3 = Player_3_1;
+            function (Player_2_1) {
+                Player_2 = Player_2_1;
             }
         ],
         execute: function () {
-            GhostPlayer = class GhostPlayer extends Player_3.Player {
+            GhostPlayer = class GhostPlayer extends Player_2.Player {
                 constructor() {
                     super(...arguments);
                     this.collisionType = collisions_4.collisions.types.none;
@@ -2021,14 +2129,14 @@ System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player
                     super.tick();
                 }
             };
-            exports_35("GhostPlayer", GhostPlayer);
+            exports_36("GhostPlayer", GhostPlayer);
         }
     };
 });
-System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function (exports_36, context_36) {
+System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function (exports_37, context_37) {
     "use strict";
     var elements_3, MapEditorOverlay, DialogBoxForm;
-    var __moduleName = context_36 && context_36.id;
+    var __moduleName = context_37 && context_37.id;
     return {
         setters: [
             function (elements_3_1) {
@@ -2073,6 +2181,16 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                         }
                         this.tileMap.removeJoint(joint);
                         this.tileMap.addJoint(updated);
+                    });
+                }
+                editEntity(entity) {
+                    DialogBoxForm.createFilledForm(this.elm, entity)
+                        .then(updated => {
+                        if (!this.tileMap) {
+                            return;
+                        }
+                        this.tileMap.removeEntity(entity);
+                        this.tileMap.addEntity(updated);
                     });
                 }
                 setBlockTypes(blockTypes) {
@@ -2145,7 +2263,7 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
                     this.setCanvasSize(newWidth, newHeight);
                 }
             };
-            exports_36("MapEditorOverlay", MapEditorOverlay);
+            exports_37("MapEditorOverlay", MapEditorOverlay);
             DialogBoxForm = class DialogBoxForm extends elements_3.Component {
                 constructor() {
                     super("dialogBox");
@@ -2250,10 +2368,10 @@ System.register("view/mapEditor/MapEditorOverlay", ["engine/elements"], function
         }
     };
 });
-System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/CanvasElmWithEventBus"], function (exports_37, context_37) {
+System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/CanvasElmWithEventBus"], function (exports_38, context_38) {
     "use strict";
     var CanvasElmWithEventBus_3, MapEditorEntityJointLayer;
-    var __moduleName = context_37 && context_37.id;
+    var __moduleName = context_38 && context_38.id;
     return {
         setters: [
             function (CanvasElmWithEventBus_3_1) {
@@ -2267,18 +2385,21 @@ System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/C
                     this.tileMap = tileMap;
                     this.overlay = overlay;
                     this.joints = [];
+                    this.entities = [];
                     this.eventBus.subscribe("mousedown", () => this.mousedownHandler());
                     this.updateJointRecords();
                     this.tileMap.data.onJointEdit.addHandler(() => this.updateJointRecords());
+                    this.updateEntityRecords();
+                    this.tileMap.data.onEntityEdit.addHandler(() => this.updateEntityRecords());
                 }
                 mousedownHandler() {
-                    const jointRadius = this.tileMap.tileSize / 4;
+                    const quarterTile = this.tileMap.tileSize / 4;
                     for (const joint of this.joints) {
                         const cursorX = this.world.camera.clientXToWorld(this.world.mouse.x);
                         const cursorY = this.world.camera.clientYToWorld(this.world.mouse.y);
                         const dx = cursorX - joint.x;
                         const dy = cursorY - joint.y;
-                        if (dx * dx + dy * dy < jointRadius * jointRadius) {
+                        if (dx * dx + dy * dy < quarterTile * quarterTile) {
                             if (this.world.mouse.rightDown) {
                                 this.tileMap.data.removeJoint(joint.joint);
                             }
@@ -2288,15 +2409,35 @@ System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/C
                             this.eventBus.stopPropagation();
                         }
                     }
+                    for (const entity of this.entities) {
+                        const cursorX = this.world.camera.clientXToWorld(this.world.mouse.x);
+                        const cursorY = this.world.camera.clientYToWorld(this.world.mouse.y);
+                        const dx = Math.abs(cursorX - entity.x);
+                        const dy = Math.abs(cursorY - entity.y);
+                        if (dx < quarterTile && dy < quarterTile) {
+                            if (this.world.mouse.rightDown) {
+                                this.tileMap.data.removeEntity(entity.entity);
+                            }
+                            else {
+                                this.overlay.editEntity(entity.entity);
+                            }
+                            this.eventBus.stopPropagation();
+                        }
+                    }
                 }
                 draw() {
                     const X = this.world.canvas.X;
-                    const jointRadius = this.tileMap.tileSize / 4;
+                    const quarterTile = this.tileMap.tileSize / 4;
+                    X.fillStyle = "#00ff0088";
                     for (const joint of this.joints) {
-                        X.fillStyle = "#00ff0088";
                         X.beginPath();
-                        X.arc(joint.x, joint.y, jointRadius, 0, Math.PI * 2);
+                        X.arc(joint.x, joint.y, quarterTile, 0, Math.PI * 2);
                         X.fill();
+                    }
+                    X.fillStyle = "#0000ff88";
+                    for (const entity of this.entities) {
+                        X.beginPath();
+                        X.fillRect(entity.x - quarterTile, entity.y - quarterTile, quarterTile * 2, quarterTile * 2);
                     }
                 }
                 updateJointRecords() {
@@ -2309,23 +2450,33 @@ System.register("view/mapEditor/MapEditorEntityJointLayer", ["engine/canvasElm/C
                         });
                     }
                 }
+                updateEntityRecords() {
+                    this.entities.length = 0;
+                    for (const entity of this.tileMap.data.getEntities()) {
+                        this.entities.push({
+                            entity: entity,
+                            x: this.tileMap.tileSize * (entity.x + 0.5),
+                            y: this.tileMap.tileSize * (entity.y + 0.5)
+                        });
+                    }
+                }
             };
-            exports_37("MapEditorEntityJointLayer", MapEditorEntityJointLayer);
+            exports_38("MapEditorEntityJointLayer", MapEditorEntityJointLayer);
         }
     };
 });
-System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCanvasElm"], function (exports_38, context_38) {
+System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCanvasElm"], function (exports_39, context_39) {
     "use strict";
-    var ParentCanvasElm_3, MapEditorMapLayer;
-    var __moduleName = context_38 && context_38.id;
+    var ParentCanvasElm_4, MapEditorMapLayer;
+    var __moduleName = context_39 && context_39.id;
     return {
         setters: [
-            function (ParentCanvasElm_3_1) {
-                ParentCanvasElm_3 = ParentCanvasElm_3_1;
+            function (ParentCanvasElm_4_1) {
+                ParentCanvasElm_4 = ParentCanvasElm_4_1;
             }
         ],
         execute: function () {
-            MapEditorMapLayer = class MapEditorMapLayer extends ParentCanvasElm_3.ParentCanvasElm {
+            MapEditorMapLayer = class MapEditorMapLayer extends ParentCanvasElm_4.ParentCanvasElm {
                 constructor(tileMap, overlay) {
                     super();
                     this.tileMap = tileMap;
@@ -2394,24 +2545,24 @@ System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCan
                     return Math.floor(this.world.camera.clientYToWorld(this.world.mouse.y) / this.tileMap.tileSize);
                 }
             };
-            exports_38("MapEditorMapLayer", MapEditorMapLayer);
+            exports_39("MapEditorMapLayer", MapEditorMapLayer);
         }
     };
 });
-System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm", "entities/GhostPlayer", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher", "settings", "view/mapEditor/MapEditorEntityJointLayer", "view/mapEditor/MapEditorMapLayer", "view/mapEditor/MapEditorOverlay"], function (exports_39, context_39) {
+System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm", "entities/GhostPlayer", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher", "settings", "view/mapEditor/MapEditorEntityJointLayer", "view/mapEditor/MapEditorMapLayer", "view/mapEditor/MapEditorOverlay"], function (exports_40, context_40) {
     "use strict";
-    var ParentCanvasElm_4, GhostPlayer_1, TileMapEntity_2, tileMapFetcher_3, settings_3, MapEditorEntityJointLayer_1, MapEditorMapLayer_1, MapEditorOverlay_1, MapEditor;
-    var __moduleName = context_39 && context_39.id;
+    var ParentCanvasElm_5, GhostPlayer_1, TileMapEntity_3, tileMapFetcher_3, settings_3, MapEditorEntityJointLayer_1, MapEditorMapLayer_1, MapEditorOverlay_1, MapEditor;
+    var __moduleName = context_40 && context_40.id;
     return {
         setters: [
-            function (ParentCanvasElm_4_1) {
-                ParentCanvasElm_4 = ParentCanvasElm_4_1;
+            function (ParentCanvasElm_5_1) {
+                ParentCanvasElm_5 = ParentCanvasElm_5_1;
             },
             function (GhostPlayer_1_1) {
                 GhostPlayer_1 = GhostPlayer_1_1;
             },
-            function (TileMapEntity_2_1) {
-                TileMapEntity_2 = TileMapEntity_2_1;
+            function (TileMapEntity_3_1) {
+                TileMapEntity_3 = TileMapEntity_3_1;
             },
             function (tileMapFetcher_3_1) {
                 tileMapFetcher_3 = tileMapFetcher_3_1;
@@ -2430,14 +2581,14 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
             }
         ],
         execute: function () {
-            MapEditor = class MapEditor extends ParentCanvasElm_4.ParentCanvasElm {
+            MapEditor = class MapEditor extends ParentCanvasElm_5.ParentCanvasElm {
                 constructor() {
                     super();
                     this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
                     this.overlay = new MapEditorOverlay_1.MapEditorOverlay();
                     tileMapFetcher_3.tileMapFetcher.fetch(prompt("Open map name"))
                         .then(tileMap => {
-                        this.tileMap = new TileMapEntity_2.TileMapEntity(tileMap);
+                        this.tileMap = new TileMapEntity_3.TileMapEntity(tileMap);
                         this.overlay.setTileMap(this.tileMap.data);
                         this.addChild(new MapEditorMapLayer_1.MapEditorMapLayer(this.tileMap, this.overlay));
                         this.addChild(new MapEditorEntityJointLayer_1.MapEditorEntityJointLayer(this.tileMap, this.overlay));
@@ -2485,14 +2636,14 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                     document.body.removeChild(a);
                 }
             };
-            exports_39("MapEditor", MapEditor);
+            exports_40("MapEditor", MapEditor);
         }
     };
 });
-System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_40, context_40) {
+System.register("index", ["engine/World", "entities/collisions", "view/GameView", "view/mapEditor/MapEditor"], function (exports_41, context_41) {
     "use strict";
     var World_1, collisions_5, GameView_1, MapEditor_1, world, currViewElm;
-    var __moduleName = context_40 && context_40.id;
+    var __moduleName = context_41 && context_41.id;
     function navigateByHash() {
         if (currViewElm) {
             world.removeElm(currViewElm);

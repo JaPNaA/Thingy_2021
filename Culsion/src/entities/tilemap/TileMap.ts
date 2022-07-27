@@ -9,6 +9,7 @@ export class TileMap {
 
     public onTileEdit = new EventHandler<[number, number]>();
     public onJointEdit = new EventHandler();
+    public onEntityEdit = new EventHandler();
     public onMajorEdit = new EventHandler();
 
     private map: number[][];
@@ -91,8 +92,18 @@ export class TileMap {
         }
     }
 
-    public getEntityData(): readonly EntityData[] {
+    public getEntities(): readonly EntityData[] {
         return this.entities;
+    }
+
+    public removeEntity(entity: EntityData) {
+        removeElmFromArray(entity, this.entities);
+        this.onEntityEdit.dispatch();
+    }
+
+    public addEntity(entity: EntityData) {
+        this.entities.push(entity);
+        this.onEntityEdit.dispatch();
     }
 
     public getBlockTypes(): readonly BlockType[] {
@@ -139,7 +150,8 @@ export class TileMap {
 
         file.jsonData = {
             blockTypes: this.blockTypes,
-            joints: this.joints
+            joints: this.joints,
+            entities: this.entities
         };
 
         return file;

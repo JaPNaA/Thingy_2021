@@ -1,6 +1,6 @@
 import { Component, Elm, InputElm } from "../../engine/elements";
 import { TileMap } from "../../entities/tilemap/TileMap";
-import { BlockType, TileMapJoint } from "../../resources/TileMapFile";
+import { BlockType, EntityData, TileMapJoint } from "../../resources/TileMapFile";
 
 export class MapEditorOverlay extends Component {
     public selectedBlock = 1;
@@ -46,6 +46,15 @@ export class MapEditorOverlay extends Component {
                 if (!this.tileMap) { return; }
                 this.tileMap.removeJoint(joint);
                 this.tileMap.addJoint(updated);
+            });
+    }
+
+    public editEntity(entity: EntityData) {
+        DialogBoxForm.createFilledForm(this.elm, entity as any)
+            .then(updated => {
+                if (!this.tileMap) { return; }
+                this.tileMap.removeEntity(entity);
+                this.tileMap.addEntity(updated);
             });
     }
 
