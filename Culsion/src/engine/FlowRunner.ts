@@ -1,4 +1,4 @@
-type ChoiceHandler = (options: any[], indexes: number[]) => number;
+type ChoiceHandler = (options: any[], indexes: number[]) => number | Promise<number>;
 
 export class FlowRunner {
     private instructionPointer = 0;
@@ -39,27 +39,27 @@ export class FlowRunner {
         this.active = true;
     }
 
-    public runOne() {
+    public async runOne() {
         const item = this.data.flow[this.instructionPointer];
         if (isControlItem(item)) {
-            this.handleControl(item);
+            await this.handleControl(item);
         } else {
             if (!this.defaultHandler) {
                 throw new FlowRunException("No default handler when non-control instruction encountered");
             }
-            this.defaultHandler(item);
+            await this.defaultHandler(item);
             this.instructionPointer++;
         }
     }
 
-    public runToEnd() {
+    public async runToEnd() {
         this.active = true;
         while (this.active) {
-            this.runOne();
+            await this.runOne();
         }
     }
 
-    private handleControl(item: ControlItem) {
+    private async handleControl(item: ControlItem) {
         switch (item.ctrl) {
             case "split":
                 if (!this.choiceHandler) { throw new FlowRunException("No choice handler when choice requested"); }
@@ -69,7 +69,7 @@ export class FlowRunner {
                     optionsData.push(option.slice(1));
                     optionsIndexes.push(this.locationDescriptorToIndex(option[0]));
                 }
-                const index = this.choiceHandler(optionsData, optionsIndexes);
+                const index = await this.choiceHandler(optionsData, optionsIndexes);
                 if (index < 0) { break; }
                 this.instructionPointer = this.locationDescriptorToIndex(optionsIndexes[index]);
                 break;

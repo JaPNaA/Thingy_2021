@@ -1647,26 +1647,26 @@ System.register("engine/FlowRunner", [], function (exports_26, context_26) {
                     this.instructionPointer = index;
                     this.active = true;
                 }
-                runOne() {
+                async runOne() {
                     const item = this.data.flow[this.instructionPointer];
                     if (isControlItem(item)) {
-                        this.handleControl(item);
+                        await this.handleControl(item);
                     }
                     else {
                         if (!this.defaultHandler) {
                             throw new FlowRunException("No default handler when non-control instruction encountered");
                         }
-                        this.defaultHandler(item);
+                        await this.defaultHandler(item);
                         this.instructionPointer++;
                     }
                 }
-                runToEnd() {
+                async runToEnd() {
                     this.active = true;
                     while (this.active) {
-                        this.runOne();
+                        await this.runOne();
                     }
                 }
-                handleControl(item) {
+                async handleControl(item) {
                     switch (item.ctrl) {
                         case "split":
                             if (!this.choiceHandler) {
@@ -1678,7 +1678,7 @@ System.register("engine/FlowRunner", [], function (exports_26, context_26) {
                                 optionsData.push(option.slice(1));
                                 optionsIndexes.push(this.locationDescriptorToIndex(option[0]));
                             }
-                            const index = this.choiceHandler(optionsData, optionsIndexes);
+                            const index = await this.choiceHandler(optionsData, optionsIndexes);
                             if (index < 0) {
                                 break;
                             }
@@ -1853,12 +1853,15 @@ System.register("resources/tileMapFetcher", ["entities/tilemap/TileMap", "resour
         }
     };
 });
-System.register("resources/dialogFetcher", ["resources/resourceFetcher"], function (exports_29, context_29) {
+System.register("resources/dialogFetcher", ["engine/FlowRunner", "resources/resourceFetcher"], function (exports_29, context_29) {
     "use strict";
-    var resourceFetcher_4, DialogFetcher, dialogFetcher;
+    var FlowRunner_2, resourceFetcher_4, DialogFetcher, dialogFetcher;
     var __moduleName = context_29 && context_29.id;
     return {
         setters: [
+            function (FlowRunner_2_1) {
+                FlowRunner_2 = FlowRunner_2_1;
+            },
             function (resourceFetcher_4_1) {
                 resourceFetcher_4 = resourceFetcher_4_1;
             }
@@ -1866,23 +1869,9 @@ System.register("resources/dialogFetcher", ["resources/resourceFetcher"], functi
         execute: function () {
             DialogFetcher = class DialogFetcher {
                 async fetch(url) {
-                    const str = await resourceFetcher_4.resourceFetcher.fetchText("assets/" + url + ".txt");
-                    const lines = str.split("\n");
-                    const arr = [];
-                    let currArrElm = [];
-                    for (const line of lines) {
-                        if (line === "") {
-                            arr.push(currArrElm.join("\n"));
-                            currArrElm.length = 0;
-                        }
-                        else {
-                            currArrElm.push(line);
-                        }
-                    }
-                    if (currArrElm.length) {
-                        arr.push(currArrElm.join("\n"));
-                    }
-                    return arr;
+                    const str = await resourceFetcher_4.resourceFetcher.fetchText("assets/" + url + ".json");
+                    const json = JSON.parse(str);
+                    return new FlowRunner_2.FlowRunner(json);
                 }
             };
             exports_29("dialogFetcher", dialogFetcher = new DialogFetcher());
@@ -1912,7 +1901,7 @@ System.register("settings", [], function (exports_30, context_30) {
 });
 System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements", "settings"], function (exports_31, context_31) {
     "use strict";
-    var CanvasElm_4, elements_2, settings_1, NPCDialog;
+    var CanvasElm_4, elements_2, settings_1, NPCDialog, NPCDialogChoice;
     var __moduleName = context_31 && context_31.id;
     return {
         setters: [
@@ -1934,11 +1923,27 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     this.rect = rect;
                     this.closed = false;
                     this.elm = new elements_2.Elm().class("NPCDialog");
-                    this.index = 0;
+                    this.currentText = "";
+                    this.textChanged = false;
                     this.charIndex = 0;
                     this.secondPerChar = 0.03;
                     this.timeToNext = 0;
                     this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
+                    dialog.setDefaultHandler((data) => {
+                        this.currentText = `${data[0]}:\n${data[1]}`;
+                        this.textChanged = true;
+                    });
+                    dialog.setEndHandler(() => {
+                        this.closed = true;
+                        this.world.removeElm(this);
+                    });
+                    dialog.setChoiceHandler(async (choices) => {
+                        const dialogChoice = new NPCDialogChoice(choices);
+                        this.world.addElm(dialogChoice);
+                        const index = await dialogChoice.selectPromise;
+                        console.log(index);
+                        return index;
+                    });
                 }
                 setWorld(world) {
                     super.setWorld(world);
@@ -1947,26 +1952,23 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                 }
                 draw() { }
                 tick() {
-                    if (this.charIndex >= this.dialog[this.index].length) {
+                    if (this.charIndex >= this.currentText.length) {
                         return;
                     }
                     this.timeToNext -= this.world.timeElapsed;
                     while (this.timeToNext < 0) {
-                        this.elm.append(this.dialog[this.index][this.charIndex]);
+                        this.elm.append(this.currentText[this.charIndex]);
                         this.charIndex++;
                         this.timeToNext += this.secondPerChar;
                     }
                 }
                 advanceDialogHandler() {
-                    this.index++;
-                    if (this.dialog[this.index] === undefined) {
-                        this.closed = true;
-                        this.world.removeElm(this);
-                    }
-                    else {
-                        this.elm.clear();
-                        this.charIndex = 0;
-                    }
+                    this.textChanged = false;
+                    // while (!this.textChanged) {
+                    this.dialog.runOne();
+                    // }
+                    this.elm.clear();
+                    this.charIndex = 0;
                 }
                 dispose() {
                     this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
@@ -1975,6 +1977,37 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                 }
             };
             exports_31("NPCDialog", NPCDialog);
+            NPCDialogChoice = class NPCDialogChoice extends CanvasElm_4.CanvasElm {
+                constructor(choices) {
+                    super();
+                    this.choices = choices;
+                    this.closed = false;
+                    this.elm = new elements_2.Elm().class("NPCDialogChoice");
+                    this.selectPromise = new Promise(res => {
+                        this.elm.append(new elements_2.Elm("ol").withSelf(ul => {
+                            for (let i = 0; i < choices.length; i++) {
+                                const choice = choices[i];
+                                ul.append(new elements_2.Elm("li").class("option")
+                                    .append(choice)
+                                    .on("click", () => {
+                                    res(i);
+                                    this.world.removeElm(this);
+                                }));
+                            }
+                        }));
+                    });
+                }
+                setWorld(world) {
+                    super.setWorld(world);
+                    world.htmlOverlay.elm.append(this.elm);
+                }
+                draw() { }
+                dispose() {
+                    this.elm.remove();
+                    super.dispose();
+                }
+            };
+            exports_31("NPCDialogChoice", NPCDialogChoice);
         }
     };
 });

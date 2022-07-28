@@ -19,13 +19,17 @@ canvas {
     height: 0;
 }
 
-.NPCDialog {
+.NPCDialog, .NPCDialogChoice {
     width: 100vw;
     max-width: 720px;
     height: 224px;
     background-color: #7b7b7b61;
     white-space: pre;
     padding: 8px;
+}
+
+.NPCDialogChoice .option {
+    cursor: pointer;
 }
 
 .MapEditorOverlay {
