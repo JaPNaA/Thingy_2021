@@ -16,6 +16,8 @@ export class NPCDialog extends CanvasElm {
     private secondPerChar = 0.03;
     private timeToNext = 0;
 
+    private canAdvanceDialogue = true;
+
     constructor(private dialog: FlowRunner, private rect: Rectangle) {
         super();
 
@@ -75,10 +77,13 @@ export class NPCDialog extends CanvasElm {
     }
 
     private async advanceDialogHandler() {
+        if (!this.canAdvanceDialogue) { return; }
+        this.canAdvanceDialogue = false;
         this.eventHappened = false;
         while (!this.eventHappened) {
             await this.dialog.runOne();
         }
+        this.canAdvanceDialogue = true;
     }
 
     public dispose() {

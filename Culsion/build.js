@@ -1932,6 +1932,7 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     this.charIndex = 0;
                     this.secondPerChar = 0.03;
                     this.timeToNext = 0;
+                    this.canAdvanceDialogue = true;
                     this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
                     dialog.setDefaultHandler((data) => {
                         // handle new dialogue
@@ -1980,10 +1981,15 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     }
                 }
                 async advanceDialogHandler() {
+                    if (!this.canAdvanceDialogue) {
+                        return;
+                    }
+                    this.canAdvanceDialogue = false;
                     this.eventHappened = false;
                     while (!this.eventHappened) {
                         await this.dialog.runOne();
                     }
+                    this.canAdvanceDialogue = true;
                 }
                 dispose() {
                     this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
