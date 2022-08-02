@@ -11,7 +11,7 @@ export class NPCDialog extends CanvasElm {
     private elm = new Elm().class("NPCDialog");
 
     private currentText = "";
-    private textChanged = false;
+    private eventHappened = false;
     private charIndex = 0;
     private secondPerChar = 0.03;
     private timeToNext = 0;
@@ -21,20 +21,36 @@ export class NPCDialog extends CanvasElm {
 
         this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
         dialog.setDefaultHandler((data: string[]) => {
+            // handle new dialogue
+            this.elm.clear();
+            this.charIndex = 0;
             this.currentText = `${data[0]}:\n${data[1]}`;
-            this.textChanged = true;
+            this.eventHappened = true;
+
+            // if the next instruction is a choice, bring it up automatically
+            setTimeout(() => {
+                if (this.dialog.isNextControlSplit()) {
+                    this.advanceDialogHandler();
+                }
+            }, 1);
+        });
+        dialog.setChoiceHandler(async (choices: any[]) => {
+            // get choice from user
+            const dialogChoice = new NPCDialogChoice(choices);
+            this.world.addElm(dialogChoice);
+            this.eventHappened = true;
+            const index = await dialogChoice.selectPromise;
+
+            // advance dialogue after choice
+            setTimeout(() => this.advanceDialogHandler(), 1);
+            return index;
         });
         dialog.setEndHandler(() => {
             this.closed = true;
             this.world.removeElm(this);
         });
-        dialog.setChoiceHandler(async (choices: any[]) => {
-            const dialogChoice = new NPCDialogChoice(choices);
-            this.world.addElm(dialogChoice);
-            const index = await dialogChoice.selectPromise;
-            console.log(index);
-            return index;
-        });
+
+        this.advanceDialogHandler();
     }
 
     public setWorld(world: World) {
@@ -58,14 +74,11 @@ export class NPCDialog extends CanvasElm {
         }
     }
 
-    private advanceDialogHandler() {
-        this.textChanged = false;
-        // while (!this.textChanged) {
-        this.dialog.runOne();
-        // }
-
-        this.elm.clear();
-        this.charIndex = 0;
+    private async advanceDialogHandler() {
+        this.eventHappened = false;
+        while (!this.eventHappened) {
+            await this.dialog.runOne();
+        }
     }
 
     public dispose() {

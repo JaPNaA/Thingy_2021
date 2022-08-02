@@ -39,6 +39,11 @@ export class FlowRunner {
         this.active = true;
     }
 
+    public isNextControlSplit() {
+        const item = this.data.flow[this.instructionPointer];
+        return isControlItem(item) && item.ctrl === "split";
+    }
+
     public async runOne() {
         const item = this.data.flow[this.instructionPointer];
         if (isControlItem(item)) {

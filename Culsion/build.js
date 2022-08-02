@@ -1647,6 +1647,10 @@ System.register("engine/FlowRunner", [], function (exports_26, context_26) {
                     this.instructionPointer = index;
                     this.active = true;
                 }
+                isNextControlSplit() {
+                    const item = this.data.flow[this.instructionPointer];
+                    return isControlItem(item) && item.ctrl === "split";
+                }
                 async runOne() {
                     const item = this.data.flow[this.instructionPointer];
                     if (isControlItem(item)) {
@@ -1924,26 +1928,39 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     this.closed = false;
                     this.elm = new elements_2.Elm().class("NPCDialog");
                     this.currentText = "";
-                    this.textChanged = false;
+                    this.eventHappened = false;
                     this.charIndex = 0;
                     this.secondPerChar = 0.03;
                     this.timeToNext = 0;
                     this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
                     dialog.setDefaultHandler((data) => {
+                        // handle new dialogue
+                        this.elm.clear();
+                        this.charIndex = 0;
                         this.currentText = `${data[0]}:\n${data[1]}`;
-                        this.textChanged = true;
+                        this.eventHappened = true;
+                        // if the next instruction is a choice, bring it up automatically
+                        setTimeout(() => {
+                            if (this.dialog.isNextControlSplit()) {
+                                this.advanceDialogHandler();
+                            }
+                        }, 1);
+                    });
+                    dialog.setChoiceHandler(async (choices) => {
+                        // get choice from user
+                        const dialogChoice = new NPCDialogChoice(choices);
+                        this.world.addElm(dialogChoice);
+                        this.eventHappened = true;
+                        const index = await dialogChoice.selectPromise;
+                        // advance dialogue after choice
+                        setTimeout(() => this.advanceDialogHandler(), 1);
+                        return index;
                     });
                     dialog.setEndHandler(() => {
                         this.closed = true;
                         this.world.removeElm(this);
                     });
-                    dialog.setChoiceHandler(async (choices) => {
-                        const dialogChoice = new NPCDialogChoice(choices);
-                        this.world.addElm(dialogChoice);
-                        const index = await dialogChoice.selectPromise;
-                        console.log(index);
-                        return index;
-                    });
+                    this.advanceDialogHandler();
                 }
                 setWorld(world) {
                     super.setWorld(world);
@@ -1962,13 +1979,11 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                         this.timeToNext += this.secondPerChar;
                     }
                 }
-                advanceDialogHandler() {
-                    this.textChanged = false;
-                    // while (!this.textChanged) {
-                    this.dialog.runOne();
-                    // }
-                    this.elm.clear();
-                    this.charIndex = 0;
+                async advanceDialogHandler() {
+                    this.eventHappened = false;
+                    while (!this.eventHappened) {
+                        await this.dialog.runOne();
+                    }
                 }
                 dispose() {
                     this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
