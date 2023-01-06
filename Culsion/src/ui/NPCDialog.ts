@@ -1,6 +1,6 @@
 import { CanvasElm } from "../engine/canvasElm/CanvasElm";
 import { Elm } from "../engine/elements";
-import { FlowRunner } from "../engine/FlowRunner";
+import { FlowRunner, FlowRunnerOutput } from "../engine/FlowRunner";
 import { Rectangle } from "../engine/util/Rectangle";
 import { World } from "../engine/World";
 import { settings } from "../settings";
@@ -11,7 +11,7 @@ export class NPCDialog extends CanvasElm {
     private elm = new Elm().class("NPCDialog");
 
     private currentText = "";
-    private textChanged = false;
+    private atChoice = false;
     private charIndex = 0;
     private secondPerChar = 0.03;
     private timeToNext = 0;
@@ -20,21 +20,7 @@ export class NPCDialog extends CanvasElm {
         super();
 
         this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
-        dialog.setDefaultHandler((data: string[]) => {
-            this.currentText = `${data[0]}:\n${data[1]}`;
-            this.textChanged = true;
-        });
-        dialog.setEndHandler(() => {
-            this.closed = true;
-            this.world.removeElm(this);
-        });
-        dialog.setChoiceHandler(async (choices: any[]) => {
-            const dialogChoice = new NPCDialogChoice(choices);
-            this.world.addElm(dialogChoice);
-            const index = await dialogChoice.selectPromise;
-            console.log(index);
-            return index;
-        });
+        this.advanceDialogHandler();
     }
 
     public setWorld(world: World) {
@@ -59,13 +45,34 @@ export class NPCDialog extends CanvasElm {
     }
 
     private advanceDialogHandler() {
-        this.textChanged = false;
-        // while (!this.textChanged) {
-        this.dialog.runOne();
-        // }
+        if (this.atChoice) { return; }
+        let loopCount = 0;
+        let output;
+        do {
+            this.dialog.runOne();
+            loopCount++;
+            if (loopCount > 10000) { throw new Error("Loop too long without output"); }
+        } while (!(output = this.dialog.getOutput()));
 
-        this.elm.clear();
-        this.charIndex = 0;
+        if (output.type === "default") {
+            this.currentText = `${output.data[0]}:\n${output.data[1]}`;
+            this.elm.clear();
+            this.charIndex = 0;
+        } else if (output.type === "choice") {
+            const dialogChoice = new NPCDialogChoice(output.choices);
+            this.world.addElm(dialogChoice);
+            this.atChoice = true;
+            dialogChoice.selectPromise.then(index => {
+                this.dialog.inputSplitChoice(index);
+                this.atChoice = false;
+                this.advanceDialogHandler();
+            });
+        } else if (output.type === "end") {
+            this.closed = true;
+            this.world.removeElm(this);
+        } else {
+            throw new Error("Unknown output");
+        }
     }
 
     public dispose() {
