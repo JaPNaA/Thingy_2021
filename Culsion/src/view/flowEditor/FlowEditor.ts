@@ -2,7 +2,6 @@ import { CanvasElm } from "../../engine/canvasElm/CanvasElm";
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { FlowRunner } from "../../engine/FlowRunner";
 import { Rectangle } from "../../engine/util/Rectangle";
-import { Entity } from "../../entities/Entity";
 import { resourceFetcher } from "../../resources/resourceFetcher";
 
 export class FlowEditor extends ParentCanvasElm {
@@ -18,7 +17,7 @@ export class FlowEditor extends ParentCanvasElm {
     constructor() {
         super();
 
-        resourceFetcher.fetchText("assets/testFlow.json")
+        resourceFetcher.fetchText("assets/testDialog.json")
             .then(text => {
                 const data = JSON.parse(text);
                 const runner = new FlowRunner(data);
@@ -32,34 +31,35 @@ export class FlowEditor extends ParentCanvasElm {
             });
     }
 
-    private play(runner: FlowRunner) {
-        runner.setDefaultHandler((data: string[]) => console.log(data));
-        runner.setChoiceHandler((choices: any[]) => {
-            console.log(choices);
-            return parseInt(prompt() || "0");
-        });
-        runner.runToEnd();
-    }
-
     private populateTree(runner: FlowRunner) {
         this.visitedMap.set(0, this.treeRoot);
 
-        runner.setDefaultHandler((data: string[]) => this.currentSubtree.data.push(data));
-        runner.setChoiceHandler((_, indexes: any[]) => {
-            for (let i = 0; i < indexes.length; i++) {
-                this.choiceQue.push({
-                    positionIndex: indexes[i],
-                    tree: this.currentSubtree
-                });
-            }
-            this.fillNextOptionSubtree(runner);
-            return -1;
-        });
+        while (true) {
+            runner.runOne();
+            const output = runner.getOutput();
+            if (output) {
+                if (output.type === "default") {
+                    this.currentSubtree.data.push(output.data);
+                } else if (output.type === "choice") {
 
-        runner.setEndHandler(() => {
-            this.fillNextOptionSubtree(runner);
-        });
-        runner.runToEnd();
+                    for (let i = 0; i < output.choices.length; i++) {
+                        this.choiceQue.push({
+                            positionIndex: output.indexes[i],
+                            tree: this.currentSubtree
+                        });
+                    }
+                    this.fillNextOptionSubtree(runner);
+                } else if (output.type === "end") {
+                    if (this.choiceQue.length > 0) {
+                        this.fillNextOptionSubtree(runner);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        this.arrangeTree();
     }
 
     private fillNextOptionSubtree(runner: FlowRunner): void {
@@ -81,6 +81,30 @@ export class FlowEditor extends ParentCanvasElm {
         this.currentSubtree = subtree;
         this.visitedMap.set(item.positionIndex, subtree);
     }
+
+    private arrangeTree() {
+        let levelTrees = [this.treeRoot];
+        let nextLevelTrees = [];
+
+        for (let level = 0; ; level++) {
+            let x = 0;
+            for (const levelTree of levelTrees) {
+                levelTree.rect.y = level * 100;
+                levelTree.rect.x = x * 100;
+                levelTree.arranged = true;
+                x++;
+                for (const subtree of levelTree.subtrees) {
+                    if (!subtree.arranged) {
+                        nextLevelTrees.push(subtree);
+                    }
+                }
+            }
+
+            levelTrees = nextLevelTrees;
+            nextLevelTrees = [];
+            if (levelTrees.length <= 0) { break; }
+        }
+    }
 }
 
 class Tree extends CanvasElm {
@@ -88,14 +112,11 @@ class Tree extends CanvasElm {
     public data: string[][] = [];
 
     public rect: Rectangle;
+    public arranged = false;
 
     constructor(private isRoot = false) {
         super();
-        this.rect = new Rectangle(
-            Math.random() * 1000,
-            Math.random() * 1000,
-            64, 64
-        );
+        this.rect = new Rectangle(0, 0, 64, 64);
     }
 
     draw() {

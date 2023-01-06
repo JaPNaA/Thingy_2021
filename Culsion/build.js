@@ -1624,6 +1624,7 @@ System.register("engine/FlowRunner", [], function (exports_26, context_26) {
                     this.instructionPointer = 0;
                     this.active = true;
                     this.markers = new Map();
+                    this.output = null;
                     for (let i = 0; i < data.flow.length; i++) {
                         const item = data.flow[i];
                         if (isControlMarker(item)) {
@@ -1631,67 +1632,68 @@ System.register("engine/FlowRunner", [], function (exports_26, context_26) {
                         }
                     }
                 }
-                setDefaultHandler(func) {
-                    this.defaultHandler = func;
-                }
-                setChoiceHandler(handler) {
-                    this.choiceHandler = handler;
-                }
-                setEndHandler(handler) {
-                    this.endHandler = handler;
-                }
+                /** Get the instruction pointer's location */
                 getIndex() {
                     return this.instructionPointer;
                 }
+                /** Set the instruction pointer's location */
                 setIndex(index) {
                     this.instructionPointer = index;
                     this.active = true;
                 }
-                async runOne() {
+                /** Gets the output of the flow runner */
+                getOutput() {
+                    return this.output;
+                }
+                /** If active, the flow runner has not reached the end. */
+                isActive() {
+                    return this.active;
+                }
+                /** If at a split choice, inputs the choice into the flowRunner. */
+                inputSplitChoice(splitChoice) {
                     const item = this.data.flow[this.instructionPointer];
+                    if (!isControlItem(item) || item.ctrl !== "split") {
+                        throw new Error("Cannot input split choice at non-split instruction");
+                    }
+                    this.instructionPointer = this.locationDescriptorToIndex(item.options[splitChoice][0]);
+                }
+                runOne() {
+                    const item = this.data.flow[this.instructionPointer];
+                    this.output = null;
                     if (isControlItem(item)) {
-                        await this.handleControl(item);
+                        this.handleControl(item);
                     }
                     else {
-                        if (!this.defaultHandler) {
-                            throw new FlowRunException("No default handler when non-control instruction encountered");
-                        }
-                        await this.defaultHandler(item);
+                        this.output = {
+                            type: "default",
+                            data: item
+                        };
                         this.instructionPointer++;
                     }
                 }
-                async runToEnd() {
-                    this.active = true;
-                    while (this.active) {
-                        await this.runOne();
-                    }
-                }
-                async handleControl(item) {
+                // public runToEnd() {
+                //     this.active = true;
+                //     while (this.active) {
+                //         this.runOne();
+                //     }
+                // }
+                handleControl(item) {
                     switch (item.ctrl) {
                         case "split":
-                            if (!this.choiceHandler) {
-                                throw new FlowRunException("No choice handler when choice requested");
-                            }
                             const optionsData = [];
-                            const optionsIndexes = [];
+                            const indexes = [];
                             for (const option of item.options) {
                                 optionsData.push(option.slice(1));
-                                optionsIndexes.push(this.locationDescriptorToIndex(option[0]));
+                                indexes.push(this.locationDescriptorToIndex(option[0]));
                             }
-                            const index = await this.choiceHandler(optionsData, optionsIndexes);
-                            if (index < 0) {
-                                break;
-                            }
-                            this.instructionPointer = this.locationDescriptorToIndex(optionsIndexes[index]);
+                            this.output = { type: "choice", choices: optionsData, indexes: indexes };
                             break;
                         case "marker":
                             this.instructionPointer++;
                             break;
                         case "end":
                             this.active = false;
-                            if (this.endHandler) {
-                                this.endHandler();
-                            }
+                            this.output = { type: "end" };
                             break;
                     }
                 }
@@ -1709,6 +1711,7 @@ System.register("engine/FlowRunner", [], function (exports_26, context_26) {
                 }
             };
             exports_26("FlowRunner", FlowRunner);
+            // Flow data
             FlowRunException = class FlowRunException extends Error {
             };
             exports_26("FlowRunException", FlowRunException);
@@ -1747,7 +1750,7 @@ System.register("view/flowEditor/FlowEditor", ["engine/canvasElm/CanvasElm", "en
                     this.allTrees = [this.treeRoot];
                     this.choiceQue = [];
                     this.visitedMap = new Map();
-                    resourceFetcher_2.resourceFetcher.fetchText("assets/testFlow.json")
+                    resourceFetcher_2.resourceFetcher.fetchText("assets/testDialog.json")
                         .then(text => {
                         const data = JSON.parse(text);
                         const runner = new FlowRunner_1.FlowRunner(data);
@@ -1759,31 +1762,35 @@ System.register("view/flowEditor/FlowEditor", ["engine/canvasElm/CanvasElm", "en
                         }
                     });
                 }
-                play(runner) {
-                    runner.setDefaultHandler((data) => console.log(data));
-                    runner.setChoiceHandler((choices) => {
-                        console.log(choices);
-                        return parseInt(prompt() || "0");
-                    });
-                    runner.runToEnd();
-                }
                 populateTree(runner) {
                     this.visitedMap.set(0, this.treeRoot);
-                    runner.setDefaultHandler((data) => this.currentSubtree.data.push(data));
-                    runner.setChoiceHandler((_, indexes) => {
-                        for (let i = 0; i < indexes.length; i++) {
-                            this.choiceQue.push({
-                                positionIndex: indexes[i],
-                                tree: this.currentSubtree
-                            });
+                    while (true) {
+                        runner.runOne();
+                        const output = runner.getOutput();
+                        if (output) {
+                            if (output.type === "default") {
+                                this.currentSubtree.data.push(output.data);
+                            }
+                            else if (output.type === "choice") {
+                                for (let i = 0; i < output.choices.length; i++) {
+                                    this.choiceQue.push({
+                                        positionIndex: output.indexes[i],
+                                        tree: this.currentSubtree
+                                    });
+                                }
+                                this.fillNextOptionSubtree(runner);
+                            }
+                            else if (output.type === "end") {
+                                if (this.choiceQue.length > 0) {
+                                    this.fillNextOptionSubtree(runner);
+                                }
+                                else {
+                                    break;
+                                }
+                            }
                         }
-                        this.fillNextOptionSubtree(runner);
-                        return -1;
-                    });
-                    runner.setEndHandler(() => {
-                        this.fillNextOptionSubtree(runner);
-                    });
-                    runner.runToEnd();
+                    }
+                    this.arrangeTree();
                 }
                 fillNextOptionSubtree(runner) {
                     const item = this.choiceQue.pop();
@@ -1803,6 +1810,29 @@ System.register("view/flowEditor/FlowEditor", ["engine/canvasElm/CanvasElm", "en
                     this.currentSubtree = subtree;
                     this.visitedMap.set(item.positionIndex, subtree);
                 }
+                arrangeTree() {
+                    let levelTrees = [this.treeRoot];
+                    let nextLevelTrees = [];
+                    for (let level = 0;; level++) {
+                        let x = 0;
+                        for (const levelTree of levelTrees) {
+                            levelTree.rect.y = level * 100;
+                            levelTree.rect.x = x * 100;
+                            levelTree.arranged = true;
+                            x++;
+                            for (const subtree of levelTree.subtrees) {
+                                if (!subtree.arranged) {
+                                    nextLevelTrees.push(subtree);
+                                }
+                            }
+                        }
+                        levelTrees = nextLevelTrees;
+                        nextLevelTrees = [];
+                        if (levelTrees.length <= 0) {
+                            break;
+                        }
+                    }
+                }
             };
             exports_27("FlowEditor", FlowEditor);
             Tree = class Tree extends CanvasElm_3.CanvasElm {
@@ -1811,7 +1841,8 @@ System.register("view/flowEditor/FlowEditor", ["engine/canvasElm/CanvasElm", "en
                     this.isRoot = isRoot;
                     this.subtrees = [];
                     this.data = [];
-                    this.rect = new Rectangle_5.Rectangle(Math.random() * 1000, Math.random() * 1000, 64, 64);
+                    this.arranged = false;
+                    this.rect = new Rectangle_5.Rectangle(0, 0, 64, 64);
                 }
                 draw() {
                     const X = this.world.canvas.X;
@@ -1924,26 +1955,12 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     this.closed = false;
                     this.elm = new elements_2.Elm().class("NPCDialog");
                     this.currentText = "";
-                    this.textChanged = false;
+                    this.atChoice = false;
                     this.charIndex = 0;
                     this.secondPerChar = 0.03;
                     this.timeToNext = 0;
                     this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
-                    dialog.setDefaultHandler((data) => {
-                        this.currentText = `${data[0]}:\n${data[1]}`;
-                        this.textChanged = true;
-                    });
-                    dialog.setEndHandler(() => {
-                        this.closed = true;
-                        this.world.removeElm(this);
-                    });
-                    dialog.setChoiceHandler(async (choices) => {
-                        const dialogChoice = new NPCDialogChoice(choices);
-                        this.world.addElm(dialogChoice);
-                        const index = await dialogChoice.selectPromise;
-                        console.log(index);
-                        return index;
-                    });
+                    this.advanceDialogHandler();
                 }
                 setWorld(world) {
                     super.setWorld(world);
@@ -1963,12 +1980,40 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     }
                 }
                 advanceDialogHandler() {
-                    this.textChanged = false;
-                    // while (!this.textChanged) {
-                    this.dialog.runOne();
-                    // }
-                    this.elm.clear();
-                    this.charIndex = 0;
+                    if (this.atChoice) {
+                        return;
+                    }
+                    let loopCount = 0;
+                    let output;
+                    do {
+                        this.dialog.runOne();
+                        loopCount++;
+                        if (loopCount > 10000) {
+                            throw new Error("Loop too long without output");
+                        }
+                    } while (!(output = this.dialog.getOutput()));
+                    if (output.type === "default") {
+                        this.currentText = `${output.data[0]}:\n${output.data[1]}`;
+                        this.elm.clear();
+                        this.charIndex = 0;
+                    }
+                    else if (output.type === "choice") {
+                        const dialogChoice = new NPCDialogChoice(output.choices);
+                        this.world.addElm(dialogChoice);
+                        this.atChoice = true;
+                        dialogChoice.selectPromise.then(index => {
+                            this.dialog.inputSplitChoice(index);
+                            this.atChoice = false;
+                            this.advanceDialogHandler();
+                        });
+                    }
+                    else if (output.type === "end") {
+                        this.closed = true;
+                        this.world.removeElm(this);
+                    }
+                    else {
+                        throw new Error("Unknown output");
+                    }
                 }
                 dispose() {
                     this.world.keyboard.removeKeydownHandler(settings_1.settings.keybindings.select, this.advanceDialogHandler);
