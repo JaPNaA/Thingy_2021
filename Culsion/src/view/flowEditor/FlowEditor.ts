@@ -2,13 +2,13 @@ import { CanvasElm } from "../../engine/canvasElm/CanvasElm";
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { FlowRunner } from "../../engine/FlowRunner";
 import { Rectangle } from "../../engine/util/Rectangle";
-import { Entity } from "../../entities/Entity";
 import { resourceFetcher } from "../../resources/resourceFetcher";
 
 export class FlowEditor extends ParentCanvasElm {
-    private treeRoot: Tree = new Tree(true);
+    private treeRoot: Tree = new Tree(0);
     private currentSubtree: Tree = this.treeRoot;
     private allTrees: Tree[] = [this.treeRoot];
+    private depths: Tree[][] = [];
     private choiceQue: {
         positionIndex: number,
         tree: Tree
@@ -18,30 +18,23 @@ export class FlowEditor extends ParentCanvasElm {
     constructor() {
         super();
 
-        resourceFetcher.fetchText("assets/testFlow.json")
-            .then(text => {
+        resourceFetcher.fetchText("assets/testDialog.json")
+            .then(async (text) => {
                 const data = JSON.parse(text);
                 const runner = new FlowRunner(data);
-                // this.play(runner);
-                this.populateTree(runner);
+                await this.populateTree(runner);
                 console.log(this.treeRoot);
 
                 for (const tree of this.allTrees) {
+                    this.depths[tree.y] = this.depths[tree.y] || [];
+                    tree.setX(this.depths[tree.y].length);
+                    this.depths[tree.y].push(tree);
                     this.addChild(tree);
                 }
             });
     }
 
-    private play(runner: FlowRunner) {
-        runner.setDefaultHandler((data: string[]) => console.log(data));
-        runner.setChoiceHandler((choices: any[]) => {
-            console.log(choices);
-            return parseInt(prompt() || "0");
-        });
-        runner.runToEnd();
-    }
-
-    private populateTree(runner: FlowRunner) {
+    private async populateTree(runner: FlowRunner) {
         this.visitedMap.set(0, this.treeRoot);
 
         runner.setDefaultHandler((data: string[]) => this.currentSubtree.data.push(data));
@@ -59,7 +52,7 @@ export class FlowEditor extends ParentCanvasElm {
         runner.setEndHandler(() => {
             this.fillNextOptionSubtree(runner);
         });
-        runner.runToEnd();
+        await runner.runToEnd();
     }
 
     private fillNextOptionSubtree(runner: FlowRunner): void {
@@ -75,7 +68,7 @@ export class FlowEditor extends ParentCanvasElm {
         this.currentSubtree = item.tree;
         runner.setIndex(item.positionIndex);
 
-        const subtree = new Tree();
+        const subtree = new Tree(item.tree.y + 1);
         this.allTrees.push(subtree);
         this.currentSubtree.subtrees.push(subtree);
         this.currentSubtree = subtree;
@@ -89,18 +82,22 @@ class Tree extends CanvasElm {
 
     public rect: Rectangle;
 
-    constructor(private isRoot = false) {
+    constructor(public y: number) {
         super();
         this.rect = new Rectangle(
-            Math.random() * 1000,
-            Math.random() * 1000,
+            0,
+            this.y * 200,
             64, 64
         );
     }
 
+    public setX(x: number) {
+        this.rect.x = x * 200;
+    }
+
     draw() {
         const X = this.world.canvas.X;
-        X.fillStyle = this.isRoot ? "#88ffff" : "#ffffff";
+        X.fillStyle = "#ffffff";
         X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
 
         X.strokeStyle = "#ff0000";
