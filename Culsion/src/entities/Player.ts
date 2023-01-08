@@ -27,7 +27,7 @@ export class Player extends Entity {
         resourceFetcher.fetchImg("assets/img/char/magmaDown.png")
             .then(img => {
                 this.texture.clear();
-                this.texture.X.drawImage(img, 0, 0)
+                this.texture.X.drawImage(img, 0, 0);
             });
 
         this.renderInteractHintTexture();

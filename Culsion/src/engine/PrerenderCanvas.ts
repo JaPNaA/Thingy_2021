@@ -5,7 +5,7 @@ export class PrerenderCanvas {
     public width!: number;
     public height!: number;
 
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, private highdpr: boolean = false) {
         this.resize(width, height);
     }
 
@@ -14,7 +14,7 @@ export class PrerenderCanvas {
     }
 
     public resize(width: number, height: number) {
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = this.highdpr ? window.devicePixelRatio || 1 : 1;
 
         this.width = width;
         this.height = height;

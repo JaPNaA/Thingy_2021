@@ -47,9 +47,6 @@ export class TileMapEntity extends Entity {
         this.prerender.resize(this.data.width * this.tileTextureSize, this.data.height * this.tileTextureSize);
         this.prerender.clear();
 
-        const X = this.prerender.X;
-        X.imageSmoothingEnabled = false;
-
         for (let y = 0; y < this.data.height; y++) {
             for (let x = 0; x < this.data.width; x++) {
                 this.updatePrerenderTile(x, y);

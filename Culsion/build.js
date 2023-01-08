@@ -947,7 +947,8 @@ System.register("engine/PrerenderCanvas", [], function (exports_19, context_19) 
         setters: [],
         execute: function () {
             PrerenderCanvas = class PrerenderCanvas {
-                constructor(width, height) {
+                constructor(width, height, highdpr = false) {
+                    this.highdpr = highdpr;
                     this.canvas = document.createElement("canvas");
                     this.X = this.canvas.getContext("2d");
                     this.resize(width, height);
@@ -956,7 +957,7 @@ System.register("engine/PrerenderCanvas", [], function (exports_19, context_19) 
                     X.drawImage(this.canvas, x, y, width || this.width, height || this.height);
                 }
                 resize(width, height) {
-                    const dpr = window.devicePixelRatio || 1;
+                    const dpr = this.highdpr ? window.devicePixelRatio || 1 : 1;
                     this.width = width;
                     this.height = height;
                     this.canvas.width = dpr * width;
@@ -1362,8 +1363,6 @@ System.register("entities/tilemap/TileMapEntity", ["engine/PrerenderCanvas", "en
                     this.rect.height = this.data.height * this.tileSize;
                     this.prerender.resize(this.data.width * this.tileTextureSize, this.data.height * this.tileTextureSize);
                     this.prerender.clear();
-                    const X = this.prerender.X;
-                    X.imageSmoothingEnabled = false;
                     for (let y = 0; y < this.data.height; y++) {
                         for (let x = 0; x < this.data.width; x++) {
                             this.updatePrerenderTile(x, y);
