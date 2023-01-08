@@ -2,7 +2,10 @@ import { CanvasElm } from "../../engine/canvasElm/CanvasElm";
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { FlowRunner } from "../../engine/FlowRunner";
 import { Rectangle } from "../../engine/util/Rectangle";
+import { World } from "../../engine/World";
+import { GhostPlayer } from "../../entities/GhostPlayer";
 import { resourceFetcher } from "../../resources/resourceFetcher";
+import { settings } from "../../settings";
 
 export class FlowEditor extends ParentCanvasElm {
     private treeRoot: Tree = new Tree(true);
@@ -14,8 +17,12 @@ export class FlowEditor extends ParentCanvasElm {
     }[] = [];
     private visitedMap: Map<number, Tree> = new Map();
 
+    private ghostPlayer = new GhostPlayer();
+
     constructor() {
         super();
+
+        this.addChild(this.ghostPlayer);
 
         resourceFetcher.fetchText("assets/testDialog.json")
             .then(text => {
@@ -29,6 +36,21 @@ export class FlowEditor extends ParentCanvasElm {
                     this.addChild(tree);
                 }
             });
+    }
+
+    public setWorld(world: World): void {
+        super.setWorld(world);
+        this.world.camera.follow(this.ghostPlayer.rect);
+    }
+
+    public tick() {
+        super.tick();
+
+        if (this.world.keyboard.isDown(settings.keybindings.zoomOut)) {
+            this.world.camera.scale /= 1.02;
+        } else if (this.world.keyboard.isDown(settings.keybindings.zoomIn)) {
+            this.world.camera.scale *= 1.02;
+        }
     }
 
     private populateTree(runner: FlowRunner) {
