@@ -2,7 +2,10 @@ import { CanvasElm } from "../../engine/canvasElm/CanvasElm";
 import { ParentCanvasElm } from "../../engine/canvasElm/ParentCanvasElm";
 import { FlowRunner } from "../../engine/FlowRunner";
 import { Rectangle } from "../../engine/util/Rectangle";
+import { World } from "../../engine/World";
+import { GhostPlayer } from "../../entities/GhostPlayer";
 import { resourceFetcher } from "../../resources/resourceFetcher";
+import { settings } from "../../settings";
 
 export class FlowEditor extends ParentCanvasElm {
     private treeRoot: Tree = new Tree(0);
@@ -15,14 +18,18 @@ export class FlowEditor extends ParentCanvasElm {
     }[] = [];
     private visitedMap: Map<number, Tree> = new Map();
 
+    private ghostPlayer = new GhostPlayer();
+
     constructor() {
         super();
 
+        this.addChild(this.ghostPlayer);
+
         resourceFetcher.fetchText("assets/testDialog.json")
-            .then(async (text) => {
+            .then(text => {
                 const data = JSON.parse(text);
                 const runner = new FlowRunner(data);
-                await this.populateTree(runner);
+                this.populateTree(runner);
                 console.log(this.treeRoot);
 
                 for (const tree of this.allTrees) {
@@ -34,25 +41,47 @@ export class FlowEditor extends ParentCanvasElm {
             });
     }
 
-    private async populateTree(runner: FlowRunner) {
+    public setWorld(world: World): void {
+        super.setWorld(world);
+        this.world.camera.follow(this.ghostPlayer.rect);
+    }
+
+    public tick() {
+        super.tick();
+
+        if (this.world.keyboard.isDown(settings.keybindings.zoomOut)) {
+            this.world.camera.scale /= 1.02;
+        } else if (this.world.keyboard.isDown(settings.keybindings.zoomIn)) {
+            this.world.camera.scale *= 1.02;
+        }
+    }
+
+    private populateTree(runner: FlowRunner) {
         this.visitedMap.set(0, this.treeRoot);
 
-        runner.setDefaultHandler((data: string[]) => this.currentSubtree.data.push(data));
-        runner.setChoiceHandler((_, indexes: any[]) => {
-            for (let i = 0; i < indexes.length; i++) {
-                this.choiceQue.push({
-                    positionIndex: indexes[i],
-                    tree: this.currentSubtree
-                });
+        while (true) {
+            runner.runOne();
+            const output = runner.getOutput();
+            if (output) {
+                if (output.type === "default") {
+                    this.currentSubtree.data.push(output.data);
+                } else if (output.type === "choice") {
+                    for (let i = 0; i < output.choices.length; i++) {
+                        this.choiceQue.push({
+                            positionIndex: output.indexes[i],
+                            tree: this.currentSubtree
+                        });
+                    }
+                    this.fillNextOptionSubtree(runner);
+                } else if (output.type === "end") {
+                    if (this.choiceQue.length > 0) {
+                        this.fillNextOptionSubtree(runner);
+                    } else {
+                        break;
+                    }
+                }
             }
-            this.fillNextOptionSubtree(runner);
-            return -1;
-        });
-
-        runner.setEndHandler(() => {
-            this.fillNextOptionSubtree(runner);
-        });
-        await runner.runToEnd();
+        };
     }
 
     private fillNextOptionSubtree(runner: FlowRunner): void {
@@ -81,6 +110,7 @@ class Tree extends CanvasElm {
     public data: string[][] = [];
 
     public rect: Rectangle;
+    public arranged = false;
 
     constructor(public y: number) {
         super();

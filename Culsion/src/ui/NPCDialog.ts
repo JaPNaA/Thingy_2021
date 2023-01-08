@@ -1,6 +1,6 @@
 import { CanvasElm } from "../engine/canvasElm/CanvasElm";
 import { Elm } from "../engine/elements";
-import { FlowRunner } from "../engine/FlowRunner";
+import { FlowRunner, FlowRunnerOutput } from "../engine/FlowRunner";
 import { Rectangle } from "../engine/util/Rectangle";
 import { World } from "../engine/World";
 import { settings } from "../settings";
@@ -11,47 +11,15 @@ export class NPCDialog extends CanvasElm {
     private elm = new Elm().class("NPCDialog");
 
     private currentText = "";
-    private eventHappened = false;
+    private atChoice = false;
     private charIndex = 0;
     private secondPerChar = 0.03;
     private timeToNext = 0;
-
-    private canAdvanceDialogue = true;
 
     constructor(private dialog: FlowRunner, private rect: Rectangle) {
         super();
 
         this.advanceDialogHandler = this.advanceDialogHandler.bind(this);
-        dialog.setDefaultHandler((data: string[]) => {
-            // handle new dialogue
-            this.elm.clear();
-            this.charIndex = 0;
-            this.currentText = `${data[0]}:\n${data[1]}`;
-            this.eventHappened = true;
-
-            // if the next instruction is a choice, bring it up automatically
-            setTimeout(() => {
-                if (this.dialog.isNextControlSplit()) {
-                    this.advanceDialogHandler();
-                }
-            }, 1);
-        });
-        dialog.setChoiceHandler(async (choices: any[]) => {
-            // get choice from user
-            const dialogChoice = new NPCDialogChoice(choices);
-            this.world.addElm(dialogChoice);
-            this.eventHappened = true;
-            const index = await dialogChoice.selectPromise;
-
-            // advance dialogue after choice
-            setTimeout(() => this.advanceDialogHandler(), 1);
-            return index;
-        });
-        dialog.setEndHandler(() => {
-            this.closed = true;
-            this.world.removeElm(this);
-        });
-
         this.advanceDialogHandler();
     }
 
@@ -76,14 +44,35 @@ export class NPCDialog extends CanvasElm {
         }
     }
 
-    private async advanceDialogHandler() {
-        if (!this.canAdvanceDialogue) { return; }
-        this.canAdvanceDialogue = false;
-        this.eventHappened = false;
-        while (!this.eventHappened) {
-            await this.dialog.runOne();
+    private advanceDialogHandler() {
+        if (this.atChoice) { return; }
+        let loopCount = 0;
+        let output;
+        do {
+            this.dialog.runOne();
+            loopCount++;
+            if (loopCount > 10000) { throw new Error("Loop too long without output"); }
+        } while (!(output = this.dialog.getOutput()));
+
+        if (output.type === "default") {
+            this.currentText = `${output.data[0]}:\n${output.data[1]}`;
+            this.elm.clear();
+            this.charIndex = 0;
+        } else if (output.type === "choice") {
+            const dialogChoice = new NPCDialogChoice(output.choices);
+            this.world.addElm(dialogChoice);
+            this.atChoice = true;
+            dialogChoice.selectPromise.then(index => {
+                this.dialog.inputSplitChoice(index);
+                this.atChoice = false;
+                this.advanceDialogHandler();
+            });
+        } else if (output.type === "end") {
+            this.closed = true;
+            this.world.removeElm(this);
+        } else {
+            throw new Error("Unknown output");
         }
-        this.canAdvanceDialogue = true;
     }
 
     public dispose() {

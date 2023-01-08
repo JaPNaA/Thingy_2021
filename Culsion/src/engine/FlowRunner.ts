@@ -1,13 +1,9 @@
-type ChoiceHandler = (options: any[], indexes: number[]) => number | Promise<number>;
-
 export class FlowRunner {
     private instructionPointer = 0;
-    private defaultHandler?: Function;
-    private choiceHandler?: ChoiceHandler;
-    private endHandler?: Function;
 
     private active = true;
     private markers: Map<string, number> = new Map();
+    private output: FlowRunnerOutput | null = null;
 
     constructor(private data: FlowData) {
         for (let i = 0; i < data.flow.length; i++) {
@@ -18,75 +14,75 @@ export class FlowRunner {
         }
     }
 
-    public setDefaultHandler(func: Function) {
-        this.defaultHandler = func;
-    }
-
-    public setChoiceHandler(handler: ChoiceHandler) {
-        this.choiceHandler = handler;
-    }
-
-    public setEndHandler(handler: Function) {
-        this.endHandler = handler;
-    }
-
+    /** Get the instruction pointer's location */
     public getIndex() {
         return this.instructionPointer;
     }
 
+    /** Set the instruction pointer's location */
     public setIndex(index: number) {
         this.instructionPointer = index;
         this.active = true;
     }
 
-    public isNextControlSplit() {
-        const item = this.data.flow[this.instructionPointer];
-        return isControlItem(item) && item.ctrl === "split";
+    /** Gets the output of the flow runner */
+    public getOutput(): FlowRunnerOutput | null {
+        return this.output;
     }
 
-    public async runOne() {
+    /** If active, the flow runner has not reached the end. */
+    public isActive() {
+        return this.active;
+    }
+
+    /** If at a split choice, inputs the choice into the flowRunner. */
+    public inputSplitChoice(splitChoice: number) {
         const item = this.data.flow[this.instructionPointer];
+        if (!isControlItem(item) || item.ctrl !== "split") {
+            throw new Error("Cannot input split choice at non-split instruction");
+        }
+        this.instructionPointer = this.locationDescriptorToIndex(item.options[splitChoice][0]);
+    }
+
+    public runOne() {
+        const item = this.data.flow[this.instructionPointer];
+        this.output = null;
+
         if (isControlItem(item)) {
-            await this.handleControl(item);
+            this.handleControl(item);
         } else {
-            if (!this.defaultHandler) {
-                throw new FlowRunException("No default handler when non-control instruction encountered");
-            }
-            await this.defaultHandler(item);
+            this.output = {
+                type: "default",
+                data: item
+            };
             this.instructionPointer++;
         }
     }
 
-    public async runToEnd() {
-        this.active = true;
-        while (this.active) {
-            await this.runOne();
-        }
-    }
+    // public runToEnd() {
+    //     this.active = true;
+    //     while (this.active) {
+    //         this.runOne();
+    //     }
+    // }
 
-    private async handleControl(item: ControlItem) {
+    private handleControl(item: ControlItem) {
         switch (item.ctrl) {
             case "split":
-                if (!this.choiceHandler) { throw new FlowRunException("No choice handler when choice requested"); }
                 const optionsData = [];
-                const optionsIndexes: number[] = [];
+                const indexes: number[] = [];
                 for (const option of item.options) {
                     optionsData.push(option.slice(1));
-                    optionsIndexes.push(this.locationDescriptorToIndex(option[0]));
+                    indexes.push(this.locationDescriptorToIndex(option[0]));
                 }
-                const index = await this.choiceHandler(optionsData, optionsIndexes);
-                if (index < 0) { break; }
-                this.instructionPointer = this.locationDescriptorToIndex(optionsIndexes[index]);
+                this.output = { type: "choice", choices: optionsData, indexes: indexes };
                 break;
             case "marker":
                 this.instructionPointer++;
                 break;
             case "end":
                 this.active = false;
-
-                if (this.endHandler) {
-                    this.endHandler();
-                }
+                this.output = { type: "end" };
                 break;
         }
     }
@@ -104,6 +100,24 @@ export class FlowRunner {
     }
 }
 
+export type FlowRunnerOutput = FlowRunnerOutputDefault | FlowRunnerOutputChoice | FlowRunnerOutputEnd;
+
+interface FlowRunnerOutputDefault {
+    type: "default";
+    data: any;
+}
+
+interface FlowRunnerOutputChoice {
+    type: "choice";
+    choices: any[];
+    indexes: number[];
+}
+
+interface FlowRunnerOutputEnd {
+    type: "end";
+}
+
+// Flow data
 export class FlowRunException extends Error { };
 
 export interface FlowData {
@@ -118,6 +132,7 @@ function isControlItem(item: any): item is ControlItem {
 
 interface ControlSplit {
     ctrl: "split";
+    /** [location descriptor, ...choice data] */
     options: [string | number, ...any][];
 }
 
