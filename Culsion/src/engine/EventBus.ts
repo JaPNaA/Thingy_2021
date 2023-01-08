@@ -73,6 +73,19 @@ export class EventBus {
         }
     }
 
+    public subscribeOnce(name: string, handler: Handler | EventBus) {
+        const decoratedHandler = (data?: any) => {
+            this.unsubscribe(name, decoratedHandler);
+
+            if (handler instanceof EventBus) {
+                handler.send(name);
+            } else {
+                handler(data);
+            }
+        };
+        this.subscribe(name, decoratedHandler);
+    }
+
     public _attach(bus: EventBus) {
         this.parentBus = bus;
 
