@@ -214,6 +214,18 @@ System.register("engine/EventBus", ["engine/util/removeElmFromArray"], function 
                         }
                     }
                 }
+                subscribeOnce(name, handler) {
+                    const decoratedHandler = (data) => {
+                        this.unsubscribe(name, decoratedHandler);
+                        if (handler instanceof EventBus) {
+                            handler.send(name);
+                        }
+                        else {
+                            handler(data);
+                        }
+                    };
+                    this.subscribe(name, decoratedHandler);
+                }
                 _attach(bus) {
                     this.parentBus = bus;
                     const listeningNames = Object.keys(this.map);
@@ -1719,204 +1731,14 @@ System.register("engine/FlowRunner", [], function (exports_26, context_26) {
         }
     };
 });
-System.register("view/flowEditor/FlowEditor", ["engine/canvasElm/CanvasElm", "engine/canvasElm/ParentCanvasElm", "engine/FlowRunner", "engine/util/Rectangle", "resources/resourceFetcher"], function (exports_27, context_27) {
-    "use strict";
-    var CanvasElm_3, ParentCanvasElm_1, FlowRunner_1, Rectangle_5, resourceFetcher_2, FlowEditor, Tree;
-    var __moduleName = context_27 && context_27.id;
-    return {
-        setters: [
-            function (CanvasElm_3_1) {
-                CanvasElm_3 = CanvasElm_3_1;
-            },
-            function (ParentCanvasElm_1_1) {
-                ParentCanvasElm_1 = ParentCanvasElm_1_1;
-            },
-            function (FlowRunner_1_1) {
-                FlowRunner_1 = FlowRunner_1_1;
-            },
-            function (Rectangle_5_1) {
-                Rectangle_5 = Rectangle_5_1;
-            },
-            function (resourceFetcher_2_1) {
-                resourceFetcher_2 = resourceFetcher_2_1;
-            }
-        ],
-        execute: function () {
-            FlowEditor = class FlowEditor extends ParentCanvasElm_1.ParentCanvasElm {
-                constructor() {
-                    super();
-                    this.treeRoot = new Tree(true);
-                    this.currentSubtree = this.treeRoot;
-                    this.allTrees = [this.treeRoot];
-                    this.choiceQue = [];
-                    this.visitedMap = new Map();
-                    resourceFetcher_2.resourceFetcher.fetchText("assets/testDialog.json")
-                        .then(text => {
-                        const data = JSON.parse(text);
-                        const runner = new FlowRunner_1.FlowRunner(data);
-                        // this.play(runner);
-                        this.populateTree(runner);
-                        console.log(this.treeRoot);
-                        for (const tree of this.allTrees) {
-                            this.addChild(tree);
-                        }
-                    });
-                }
-                populateTree(runner) {
-                    this.visitedMap.set(0, this.treeRoot);
-                    while (true) {
-                        runner.runOne();
-                        const output = runner.getOutput();
-                        if (output) {
-                            if (output.type === "default") {
-                                this.currentSubtree.data.push(output.data);
-                            }
-                            else if (output.type === "choice") {
-                                for (let i = 0; i < output.choices.length; i++) {
-                                    this.choiceQue.push({
-                                        positionIndex: output.indexes[i],
-                                        tree: this.currentSubtree
-                                    });
-                                }
-                                this.fillNextOptionSubtree(runner);
-                            }
-                            else if (output.type === "end") {
-                                if (this.choiceQue.length > 0) {
-                                    this.fillNextOptionSubtree(runner);
-                                }
-                                else {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    this.arrangeTree();
-                }
-                fillNextOptionSubtree(runner) {
-                    const item = this.choiceQue.pop();
-                    if (!item) {
-                        return;
-                    }
-                    const existingSubtree = this.visitedMap.get(item.positionIndex);
-                    if (existingSubtree) {
-                        item.tree.subtrees.push(existingSubtree);
-                        return this.fillNextOptionSubtree(runner);
-                    }
-                    this.currentSubtree = item.tree;
-                    runner.setIndex(item.positionIndex);
-                    const subtree = new Tree();
-                    this.allTrees.push(subtree);
-                    this.currentSubtree.subtrees.push(subtree);
-                    this.currentSubtree = subtree;
-                    this.visitedMap.set(item.positionIndex, subtree);
-                }
-                arrangeTree() {
-                    let levelTrees = [this.treeRoot];
-                    let nextLevelTrees = [];
-                    for (let level = 0;; level++) {
-                        let x = 0;
-                        for (const levelTree of levelTrees) {
-                            levelTree.rect.y = level * 100;
-                            levelTree.rect.x = x * 100;
-                            levelTree.arranged = true;
-                            x++;
-                            for (const subtree of levelTree.subtrees) {
-                                if (!subtree.arranged) {
-                                    nextLevelTrees.push(subtree);
-                                }
-                            }
-                        }
-                        levelTrees = nextLevelTrees;
-                        nextLevelTrees = [];
-                        if (levelTrees.length <= 0) {
-                            break;
-                        }
-                    }
-                }
-            };
-            exports_27("FlowEditor", FlowEditor);
-            Tree = class Tree extends CanvasElm_3.CanvasElm {
-                constructor(isRoot = false) {
-                    super();
-                    this.isRoot = isRoot;
-                    this.subtrees = [];
-                    this.data = [];
-                    this.arranged = false;
-                    this.rect = new Rectangle_5.Rectangle(0, 0, 64, 64);
-                }
-                draw() {
-                    const X = this.world.canvas.X;
-                    X.fillStyle = this.isRoot ? "#88ffff" : "#ffffff";
-                    X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
-                    X.strokeStyle = "#ff0000";
-                    X.beginPath();
-                    for (const subtree of this.subtrees) {
-                        X.moveTo(this.rect.centerX(), this.rect.centerY());
-                        X.lineTo(subtree.rect.centerX(), subtree.rect.centerY());
-                    }
-                    X.stroke();
-                }
-            };
-        }
-    };
-});
-System.register("resources/tileMapFetcher", ["entities/tilemap/TileMap", "resources/resourceFetcher"], function (exports_28, context_28) {
-    "use strict";
-    var TileMap_1, resourceFetcher_3, TileMapFetcher, tileMapFetcher;
-    var __moduleName = context_28 && context_28.id;
-    return {
-        setters: [
-            function (TileMap_1_1) {
-                TileMap_1 = TileMap_1_1;
-            },
-            function (resourceFetcher_3_1) {
-                resourceFetcher_3 = resourceFetcher_3_1;
-            }
-        ],
-        execute: function () {
-            TileMapFetcher = class TileMapFetcher {
-                async fetch(url) {
-                    const data = await resourceFetcher_3.resourceFetcher.fetchRaw("assets/map/" + url + ".tmap");
-                    return new TileMap_1.TileMap(data);
-                }
-            };
-            exports_28("tileMapFetcher", tileMapFetcher = new TileMapFetcher());
-        }
-    };
-});
-System.register("resources/dialogFetcher", ["engine/FlowRunner", "resources/resourceFetcher"], function (exports_29, context_29) {
-    "use strict";
-    var FlowRunner_2, resourceFetcher_4, DialogFetcher, dialogFetcher;
-    var __moduleName = context_29 && context_29.id;
-    return {
-        setters: [
-            function (FlowRunner_2_1) {
-                FlowRunner_2 = FlowRunner_2_1;
-            },
-            function (resourceFetcher_4_1) {
-                resourceFetcher_4 = resourceFetcher_4_1;
-            }
-        ],
-        execute: function () {
-            DialogFetcher = class DialogFetcher {
-                async fetch(url) {
-                    const str = await resourceFetcher_4.resourceFetcher.fetchText("assets/" + url + ".json");
-                    const json = JSON.parse(str);
-                    return new FlowRunner_2.FlowRunner(json);
-                }
-            };
-            exports_29("dialogFetcher", dialogFetcher = new DialogFetcher());
-        }
-    };
-});
-System.register("settings", [], function (exports_30, context_30) {
+System.register("settings", [], function (exports_27, context_27) {
     "use strict";
     var settings;
-    var __moduleName = context_30 && context_30.id;
+    var __moduleName = context_27 && context_27.id;
     return {
         setters: [],
         execute: function () {
-            exports_30("settings", settings = {
+            exports_27("settings", settings = {
                 keybindings: {
                     moveUp: ["KeyW", "ArrowUp"],
                     moveDown: ["KeyS", "ArrowDown"],
@@ -1930,14 +1752,39 @@ System.register("settings", [], function (exports_30, context_30) {
         }
     };
 });
-System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements", "settings"], function (exports_31, context_31) {
+System.register("resources/dialogFetcher", ["engine/FlowRunner", "resources/resourceFetcher"], function (exports_28, context_28) {
     "use strict";
-    var CanvasElm_4, elements_2, settings_1, NPCDialog, NPCDialogChoice;
-    var __moduleName = context_31 && context_31.id;
+    var FlowRunner_1, resourceFetcher_2, DialogFetcher, dialogFetcher;
+    var __moduleName = context_28 && context_28.id;
     return {
         setters: [
-            function (CanvasElm_4_1) {
-                CanvasElm_4 = CanvasElm_4_1;
+            function (FlowRunner_1_1) {
+                FlowRunner_1 = FlowRunner_1_1;
+            },
+            function (resourceFetcher_2_1) {
+                resourceFetcher_2 = resourceFetcher_2_1;
+            }
+        ],
+        execute: function () {
+            DialogFetcher = class DialogFetcher {
+                async fetch(url) {
+                    const str = await resourceFetcher_2.resourceFetcher.fetchText("assets/" + url + ".json");
+                    const json = JSON.parse(str);
+                    return new FlowRunner_1.FlowRunner(json);
+                }
+            };
+            exports_28("dialogFetcher", dialogFetcher = new DialogFetcher());
+        }
+    };
+});
+System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements", "settings"], function (exports_29, context_29) {
+    "use strict";
+    var CanvasElm_3, elements_2, settings_1, NPCDialog, NPCDialogChoice;
+    var __moduleName = context_29 && context_29.id;
+    return {
+        setters: [
+            function (CanvasElm_3_1) {
+                CanvasElm_3 = CanvasElm_3_1;
             },
             function (elements_2_1) {
                 elements_2 = elements_2_1;
@@ -1947,7 +1794,7 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
             }
         ],
         execute: function () {
-            NPCDialog = class NPCDialog extends CanvasElm_4.CanvasElm {
+            NPCDialog = class NPCDialog extends CanvasElm_3.CanvasElm {
                 constructor(dialog, rect) {
                     super();
                     this.dialog = dialog;
@@ -2021,8 +1868,8 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     super.dispose();
                 }
             };
-            exports_31("NPCDialog", NPCDialog);
-            NPCDialogChoice = class NPCDialogChoice extends CanvasElm_4.CanvasElm {
+            exports_29("NPCDialog", NPCDialog);
+            NPCDialogChoice = class NPCDialogChoice extends CanvasElm_3.CanvasElm {
                 constructor(choices) {
                     super();
                     this.choices = choices;
@@ -2052,14 +1899,14 @@ System.register("ui/NPCDialog", ["engine/canvasElm/CanvasElm", "engine/elements"
                     super.dispose();
                 }
             };
-            exports_31("NPCDialogChoice", NPCDialogChoice);
+            exports_29("NPCDialogChoice", NPCDialogChoice);
         }
     };
 });
-System.register("entities/NPC", ["entities/Entity"], function (exports_32, context_32) {
+System.register("entities/NPC", ["entities/Entity"], function (exports_30, context_30) {
     "use strict";
     var Entity_2, NPC;
-    var __moduleName = context_32 && context_32.id;
+    var __moduleName = context_30 && context_30.id;
     return {
         setters: [
             function (Entity_2_1) {
@@ -2079,18 +1926,18 @@ System.register("entities/NPC", ["entities/Entity"], function (exports_32, conte
                     X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
                 }
             };
-            exports_32("NPC", NPC);
+            exports_30("NPC", NPC);
         }
     };
 });
-System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC"], function (exports_33, context_33) {
+System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/dialogFetcher", "ui/NPCDialog", "entities/NPC"], function (exports_31, context_31) {
     "use strict";
-    var Rectangle_6, dialogFetcher_1, NPCDialog_1, NPC_1, NPCWithDialog;
-    var __moduleName = context_33 && context_33.id;
+    var Rectangle_5, dialogFetcher_1, NPCDialog_1, NPC_1, NPCWithDialog;
+    var __moduleName = context_31 && context_31.id;
     return {
         setters: [
-            function (Rectangle_6_1) {
-                Rectangle_6 = Rectangle_6_1;
+            function (Rectangle_5_1) {
+                Rectangle_5 = Rectangle_5_1;
             },
             function (dialogFetcher_1_1) {
                 dialogFetcher_1 = dialogFetcher_1_1;
@@ -2117,7 +1964,7 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
                     }
                     this.loadingDialog = true;
                     dialogFetcher_1.dialogFetcher.fetch("testDialog").then(dialog => {
-                        this.npcDialog = new NPCDialog_1.NPCDialog(dialog, new Rectangle_6.Rectangle(this.rect.x, this.rect.y, 500, 300));
+                        this.npcDialog = new NPCDialog_1.NPCDialog(dialog, new Rectangle_5.Rectangle(this.rect.x, this.rect.y, 500, 300));
                         this.world.addElm(this.npcDialog);
                         this.loadingDialog = false;
                     });
@@ -2129,138 +1976,14 @@ System.register("entities/NPCWithDialog", ["engine/util/Rectangle", "resources/d
                     }
                 }
             };
-            exports_33("NPCWithDialog", NPCWithDialog);
+            exports_31("NPCWithDialog", NPCWithDialog);
         }
     };
 });
-System.register("entities/tilemap/EntitiesInTileMap", ["engine/canvasElm/ParentCanvasElm", "entities/NPCWithDialog", "entities/tilemap/TileMapEntity"], function (exports_34, context_34) {
+System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/MovingRectangle", "engine/util/Rectangle", "resources/resourceFetcher", "settings", "entities/collisions", "entities/Entity", "entities/NPCWithDialog"], function (exports_32, context_32) {
     "use strict";
-    var ParentCanvasElm_2, NPCWithDialog_1, TileMapEntity_1, EntitiesInTileMap;
-    var __moduleName = context_34 && context_34.id;
-    return {
-        setters: [
-            function (ParentCanvasElm_2_1) {
-                ParentCanvasElm_2 = ParentCanvasElm_2_1;
-            },
-            function (NPCWithDialog_1_1) {
-                NPCWithDialog_1 = NPCWithDialog_1_1;
-            },
-            function (TileMapEntity_1_1) {
-                TileMapEntity_1 = TileMapEntity_1_1;
-            }
-        ],
-        execute: function () {
-            /**
-             * A parent to store Entities inside of TileMaps.
-             */
-            EntitiesInTileMap = class EntitiesInTileMap extends ParentCanvasElm_2.ParentCanvasElm {
-                constructor(tileMap) {
-                    super();
-                    this.tileMap = tileMap;
-                    const entities = tileMap.getEntities();
-                    for (const entity of entities) {
-                        this.addChild(new NPCWithDialog_1.NPCWithDialog(entity.x * TileMapEntity_1.TileMapEntity.tileSize, entity.y * TileMapEntity_1.TileMapEntity.tileSize));
-                    }
-                }
-            };
-            exports_34("EntitiesInTileMap", EntitiesInTileMap);
-        }
-    };
-});
-System.register("entities/tilemap/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "resources/TileMapFile", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher", "entities/tilemap/EntitiesInTileMap"], function (exports_35, context_35) {
-    "use strict";
-    var isRectanglesColliding_3, ParentCanvasElm_3, Rectangle_7, TileMapFile_2, TileMapEntity_2, tileMapFetcher_1, EntitiesInTileMap_1, ParentTileMap;
-    var __moduleName = context_35 && context_35.id;
-    return {
-        setters: [
-            function (isRectanglesColliding_3_1) {
-                isRectanglesColliding_3 = isRectanglesColliding_3_1;
-            },
-            function (ParentCanvasElm_3_1) {
-                ParentCanvasElm_3 = ParentCanvasElm_3_1;
-            },
-            function (Rectangle_7_1) {
-                Rectangle_7 = Rectangle_7_1;
-            },
-            function (TileMapFile_2_1) {
-                TileMapFile_2 = TileMapFile_2_1;
-            },
-            function (TileMapEntity_2_1) {
-                TileMapEntity_2 = TileMapEntity_2_1;
-            },
-            function (tileMapFetcher_1_1) {
-                tileMapFetcher_1 = tileMapFetcher_1_1;
-            },
-            function (EntitiesInTileMap_1_1) {
-                EntitiesInTileMap_1 = EntitiesInTileMap_1_1;
-            }
-        ],
-        execute: function () {
-            /**
-             * A parent for TileMaps. Manages TileMap loading and unloading.
-             *
-             * Children include TileMapEntity and EntitiesInTileMap.
-             */
-            ParentTileMap = class ParentTileMap extends ParentCanvasElm_3.ParentCanvasElm {
-                constructor(mapFile, view) {
-                    super();
-                    this.view = view;
-                    this.activeMapEntities = [];
-                    this.maps = [];
-                    this.addTileMap(mapFile, 0, 0);
-                    console.log(this);
-                }
-                tick() {
-                    super.tick();
-                    for (const map of this.maps) {
-                        if (map.active) {
-                            continue;
-                        }
-                        if (isRectanglesColliding_3.isRectanglesColliding(this.view, map.rect)) {
-                            this.activateMap(map);
-                        }
-                    }
-                }
-                activateMap(map) {
-                    const tileMapEntity = new TileMapEntity_2.TileMapEntity(map.map);
-                    const entitiesInTileMap = new EntitiesInTileMap_1.EntitiesInTileMap(map.map);
-                    tileMapEntity.rect.x = map.rect.x;
-                    tileMapEntity.rect.y = map.rect.y;
-                    this.activeMapEntities.push(tileMapEntity);
-                    this.addChild(tileMapEntity);
-                    this.addChild(entitiesInTileMap);
-                    map.active = true;
-                }
-                addTileMap(tileMap, offsetX, offsetY) {
-                    const joints = tileMap.getJoints();
-                    this.maps.push({
-                        map: tileMap,
-                        rect: new Rectangle_7.Rectangle(offsetX, offsetY, tileMap.width * TileMapEntity_2.TileMapEntity.tileSize, tileMap.height * TileMapEntity_2.TileMapEntity.tileSize),
-                        active: false
-                    });
-                    for (const joint of joints) {
-                        if (!TileMapFile_2.isTileMapJointExtension(joint)) {
-                            continue;
-                        }
-                        tileMapFetcher_1.tileMapFetcher.fetch(joint.toMap)
-                            .then(tileMap => {
-                            const newJoint = tileMap.getJointById(joint.toId);
-                            if (!newJoint) {
-                                throw new Error("Failed to join joints -- could not find target joint.");
-                            }
-                            this.addTileMap(tileMap, (joint.x - newJoint.x) * TileMapEntity_2.TileMapEntity.tileSize + offsetX, (joint.y - newJoint.y) * TileMapEntity_2.TileMapEntity.tileSize + offsetY);
-                        });
-                    }
-                }
-            };
-            exports_35("ParentTileMap", ParentTileMap);
-        }
-    };
-});
-System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/MovingRectangle", "engine/util/Rectangle", "resources/resourceFetcher", "settings", "entities/collisions", "entities/Entity", "entities/NPCWithDialog"], function (exports_36, context_36) {
-    "use strict";
-    var PrerenderCanvas_3, MovingRectangle_2, Rectangle_8, resourceFetcher_5, settings_2, collisions_3, Entity_3, NPCWithDialog_2, Player;
-    var __moduleName = context_36 && context_36.id;
+    var PrerenderCanvas_3, MovingRectangle_2, Rectangle_6, resourceFetcher_3, settings_2, collisions_3, Entity_3, NPCWithDialog_1, Player;
+    var __moduleName = context_32 && context_32.id;
     return {
         setters: [
             function (PrerenderCanvas_3_1) {
@@ -2269,11 +1992,11 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
             function (MovingRectangle_2_1) {
                 MovingRectangle_2 = MovingRectangle_2_1;
             },
-            function (Rectangle_8_1) {
-                Rectangle_8 = Rectangle_8_1;
+            function (Rectangle_6_1) {
+                Rectangle_6 = Rectangle_6_1;
             },
-            function (resourceFetcher_5_1) {
-                resourceFetcher_5 = resourceFetcher_5_1;
+            function (resourceFetcher_3_1) {
+                resourceFetcher_3 = resourceFetcher_3_1;
             },
             function (settings_2_1) {
                 settings_2 = settings_2_1;
@@ -2284,8 +2007,8 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
             function (Entity_3_1) {
                 Entity_3 = Entity_3_1;
             },
-            function (NPCWithDialog_2_1) {
-                NPCWithDialog_2 = NPCWithDialog_2_1;
+            function (NPCWithDialog_1_1) {
+                NPCWithDialog_1 = NPCWithDialog_1_1;
             }
         ],
         execute: function () {
@@ -2301,7 +2024,7 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
                     this.interactTarget = null;
                     this.texture.X.fillStyle = "#ff0000";
                     this.texture.X.fillRect(0, 0, 12, 16);
-                    resourceFetcher_5.resourceFetcher.fetchImg("assets/img/char/magmaDown.png")
+                    resourceFetcher_3.resourceFetcher.fetchImg("assets/img/char/magmaDown.png")
                         .then(img => {
                         this.texture.clear();
                         this.texture.X.drawImage(img, 0, 0);
@@ -2366,23 +2089,362 @@ System.register("entities/Player", ["engine/PrerenderCanvas", "engine/util/Movin
                     X.fillText(settings_2.settings.keybindings.select[0], this.interactHintTexture.width / 2, this.interactHintTexture.height / 2);
                 }
                 getInteractTarget() {
-                    const items = this.world.collisionSystem.getCollisionsWith(new Rectangle_8.Rectangle(this.rect.x - this.interactionRange, this.rect.y - this.interactionRange, this.rect.width + this.interactionRange * 2, this.rect.height + this.interactionRange * 2));
+                    const items = this.world.collisionSystem.getCollisionsWith(new Rectangle_6.Rectangle(this.rect.x - this.interactionRange, this.rect.y - this.interactionRange, this.rect.width + this.interactionRange * 2, this.rect.height + this.interactionRange * 2));
                     for (const item of items) {
-                        if (item.elm instanceof NPCWithDialog_2.NPCWithDialog && item.elm.canStartDialog()) {
+                        if (item.elm instanceof NPCWithDialog_1.NPCWithDialog && item.elm.canStartDialog()) {
                             return item.elm;
                         }
                     }
                     return null;
                 }
             };
-            exports_36("Player", Player);
+            exports_32("Player", Player);
         }
     };
 });
-System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/tilemap/ParentTileMap", "entities/Player", "resources/tileMapFetcher"], function (exports_37, context_37) {
+System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player"], function (exports_33, context_33) {
     "use strict";
-    var ParentCanvasElm_4, ParentTileMap_1, Player_1, tileMapFetcher_2, GameView;
+    var collisions_4, Player_1, GhostPlayer;
+    var __moduleName = context_33 && context_33.id;
+    return {
+        setters: [
+            function (collisions_4_1) {
+                collisions_4 = collisions_4_1;
+            },
+            function (Player_1_1) {
+                Player_1 = Player_1_1;
+            }
+        ],
+        execute: function () {
+            GhostPlayer = class GhostPlayer extends Player_1.Player {
+                constructor() {
+                    super(...arguments);
+                    this.collisionType = collisions_4.collisions.types.none;
+                    this.actualSpeed = 1000;
+                }
+                tick() {
+                    this.speed = this.actualSpeed / this.world.camera.scale;
+                    super.tick();
+                }
+            };
+            exports_33("GhostPlayer", GhostPlayer);
+        }
+    };
+});
+System.register("view/flowEditor/FlowEditor", ["engine/canvasElm/CanvasElm", "engine/canvasElm/ParentCanvasElm", "engine/FlowRunner", "engine/util/Rectangle", "entities/GhostPlayer", "resources/resourceFetcher", "settings"], function (exports_34, context_34) {
+    "use strict";
+    var CanvasElm_4, ParentCanvasElm_1, FlowRunner_2, Rectangle_7, GhostPlayer_1, resourceFetcher_4, settings_3, FlowEditor, Tree;
+    var __moduleName = context_34 && context_34.id;
+    return {
+        setters: [
+            function (CanvasElm_4_1) {
+                CanvasElm_4 = CanvasElm_4_1;
+            },
+            function (ParentCanvasElm_1_1) {
+                ParentCanvasElm_1 = ParentCanvasElm_1_1;
+            },
+            function (FlowRunner_2_1) {
+                FlowRunner_2 = FlowRunner_2_1;
+            },
+            function (Rectangle_7_1) {
+                Rectangle_7 = Rectangle_7_1;
+            },
+            function (GhostPlayer_1_1) {
+                GhostPlayer_1 = GhostPlayer_1_1;
+            },
+            function (resourceFetcher_4_1) {
+                resourceFetcher_4 = resourceFetcher_4_1;
+            },
+            function (settings_3_1) {
+                settings_3 = settings_3_1;
+            }
+        ],
+        execute: function () {
+            FlowEditor = class FlowEditor extends ParentCanvasElm_1.ParentCanvasElm {
+                constructor() {
+                    super();
+                    this.treeRoot = new Tree(true);
+                    this.currentSubtree = this.treeRoot;
+                    this.allTrees = [this.treeRoot];
+                    this.choiceQue = [];
+                    this.visitedMap = new Map();
+                    this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
+                    this.addChild(this.ghostPlayer);
+                    resourceFetcher_4.resourceFetcher.fetchText("assets/testDialog.json")
+                        .then(text => {
+                        const data = JSON.parse(text);
+                        const runner = new FlowRunner_2.FlowRunner(data);
+                        // this.play(runner);
+                        this.populateTree(runner);
+                        console.log(this.treeRoot);
+                        for (const tree of this.allTrees) {
+                            this.addChild(tree);
+                        }
+                    });
+                }
+                setWorld(world) {
+                    super.setWorld(world);
+                    this.world.camera.follow(this.ghostPlayer.rect);
+                }
+                tick() {
+                    super.tick();
+                    if (this.world.keyboard.isDown(settings_3.settings.keybindings.zoomOut)) {
+                        this.world.camera.scale /= 1.02;
+                    }
+                    else if (this.world.keyboard.isDown(settings_3.settings.keybindings.zoomIn)) {
+                        this.world.camera.scale *= 1.02;
+                    }
+                }
+                populateTree(runner) {
+                    this.visitedMap.set(0, this.treeRoot);
+                    while (true) {
+                        runner.runOne();
+                        const output = runner.getOutput();
+                        if (output) {
+                            if (output.type === "default") {
+                                this.currentSubtree.data.push(output.data);
+                            }
+                            else if (output.type === "choice") {
+                                for (let i = 0; i < output.choices.length; i++) {
+                                    this.choiceQue.push({
+                                        positionIndex: output.indexes[i],
+                                        tree: this.currentSubtree
+                                    });
+                                }
+                                this.fillNextOptionSubtree(runner);
+                            }
+                            else if (output.type === "end") {
+                                if (this.choiceQue.length > 0) {
+                                    this.fillNextOptionSubtree(runner);
+                                }
+                                else {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    this.arrangeTree();
+                }
+                fillNextOptionSubtree(runner) {
+                    const item = this.choiceQue.pop();
+                    if (!item) {
+                        return;
+                    }
+                    const existingSubtree = this.visitedMap.get(item.positionIndex);
+                    if (existingSubtree) {
+                        item.tree.subtrees.push(existingSubtree);
+                        return this.fillNextOptionSubtree(runner);
+                    }
+                    this.currentSubtree = item.tree;
+                    runner.setIndex(item.positionIndex);
+                    const subtree = new Tree();
+                    this.allTrees.push(subtree);
+                    this.currentSubtree.subtrees.push(subtree);
+                    this.currentSubtree = subtree;
+                    this.visitedMap.set(item.positionIndex, subtree);
+                }
+                arrangeTree() {
+                    let levelTrees = [this.treeRoot];
+                    let nextLevelTrees = [];
+                    for (let level = 0;; level++) {
+                        let x = 0;
+                        for (const levelTree of levelTrees) {
+                            levelTree.rect.y = level * 100;
+                            levelTree.rect.x = x * 100;
+                            levelTree.arranged = true;
+                            x++;
+                            for (const subtree of levelTree.subtrees) {
+                                if (!subtree.arranged) {
+                                    nextLevelTrees.push(subtree);
+                                }
+                            }
+                        }
+                        levelTrees = nextLevelTrees;
+                        nextLevelTrees = [];
+                        if (levelTrees.length <= 0) {
+                            break;
+                        }
+                    }
+                }
+            };
+            exports_34("FlowEditor", FlowEditor);
+            Tree = class Tree extends CanvasElm_4.CanvasElm {
+                constructor(isRoot = false) {
+                    super();
+                    this.isRoot = isRoot;
+                    this.subtrees = [];
+                    this.data = [];
+                    this.arranged = false;
+                    this.rect = new Rectangle_7.Rectangle(0, 0, 64, 64);
+                }
+                draw() {
+                    const X = this.world.canvas.X;
+                    X.fillStyle = this.isRoot ? "#88ffff" : "#ffffff";
+                    X.fillRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+                    X.strokeStyle = "#ff0000";
+                    X.beginPath();
+                    for (const subtree of this.subtrees) {
+                        X.moveTo(this.rect.centerX(), this.rect.centerY());
+                        X.lineTo(subtree.rect.centerX(), subtree.rect.centerY());
+                    }
+                    X.stroke();
+                }
+            };
+        }
+    };
+});
+System.register("resources/tileMapFetcher", ["entities/tilemap/TileMap", "resources/resourceFetcher"], function (exports_35, context_35) {
+    "use strict";
+    var TileMap_1, resourceFetcher_5, TileMapFetcher, tileMapFetcher;
+    var __moduleName = context_35 && context_35.id;
+    return {
+        setters: [
+            function (TileMap_1_1) {
+                TileMap_1 = TileMap_1_1;
+            },
+            function (resourceFetcher_5_1) {
+                resourceFetcher_5 = resourceFetcher_5_1;
+            }
+        ],
+        execute: function () {
+            TileMapFetcher = class TileMapFetcher {
+                async fetch(url) {
+                    const data = await resourceFetcher_5.resourceFetcher.fetchRaw("assets/map/" + url + ".tmap");
+                    return new TileMap_1.TileMap(data);
+                }
+            };
+            exports_35("tileMapFetcher", tileMapFetcher = new TileMapFetcher());
+        }
+    };
+});
+System.register("entities/tilemap/EntitiesInTileMap", ["engine/canvasElm/ParentCanvasElm", "entities/NPCWithDialog", "entities/tilemap/TileMapEntity"], function (exports_36, context_36) {
+    "use strict";
+    var ParentCanvasElm_2, NPCWithDialog_2, TileMapEntity_1, EntitiesInTileMap;
+    var __moduleName = context_36 && context_36.id;
+    return {
+        setters: [
+            function (ParentCanvasElm_2_1) {
+                ParentCanvasElm_2 = ParentCanvasElm_2_1;
+            },
+            function (NPCWithDialog_2_1) {
+                NPCWithDialog_2 = NPCWithDialog_2_1;
+            },
+            function (TileMapEntity_1_1) {
+                TileMapEntity_1 = TileMapEntity_1_1;
+            }
+        ],
+        execute: function () {
+            /**
+             * A parent to store Entities inside of TileMaps.
+             */
+            EntitiesInTileMap = class EntitiesInTileMap extends ParentCanvasElm_2.ParentCanvasElm {
+                constructor(tileMap) {
+                    super();
+                    this.tileMap = tileMap;
+                    const entities = tileMap.getEntities();
+                    for (const entity of entities) {
+                        this.addChild(new NPCWithDialog_2.NPCWithDialog(entity.x * TileMapEntity_1.TileMapEntity.tileSize, entity.y * TileMapEntity_1.TileMapEntity.tileSize));
+                    }
+                }
+            };
+            exports_36("EntitiesInTileMap", EntitiesInTileMap);
+        }
+    };
+});
+System.register("entities/tilemap/ParentTileMap", ["engine/collision/isRectanglesColliding", "engine/canvasElm/ParentCanvasElm", "engine/util/Rectangle", "resources/TileMapFile", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher", "entities/tilemap/EntitiesInTileMap"], function (exports_37, context_37) {
+    "use strict";
+    var isRectanglesColliding_3, ParentCanvasElm_3, Rectangle_8, TileMapFile_2, TileMapEntity_2, tileMapFetcher_1, EntitiesInTileMap_1, ParentTileMap;
     var __moduleName = context_37 && context_37.id;
+    return {
+        setters: [
+            function (isRectanglesColliding_3_1) {
+                isRectanglesColliding_3 = isRectanglesColliding_3_1;
+            },
+            function (ParentCanvasElm_3_1) {
+                ParentCanvasElm_3 = ParentCanvasElm_3_1;
+            },
+            function (Rectangle_8_1) {
+                Rectangle_8 = Rectangle_8_1;
+            },
+            function (TileMapFile_2_1) {
+                TileMapFile_2 = TileMapFile_2_1;
+            },
+            function (TileMapEntity_2_1) {
+                TileMapEntity_2 = TileMapEntity_2_1;
+            },
+            function (tileMapFetcher_1_1) {
+                tileMapFetcher_1 = tileMapFetcher_1_1;
+            },
+            function (EntitiesInTileMap_1_1) {
+                EntitiesInTileMap_1 = EntitiesInTileMap_1_1;
+            }
+        ],
+        execute: function () {
+            /**
+             * A parent for TileMaps. Manages TileMap loading and unloading.
+             *
+             * Children include TileMapEntity and EntitiesInTileMap.
+             */
+            ParentTileMap = class ParentTileMap extends ParentCanvasElm_3.ParentCanvasElm {
+                constructor(mapFile, view) {
+                    super();
+                    this.view = view;
+                    this.activeMapEntities = [];
+                    this.maps = [];
+                    this.addTileMap(mapFile, 0, 0);
+                    console.log(this);
+                }
+                tick() {
+                    super.tick();
+                    for (const map of this.maps) {
+                        if (map.active) {
+                            continue;
+                        }
+                        if (isRectanglesColliding_3.isRectanglesColliding(this.view, map.rect)) {
+                            this.activateMap(map);
+                        }
+                    }
+                }
+                activateMap(map) {
+                    const tileMapEntity = new TileMapEntity_2.TileMapEntity(map.map);
+                    const entitiesInTileMap = new EntitiesInTileMap_1.EntitiesInTileMap(map.map);
+                    tileMapEntity.rect.x = map.rect.x;
+                    tileMapEntity.rect.y = map.rect.y;
+                    this.activeMapEntities.push(tileMapEntity);
+                    this.addChild(tileMapEntity);
+                    this.addChild(entitiesInTileMap);
+                    map.active = true;
+                }
+                addTileMap(tileMap, offsetX, offsetY) {
+                    const joints = tileMap.getJoints();
+                    this.maps.push({
+                        map: tileMap,
+                        rect: new Rectangle_8.Rectangle(offsetX, offsetY, tileMap.width * TileMapEntity_2.TileMapEntity.tileSize, tileMap.height * TileMapEntity_2.TileMapEntity.tileSize),
+                        active: false
+                    });
+                    for (const joint of joints) {
+                        if (!TileMapFile_2.isTileMapJointExtension(joint)) {
+                            continue;
+                        }
+                        tileMapFetcher_1.tileMapFetcher.fetch(joint.toMap)
+                            .then(tileMap => {
+                            const newJoint = tileMap.getJointById(joint.toId);
+                            if (!newJoint) {
+                                throw new Error("Failed to join joints -- could not find target joint.");
+                            }
+                            this.addTileMap(tileMap, (joint.x - newJoint.x) * TileMapEntity_2.TileMapEntity.tileSize + offsetX, (joint.y - newJoint.y) * TileMapEntity_2.TileMapEntity.tileSize + offsetY);
+                        });
+                    }
+                }
+            };
+            exports_37("ParentTileMap", ParentTileMap);
+        }
+    };
+});
+System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/tilemap/ParentTileMap", "entities/Player", "resources/tileMapFetcher"], function (exports_38, context_38) {
+    "use strict";
+    var ParentCanvasElm_4, ParentTileMap_1, Player_2, tileMapFetcher_2, GameView;
+    var __moduleName = context_38 && context_38.id;
     return {
         setters: [
             function (ParentCanvasElm_4_1) {
@@ -2391,8 +2453,8 @@ System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/
             function (ParentTileMap_1_1) {
                 ParentTileMap_1 = ParentTileMap_1_1;
             },
-            function (Player_1_1) {
-                Player_1 = Player_1_1;
+            function (Player_2_1) {
+                Player_2 = Player_2_1;
             },
             function (tileMapFetcher_2_1) {
                 tileMapFetcher_2 = tileMapFetcher_2_1;
@@ -2402,7 +2464,7 @@ System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/
             GameView = class GameView extends ParentCanvasElm_4.ParentCanvasElm {
                 constructor() {
                     super();
-                    this.player = new Player_1.Player();
+                    this.player = new Player_2.Player();
                     tileMapFetcher_2.tileMapFetcher.fetch("cave")
                         .then(tileMap => {
                         this.addChild(new ParentTileMap_1.ParentTileMap(tileMap, this.world.camera.rect));
@@ -2414,36 +2476,7 @@ System.register("view/GameView", ["engine/canvasElm/ParentCanvasElm", "entities/
                     world.camera.follow(this.player.rect);
                 }
             };
-            exports_37("GameView", GameView);
-        }
-    };
-});
-System.register("entities/GhostPlayer", ["entities/collisions", "entities/Player"], function (exports_38, context_38) {
-    "use strict";
-    var collisions_4, Player_2, GhostPlayer;
-    var __moduleName = context_38 && context_38.id;
-    return {
-        setters: [
-            function (collisions_4_1) {
-                collisions_4 = collisions_4_1;
-            },
-            function (Player_2_1) {
-                Player_2 = Player_2_1;
-            }
-        ],
-        execute: function () {
-            GhostPlayer = class GhostPlayer extends Player_2.Player {
-                constructor() {
-                    super(...arguments);
-                    this.collisionType = collisions_4.collisions.types.none;
-                    this.actualSpeed = 1000;
-                }
-                tick() {
-                    this.speed = this.actualSpeed / this.world.camera.scale;
-                    super.tick();
-                }
-            };
-            exports_38("GhostPlayer", GhostPlayer);
+            exports_38("GameView", GameView);
         }
     };
 });
@@ -2865,15 +2898,15 @@ System.register("view/mapEditor/MapEditorMapLayer", ["engine/canvasElm/ParentCan
 });
 System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm", "entities/GhostPlayer", "entities/tilemap/TileMapEntity", "resources/tileMapFetcher", "settings", "view/mapEditor/MapEditorEntityJointLayer", "view/mapEditor/MapEditorMapLayer", "view/mapEditor/MapEditorOverlay"], function (exports_42, context_42) {
     "use strict";
-    var ParentCanvasElm_6, GhostPlayer_1, TileMapEntity_3, tileMapFetcher_3, settings_3, MapEditorEntityJointLayer_1, MapEditorMapLayer_1, MapEditorOverlay_1, MapEditor;
+    var ParentCanvasElm_6, GhostPlayer_2, TileMapEntity_3, tileMapFetcher_3, settings_4, MapEditorEntityJointLayer_1, MapEditorMapLayer_1, MapEditorOverlay_1, MapEditor;
     var __moduleName = context_42 && context_42.id;
     return {
         setters: [
             function (ParentCanvasElm_6_1) {
                 ParentCanvasElm_6 = ParentCanvasElm_6_1;
             },
-            function (GhostPlayer_1_1) {
-                GhostPlayer_1 = GhostPlayer_1_1;
+            function (GhostPlayer_2_1) {
+                GhostPlayer_2 = GhostPlayer_2_1;
             },
             function (TileMapEntity_3_1) {
                 TileMapEntity_3 = TileMapEntity_3_1;
@@ -2881,8 +2914,8 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
             function (tileMapFetcher_3_1) {
                 tileMapFetcher_3 = tileMapFetcher_3_1;
             },
-            function (settings_3_1) {
-                settings_3 = settings_3_1;
+            function (settings_4_1) {
+                settings_4 = settings_4_1;
             },
             function (MapEditorEntityJointLayer_1_1) {
                 MapEditorEntityJointLayer_1 = MapEditorEntityJointLayer_1_1;
@@ -2898,7 +2931,7 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
             MapEditor = class MapEditor extends ParentCanvasElm_6.ParentCanvasElm {
                 constructor() {
                     super();
-                    this.ghostPlayer = new GhostPlayer_1.GhostPlayer();
+                    this.ghostPlayer = new GhostPlayer_2.GhostPlayer();
                     this.overlay = new MapEditorOverlay_1.MapEditorOverlay();
                     tileMapFetcher_3.tileMapFetcher.fetch(prompt("Open map name"))
                         .then(tileMap => {
@@ -2914,20 +2947,20 @@ System.register("view/mapEditor/MapEditor", ["engine/canvasElm/ParentCanvasElm",
                 setWorld(world) {
                     super.setWorld(world);
                     this.world.camera.follow(this.ghostPlayer.rect);
-                    this.world.keyboard.addKeydownHandler(settings_3.settings.keybindings.select, this.exportMapKeyHandler);
+                    this.world.keyboard.addKeydownHandler(settings_4.settings.keybindings.select, this.exportMapKeyHandler);
                     this.world.htmlOverlay.elm.append(this.overlay);
                 }
                 dispose() {
-                    this.world.keyboard.removeKeydownHandler(settings_3.settings.keybindings.select, this.exportMapKeyHandler);
+                    this.world.keyboard.removeKeydownHandler(settings_4.settings.keybindings.select, this.exportMapKeyHandler);
                     super.dispose();
                     this.overlay.elm.remove();
                 }
                 tick() {
                     super.tick();
-                    if (this.world.keyboard.isDown(settings_3.settings.keybindings.zoomOut)) {
+                    if (this.world.keyboard.isDown(settings_4.settings.keybindings.zoomOut)) {
                         this.world.camera.scale /= 1.02;
                     }
-                    else if (this.world.keyboard.isDown(settings_3.settings.keybindings.zoomIn)) {
+                    else if (this.world.keyboard.isDown(settings_4.settings.keybindings.zoomIn)) {
                         this.world.camera.scale *= 1.02;
                     }
                 }
