@@ -23,7 +23,7 @@
 
 <body>
     <script>
-        const content = decodeURIComponent(location.hash.startsWith("#") ? location.hash.slice(1) : location.hash);
+        const content = location.hash.startsWith("#") ? location.hash.slice(1) : location.hash;
 
         const iframe = document.createElement("iframe");
         iframe.src = "data:text/html," + content;

@@ -17,7 +17,7 @@
 
     <p> Input html body: </p>
 
-    <p> <input oninput="document.getElementById('output').innerText = document.getElementById('output').href = location.href.slice(0, location.href.lastIndexOf('/')) + '/#' + encodeURIComponent(this.value)"> </p>
+    <p> <textarea style="resize: none; width: 100%; min-height: 250px; height: 50vh;" oninput="document.getElementById('output').innerText = document.getElementById('output').href = location.href.slice(0, location.href.lastIndexOf('/')) + '/#' + encodeURIComponent(this.value)"></textarea> </p>
 
     <p> <a href="#" id="output"></a> </p>
 </body>
